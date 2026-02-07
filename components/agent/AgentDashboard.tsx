@@ -33,10 +33,11 @@ export function AgentDashboard() {
           </button>
         </div>
 
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {properties.map((property) => (
-            <div key={property.id} className="luxury-card group">
+        {/* Properties Grid + Chat Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {properties.map((property) => (
+              <div key={property.id} className="luxury-card group">
               <div className="relative mb-4 overflow-hidden rounded-lg h-48 bg-dark-700">
                 {property.images[0] && (
                   <img
@@ -66,8 +67,81 @@ export function AgentDashboard() {
               >
                 Edit & Share
               </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Chat Panel */}
+          <div className="lg:col-span-1">
+            <div className="luxury-card h-full flex flex-col">
+              <h3 className="text-xl font-semibold mb-4">AI Assistant Chat</h3>
+              <div className="flex-1 overflow-y-auto space-y-3 p-2" style={{maxHeight: 480}}>
+                {/* messages area */}
+                {aiResponse ? (
+                  <div className="bg-dark-800 p-3 rounded border border-gold-800">
+                    <p className="text-sm text-gray-300 mb-2">AI:</p>
+                    <p className="text-gray-300 text-sm">{aiResponse.title}</p>
+                    <p className="text-gray-400 text-xs mt-2">{aiResponse.address}</p>
+                  </div>
+                ) : (
+                  <div className="text-gray-400 text-sm">Start a conversation to generate a property instantly.</div>
+                )}
+              </div>
+
+              <div className="mt-4">
+                <input
+                  type="text"
+                  placeholder="Describe the property (address, features)"
+                  className="luxury-input w-full mb-2"
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button
+                    className="luxury-button-primary flex-1"
+                    onClick={async () => {
+                      if (!aiQuery) return;
+                      setAiLoading(true);
+                      try {
+                        const res = await fetch('/api/ai', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ prompt: aiQuery, agentId }),
+                        });
+                        const data = await res.json();
+                        setAiResponse(data);
+                        // auto-create property immediately
+                        setCreating(true);
+                        await fetch('/api/properties', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ ...data, agentId }),
+                        });
+                        // show quick confirmation and reload to show new prop
+                        window.location.reload();
+                      } catch (err) {
+                        setAiResponse({ error: 'AI request failed' });
+                        setCreating(false);
+                      } finally {
+                        setAiLoading(false);
+                      }
+                    }}
+                  >
+                    {aiLoading ? 'Generating...' : 'Send & Create'}
+                  </button>
+                  <button
+                    className="luxury-button-secondary"
+                    onClick={() => {
+                      setAiQuery('');
+                      setAiResponse(null);
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Upload Modal */}

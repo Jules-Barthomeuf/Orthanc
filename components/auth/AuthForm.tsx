@@ -13,7 +13,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"agent" | "client">("agent");
+  const role: "agent" | "client" = "agent";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -66,34 +66,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         <div className="luxury-card">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gold-400 mb-3">
-                I am a...
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    value="agent"
-                    checked={role === "agent"}
-                    onChange={(e) => setRole(e.target.value as "agent" | "client")}
-                    className="w-4 h-4 text-gold-500"
-                  />
-                  <span className="ml-2 text-gray-300">Agent</span>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    value="client"
-                    checked={role === "client"}
-                    onChange={(e) => setRole(e.target.value as "agent" | "client")}
-                    className="w-4 h-4 text-gold-500"
-                  />
-                  <span className="ml-2 text-gray-300">Client</span>
-                </label>
-              </div>
-            </div>
+            {/* Role is fixed to Agent — platform for agents only */}
 
             {/* Email */}
             <div>
