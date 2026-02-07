@@ -9,6 +9,10 @@ export function AgentDashboard() {
   const agentId = "agent-1"; // Mock current user
   const properties = findPropertiesByAgentId(agentId);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiResponse, setAiResponse] = useState<any>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   return (
     <div className="pt-20 pb-12">
@@ -96,17 +100,79 @@ export function AgentDashboard() {
                     </p>
                     <div className="space-y-3 text-left bg-dark-800 p-4 rounded-lg mb-4">
                       <p className="text-gray-300">
-                        <span className="text-gold-400">📍</span> What's the property address?
+                        <span className="text-gold-400">📍</span> Provide an address or brief description and our AI will draft the property listing.
                       </p>
                       <input
                         type="text"
-                        placeholder="Enter address..."
+                        placeholder="Enter address or description..."
                         className="luxury-input w-full"
+                        value={aiQuery}
+                        onChange={(e) => setAiQuery(e.target.value)}
                       />
                     </div>
-                    <button className="luxury-button-primary w-full">
-                      Continue with AI
-                    </button>
+                    <div>
+                      <button
+                        className="luxury-button-primary w-full"
+                        onClick={async () => {
+                          if (!aiQuery) return;
+                          setAiLoading(true);
+                          try {
+                            const res = await fetch('/api/ai', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ prompt: aiQuery, agentId }),
+                            });
+                            const data = await res.json();
+                            setAiResponse(data);
+                          } catch (err) {
+                            setAiResponse({ error: 'AI request failed' });
+                          } finally {
+                            setAiLoading(false);
+                          }
+                        }}
+                      >
+                        {aiLoading ? 'Generating...' : 'Continue with AI'}
+                      </button>
+                    </div>
+
+                    {/* AI Response Preview */}
+                    {aiResponse && (
+                      <div className="mt-4 bg-dark-800 p-4 rounded-lg border border-gold-800">
+                        {aiResponse.error ? (
+                          <p className="text-red-400">{aiResponse.error}</p>
+                        ) : (
+                          <div>
+                            <h4 className="font-semibold mb-2">Suggested Listing</h4>
+                            <p className="text-gray-300 text-sm mb-2">{aiResponse.title}</p>
+                            <p className="text-gray-400 text-sm mb-2">{aiResponse.address}</p>
+                            <p className="text-gray-400 text-sm mb-4">${(aiResponse.price || 0).toLocaleString()}</p>
+                            <button
+                              className="luxury-button-primary w-full mb-2"
+                              onClick={async () => {
+                                setCreating(true);
+                                try {
+                                  await fetch('/api/properties', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ ...aiResponse, agentId }),
+                                  });
+                                  // Refresh the page to show new property (simple approach)
+                                  window.location.reload();
+                                } catch (err) {
+                                  console.error(err);
+                                  setCreating(false);
+                                }
+                              }}
+                            >
+                              {creating ? 'Creating...' : 'Create Property from AI'}
+                            </button>
+                            <button className="luxury-button-secondary w-full" onClick={() => setAiResponse(null)}>
+                              Edit Manually
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
