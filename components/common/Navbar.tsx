@@ -173,7 +173,7 @@ export function Navbar({ variant }: { variant?: "landing" | "default" }) {
           {/* Logo */}
           <Link href="/" className="flex items-center relative z-10">
             <img
-              src="/image.png"
+              src="/logo.svg"
               alt="Orthanc"
               className="h-10 w-auto"
             />

@@ -1,63 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import SimulatorChat from './SimulatorChat';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  DollarSign,
-  TrendingUp,
-  BarChart3,
-  PieChart,
-  Building2,
-  Gem,
-  Target,
-  ArrowRight,
-  Info,
-  Landmark,
-  CreditCard,
-  Percent,
-  CalendarClock,
-  ShieldCheck,
-  ReceiptText,
-  Scale,
-  Crosshair,
-  Timer,
-  ChartNoAxesCombined,
-  HelpCircle,
-  X,
-} from 'lucide-react';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
-/* ═══════════════════════════════════════════════════════════════
-   TYPES & DEFAULTS
-   ═══════════════════════════════════════════════════════════════ */
+import type { HoldingStructure } from '../../types';
 
 interface SimState {
   // Property basics
