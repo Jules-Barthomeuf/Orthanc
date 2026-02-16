@@ -17,6 +17,7 @@ export interface Property {
   ownershipHistory: OwnershipRecord[];
   marketData: MarketData;
   investmentAnalysis: InvestmentAnalysis;
+  annualOpex?: number;
 }
 
 export interface Document {
