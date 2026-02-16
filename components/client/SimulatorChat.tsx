@@ -30,7 +30,7 @@ export interface SimStatePartial {
   interestRate?: number;
   loanTermYears?: number;
   holdPeriodYears?: number;
-  holdingStructure?: 'personal' | 'llc' | 'trust' | 'sci';
+  holdingStructure?: import('../../types').HoldingStructure;
   baseAppreciationRate?: number;
   propertyTaxRate?: number;
   annualInsurance?: number;

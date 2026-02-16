@@ -1,3 +1,4 @@
+export type HoldingStructure = 'personal' | 'llc' | 'trust' | 'foreign' | 'sci';
 export interface Property {
   id: string;
   title: string;

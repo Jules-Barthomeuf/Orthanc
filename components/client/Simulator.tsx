@@ -95,7 +95,7 @@ interface SimState {
   loanTermYears: number;
 
   // Holding structure
-  holdingStructure: 'personal' | 'llc' | 'trust' | 'foreign';
+  holdingStructure: HoldingStructure;
 
   // Appreciation & Scarcity
   baseAppreciationRate: number;
