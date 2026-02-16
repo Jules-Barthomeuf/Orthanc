@@ -18,6 +18,7 @@ export interface Property {
   marketData: MarketData;
   investmentAnalysis: InvestmentAnalysis;
   annualOpex?: number;
+  liquidityScore?: number;
 }
 
 export interface Document {
