@@ -47,12 +47,49 @@ export interface OwnershipRecord {
 }
 
 export interface MarketData {
+  neighborhood: string;
+  city: string;
   neighborhoodVibe: string;
+  demographics: {
+    population: string;
+    medianAge: number;
+    medianIncome: number;
+    ownerOccupied: number; // percentage
+  };
+  schools: {
+    name: string;
+    rating: number; // 1-10
+    type: string;
+    distance: string;
+  }[];
+  transportation: {
+    transitScore: number;
+    walkScore: number;
+    bikeScore: number;
+    nearbyStations: string[];
+  };
+  safety: {
+    crimeRate: string;
+    safetyScore: number; // 0-100
+  };
+  marketTrends: {
+    medianPrice: number;
+    avgDaysOnMarket: number;
+    pricePerSqFt: number;
+    inventoryLevel: string;
+    appreciationRate: number; // yearly percentage
+  };
   attractions: string[];
   localPolicies: string[];
   zoningInfo: string;
   economicOutlook: string;
   priceHistory: { date: Date; price: number }[];
+  agentPerspective?: AgentPerspective[];
+}
+
+export interface AgentPerspective {
+  category: string;
+  info: string;
 }
 
 export interface InvestmentAnalysis {

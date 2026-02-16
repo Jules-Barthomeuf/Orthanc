@@ -62,268 +62,147 @@ export const mockAgents: Agent[] = [
 export const mockProperties: Property[] = [
   {
     id: "prop-1",
-    title: "Luxury Oceanfront Villa - Miami Beach Mansion",
-    address: "4521 Ocean Drive, Miami Beach, FL 33139",
-    price: 15500000,
-    description:
-      "Stunning oceanfront mansion with 180-degree views of the Atlantic Ocean. Featuring 6 bedrooms, 7.5 bathrooms, and state-of-the-art amenities.",
-    images: [
-      "https://images.unsplash.com/photo-1613490900233-141ee9f9e0a0?w=1200",
-      "https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200",
-      "https://images.unsplash.com/photo-1590672894672-f26ff92e998d?w=1200",
-    ],
-    agentId: "agent-1",
-    createdAt: new Date("2024-03-01"),
-    bedroom: 6,
-    bathroom: 7.5,
-    squareFeet: 9500,
+    title: "Villa Miami Beach",
+    address: "123 Ocean Drive, Miami Beach, FL",
+    price: 2500000,
+    createdAt: new Date("2024-01-15"),
     yearBuilt: 2015,
-    lot: 2.5,
-    documents: [
-      {
-        id: "doc-1",
-        name: "Floor Plans - Full Property",
-        type: "blueprint",
-        url: "#",
-        uploadedAt: new Date("2024-03-01"),
-        analysis:
-          "Property features open concept living areas with seamless indoor-outdoor transitions. Each bedroom suite is independently designed with luxury finishes.",
-      },
-      {
-        id: "doc-2",
-        name: "2024 Property Inspection Report",
-        type: "inspection",
-        url: "#",
-        uploadedAt: new Date("2024-03-01"),
-        analysis:
-          "Excellent structural condition. Minor updates recommended for pool equipment. Foundation is solid with no concerns.",
-      },
-    ],
-    maintenanceHistory: [
-      {
-        id: "maint-1",
-        date: new Date("2024-01-15"),
-        description: "Annual pool equipment service and cleaning",
-        cost: 8500,
-        category: "Pool & Spa",
-      },
-      {
-        id: "maint-2",
-        date: new Date("2023-10-20"),
-        description: "Roof inspection and minor repairs",
-        cost: 12000,
-        category: "Roofing",
-      },
-      {
-        id: "maint-3",
-        date: new Date("2023-06-10"),
-        description: "HVAC system upgrade and maintenance",
-        cost: 25000,
-        category: "HVAC",
-      },
-    ],
-    ownershipHistory: [
-      {
-        id: "own-1",
-        owner: "James & Patricia Anderson",
-        purchaseDate: new Date("2015-08-10"),
-        saleDate: new Date("2024-04-30"),
-        purchasePrice: 11200000,
-        salePrice: 15500000,
-        reason:
-          "Relocating to London for business opportunity. Property has appreciated significantly.",
-      },
-    ],
+    bedroom: 4,
+    bathroom: 3,
+    squareFeet: 3200,
+    lot: 0.5,
+    images: ["https://images.unsplash.com/photo-1506744038136-46273834b3fb"],
+    description: "Superbe villa moderne avec vue sur l'océan et piscine à débordement.",
+    agentId: "agent-1",
+    documents: [],
+    maintenanceHistory: [],
     marketData: {
-      neighborhoodVibe:
-        "Exclusive oceanfront community with private beach access, world-class dining, high-end shopping on Lincoln Road",
-      attractions: [
-        "Miami Beach Boardwalk",
-        "Art Deco Historic District",
-        "South Pointe Park",
-        "Lincoln Road Mall",
-        "Miami Museum of Art",
+      neighborhood: "South of Fifth",
+      city: "Miami Beach",
+      neighborhoodVibe: "Luxury living with vibrant nightlife and pristine beaches. Highly walkable and exclusive.",
+      demographics: {
+        population: "92,300",
+        medianAge: 40,
+        medianIncome: 85000,
+        ownerOccupied: 45
+      },
+      schools: [
+        { name: "South Pointe Elementary", rating: 9, type: "Public", distance: "0.5 miles" },
+        { name: "Miami Beach Senior High", rating: 8, type: "Public", distance: "2.1 miles" }
       ],
-      localPolicies: [
-        "New short-term rental restrictions coming in 2024",
-        "Property tax reassessment expected",
-      ],
-      zoningInfo: "Residential High-Rise Zone, 150ft height limit",
-      economicOutlook:
-        "Miami's economy growing 4.2% annually. Tourism at record levels. Tech and finance sectors expanding.",
+      transportation: {
+        transitScore: 70,
+        walkScore: 92,
+        bikeScore: 85,
+        nearbyStations: ["Alton Rd & 4th St", "Washington Ave & 3rd St"]
+      },
+      safety: {
+        crimeRate: "Low",
+        safetyScore: 88
+      },
+      marketTrends: {
+        medianPrice: 2100000,
+        avgDaysOnMarket: 45,
+        pricePerSqFt: 1250,
+        inventoryLevel: "Balanced",
+        appreciationRate: 12.5
+      },
+      attractions: ["South Pointe Park", "Art Deco Historic District", "Miami Beach Marina"],
+      localPolicies: ["Short-term rental restrictions apply", "Historic preservation guidelines"],
+      zoningInfo: "Residential Single Family (RS-4)",
+      economicOutlook: "Strong growth driven by tech migration and tourism recovery.",
       priceHistory: [
-        { date: new Date("2023-01-01"), price: 11800000 },
-        { date: new Date("2023-04-01"), price: 12300000 },
-        { date: new Date("2023-07-01"), price: 12900000 },
-        { date: new Date("2023-10-01"), price: 13500000 },
-        { date: new Date("2024-01-01"), price: 14200000 },
-        { date: new Date("2024-04-30"), price: 15500000 },
+        { date: new Date("2020-01-01"), price: 1800000 },
+        { date: new Date("2021-01-01"), price: 1950000 },
+        { date: new Date("2022-01-01"), price: 2200000 },
+        { date: new Date("2023-01-01"), price: 2350000 },
+        { date: new Date("2024-01-01"), price: 2500000 },
       ],
     },
     investmentAnalysis: {
-      currentValue: 15500000,
-      projectedValue5Year: 19440000,
-      projectedValue10Year: 24320000,
-      capRate: 3.5,
-      roiProjection: 4.8,
-      scenarios: [
-        {
-          name: "Conservative",
-          downPayment: 5000000,
-          loanTerm: 30,
-          interestRate: 6.5,
-          monthlyPayment: 63500,
-          totalCost: 22860000,
-          equity5Year: 8200000,
-          marketValue5Year: 19440000,
-        },
-        {
-          name: "Moderate",
-          downPayment: 3875000,
-          loanTerm: 20,
-          interestRate: 6.5,
-          monthlyPayment: 81200,
-          totalCost: 22320000,
-          equity5Year: 9800000,
-          marketValue5Year: 19440000,
-        },
-      ],
+      currentValue: 2500000,
+      projectedValue5Year: 3200000,
+      projectedValue10Year: 4100000,
+      roiProjection: 28,
+      scenarios: [],
+      capRate: 4.2,
     },
+    ownershipHistory: []
   },
   {
     id: "prop-2",
-    title: "Modern Waterfront Penthouse - Brickell",
-    address: "888 Brickell Avenue, Miami, FL 33131",
-    price: 8750000,
-    description:
-      "Spectacular penthouse with wraparound terraces and panoramic views. 4 bedrooms, 4.5 bathrooms.",
-    images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
-      "https://images.unsplash.com/photo-1559080241-7a37deadfa19?w=1200",
-    ],
-    agentId: "agent-1",
+    title: "Penthouse Beverly Hills",
+    address: "456 Sunset Blvd, Beverly Hills, CA",
+    price: 4200000,
     createdAt: new Date("2024-02-20"),
-    bedroom: 4,
-    bathroom: 4.5,
-    squareFeet: 6200,
     yearBuilt: 2018,
-    lot: 0.0,
-    documents: [],
-    maintenanceHistory: [],
-    ownershipHistory: [],
-    marketData: {
-      neighborhoodVibe:
-        "Contemporary urban living with world-class amenities, fine dining, and financial district proximity",
-      attractions: [
-        "Brickell City Centre",
-        "Brickell Park",
-        "Miami Riverwalk",
-        "Wynwood Walls",
-      ],
-      localPolicies: ["Urban development zone", "Tax incentives available"],
-      zoningInfo: "Residential Multi-Use Zone",
-      economicOutlook:
-        "Strong rental demand. Brickell seeing 8-10% annual appreciation.",
-      priceHistory: [
-        { date: new Date("2023-01-01"), price: 7800000 },
-        { date: new Date("2024-01-01"), price: 8500000 },
-        { date: new Date("2024-02-20"), price: 8750000 },
-      ],
-    },
-    investmentAnalysis: {
-      currentValue: 8750000,
-      projectedValue5Year: 10937500,
-      projectedValue10Year: 13671875,
-      capRate: 4.2,
-      roiProjection: 5.1,
-      scenarios: [
-        {
-          name: "Conservative",
-          downPayment: 2625000,
-          loanTerm: 30,
-          interestRate: 6.5,
-          monthlyPayment: 37750,
-          totalCost: 13605000,
-          equity5Year: 4500000,
-          marketValue5Year: 10937500,
-        },
-        {
-          name: "Aggressive",
-          downPayment: 1312500,
-          loanTerm: 20,
-          interestRate: 6.5,
-          monthlyPayment: 46280,
-          totalCost: 12396000,
-          equity5Year: 3500000,
-          marketValue5Year: 10937500,
-        },
-      ],
-    },
-  },
-  {
-    id: "prop-3",
-    title: "Contemporary Hilltop Estate - Beverly Hills",
-    address: "1247 Mulholland Drive, Los Angeles, CA 90046",
-    price: 22000000,
-    description:
-      "Architectural masterpiece with smart home integration and resort-style amenities. 7 bedrooms, 9 bathrooms.",
-    images: [
-      "https://images.unsplash.com/photo-1600047915290-1bc07cecedfa?w=1200",
-      "https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?w=1200",
-      "https://images.unsplash.com/photo-1611208626889-7d4d4a1f85cf?w=1200",
-    ],
+    bedroom: 5,
+    bathroom: 4,
+    squareFeet: 4100,
+    lot: 0.7,
+    images: ["https://images.unsplash.com/photo-1464983953574-0892a716854b"],
+    description: "Penthouse luxueux avec rooftop et vue panoramique sur la ville.",
     agentId: "agent-2",
-    createdAt: new Date("2024-03-15"),
-    bedroom: 7,
-    bathroom: 9,
-    squareFeet: 12000,
-    yearBuilt: 2019,
-    lot: 3.0,
     documents: [],
     maintenanceHistory: [],
-    ownershipHistory: [],
     marketData: {
-      neighborhoodVibe:
-        "Exclusive hillside community with celebrity residents, privacy gates, and stunning canyon views",
-      attractions: [
-        "Beverly Hills Hotel",
-        "Rodeo Drive",
-        "Greystone Mansion",
-        "Hollywood Sign",
+      neighborhood: "The Flats",
+      city: "Beverly Hills",
+      neighborhoodVibe: "World-famous luxury destination with high-end shopping and dining. Quiet, tree-lined streets.",
+      demographics: {
+        population: "34,000",
+        medianAge: 46,
+        medianIncome: 150000,
+        ownerOccupied: 60
+      },
+      schools: [
+        { name: "Beverly Hills High", rating: 10, type: "Public", distance: "1.2 miles" },
+        { name: "Hawthorne Elementary", rating: 10, type: "Public", distance: "0.8 miles" }
       ],
-      localPolicies: [
-        "Strict building codes",
-        "Earthquake retrofitting recommended",
+      transportation: {
+        transitScore: 45,
+        walkScore: 88,
+        bikeScore: 65,
+        nearbyStations: ["Wilshire / Rodeo"]
+      },
+      safety: {
+        crimeRate: "Very Low",
+        safetyScore: 95
+      },
+      marketTrends: {
+        medianPrice: 3800000,
+        avgDaysOnMarket: 30,
+        pricePerSqFt: 1800,
+        inventoryLevel: "Low",
+        appreciationRate: 8.4
+      },
+      attractions: ["Rodeo Drive", "Beverly Gardens Park", "Greystone Mansion"],
+      localPolicies: ["Strict noise ordinances", "Height restrictions for new construction"],
+      zoningInfo: "R-1 Single Family Residential",
+      economicOutlook: "Stable luxury market with consistent international demand.",
+      agentPerspective: [
+        { category: "Insider Tips", info: "The north side of the street gets significantly less traffic noise. The neighbors are known for their annual summer block party." },
+        { category: "Future Development", info: "Rumors of a new upscale organic grocer opening two blocks away next year. City planning just approved a new park renovation nearby." },
+        { category: "Local Lifestyle", info: "Sunday farmers market is a must. The community is very private but friendly, with a strong focus on security and privacy." },
+        { category: "Investment Outlook", info: "Prices here have been resilient even during downturns due to the school district. Expect steady appreciation." }
       ],
-      zoningInfo: "Hillside Residential Zone, Standard Lot",
-      economicOutlook:
-        "Beverly Hills maintaining premium pricing. 3-5% annual appreciation expected.",
       priceHistory: [
-        { date: new Date("2023-01-01"), price: 20000000 },
-        { date: new Date("2024-01-01"), price: 21500000 },
-        { date: new Date("2024-03-15"), price: 22000000 },
+        { date: new Date("2020-01-01"), price: 3500000 },
+        { date: new Date("2021-01-01"), price: 3700000 },
+        { date: new Date("2022-01-01"), price: 3950000 },
+        { date: new Date("2023-01-01"), price: 4100000 },
+        { date: new Date("2024-01-01"), price: 4200000 },
       ],
     },
     investmentAnalysis: {
-      currentValue: 22000000,
-      projectedValue5Year: 25300000,
-      projectedValue10Year: 29095000,
-      capRate: 2.8,
-      roiProjection: 3.2,
-      scenarios: [
-        {
-          name: "Conservative",
-          downPayment: 6600000,
-          loanTerm: 30,
-          interestRate: 6.5,
-          monthlyPayment: 95200,
-          totalCost: 34280000,
-          equity5Year: 10500000,
-          marketValue5Year: 25300000,
-        },
-      ],
+      currentValue: 4200000,
+      projectedValue5Year: 5000000,
+      projectedValue10Year: 6200000,
+      roiProjection: 20,
+      scenarios: [],
+      capRate: 3.8,
     },
+    ownershipHistory: []
   },
 ];
 

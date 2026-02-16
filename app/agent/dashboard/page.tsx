@@ -12,6 +12,7 @@ export default function AgentDashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
+    document.title = 'Orthanc - Dashboard';
     if (!user || user.role !== "agent") {
       router.push("/login");
     }
@@ -22,10 +23,11 @@ export default function AgentDashboardPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-dark-950 flex flex-col">
       <Navbar />
-      <AgentDashboard />
-      <Footer />
-    </>
+      <div className="flex-1 flex">
+        <AgentDashboard />
+      </div>
+    </div>
   );
 }
