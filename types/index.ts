@@ -19,6 +19,9 @@ export interface Property {
   investmentAnalysis: InvestmentAnalysis;
   annualOpex?: number;
   liquidityScore?: number;
+  riskScore?: number;
+  capRate?: number;
+  irr?: number;
 }
 
 export interface Document {
