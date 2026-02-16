@@ -438,6 +438,8 @@ function useFinancials(s: SimState) {
       exitValue, capitalGain,
       requiredAppreciation, targetExitValue,
       totalStaff,
+      liquidityScore: undefined,
+      riskScore: undefined,
     };
   }, [s]);
 }
