@@ -57,7 +57,7 @@ export async function writePropertiesBulk(properties: Property[]) {
   if (isSupabaseEnabled()) {
     const sb = getSupabaseClient()!;
     const rows = properties.map((p) => ({ id: p.id, data: p, created_at: p.createdAt || new Date() }));
-    await sb.from("properties").upsert(rows, { returning: "minimal" });
+    await sb.from("properties").upsert(rows);
     return;
   }
   writeProperties(properties);
