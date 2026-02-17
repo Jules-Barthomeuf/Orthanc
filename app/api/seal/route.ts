@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'propertyId required' }), { status: 400 });
   }
 
-  const property = findStoredPropertyById(propertyId);
+  const property = await findStoredPropertyById(propertyId);
   if (!property) {
     return new Response(JSON.stringify({ error: 'Property not found' }), { status: 404 });
   }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const history = Array.isArray((property as any).ownershipHistory)
     ? [...(property as any).ownershipHistory, record]
     : [record];
-  updateProperty(propertyId, { ownershipHistory: history } as any);
+  await updateProperty(propertyId, { ownershipHistory: history } as any);
 
   return new Response(JSON.stringify({ ok: true, hash, record }), { status: 200 });
 }

@@ -20,10 +20,12 @@ interface InvestmentPanelProps {
 }
 
 export function InvestmentPanel({ property }: InvestmentPanelProps) {
-  const [downPayment, setDownPayment] = useState(property.price * 0.25);
+  const [downPayment, setDownPayment] = useState((property.price ?? 0) * 0.25);
   const [selectedScenario, setSelectedScenario] = useState(0);
 
-  const scenario = property.investmentAnalysis.scenarios[selectedScenario];
+  const scenarios = property.investmentAnalysis?.scenarios ?? [];
+  const scenario = scenarios[selectedScenario];
+  if (!scenario) return <div className="p-8 text-dark-400">Investment analysis not available for this property.</div>;
   const loanAmount = property.price - downPayment;
 
   const monthlyRate = (scenario.interestRate / 100) / 12;

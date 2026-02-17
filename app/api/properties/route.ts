@@ -7,7 +7,7 @@ import {
 import { generateMarketData } from "@/lib/marketDataGenerator";
 
 export async function GET() {
-  const properties = readProperties();
+  const properties = await readProperties();
   // Auto-enrich properties missing complete market data
   let needsWrite = false;
   for (let i = 0; i < properties.length; i++) {
@@ -26,7 +26,7 @@ export async function GET() {
   // Persist enriched data so it only happens once
   if (needsWrite) {
     const { writePropertiesBulk } = await import("@/lib/propertyStorage");
-    writePropertiesBulk(properties);
+    await writePropertiesBulk(properties);
   }
   return new Response(JSON.stringify(properties), { status: 200 });
 }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     if (!hasInvestmentData) investmentAnalysis = generated.investmentAnalysis;
   }
 
-  const newProp = saveProperty({
+  const newProp = await saveProperty({
     ...body,
     id: body.id || `prop-${Date.now()}`,
     createdAt: body.createdAt || new Date(),
@@ -84,7 +84,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const updated = updateProperty(id, updates);
+  const updated = await updateProperty(id, updates);
   if (!updated) {
     return new Response(
       JSON.stringify({ error: "Property not found" }),
@@ -106,7 +106,7 @@ export async function DELETE(req: Request) {
     );
   }
 
-  const deleted = deleteProperty(id);
+  const deleted = await deleteProperty(id);
   if (!deleted) {
     return new Response(
       JSON.stringify({ error: "Property not found" }),

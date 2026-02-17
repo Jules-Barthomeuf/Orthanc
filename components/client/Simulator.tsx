@@ -6,7 +6,31 @@ import {
   DollarSign, ChevronDown, Percent, CreditCard, TrendingUp, Landmark, CalendarClock, ShieldCheck, Gem, Target, Scale, Info, HelpCircle, X, Timer, Crosshair, ArrowRight, PieChart, BarChart3, ChartNoAxesCombined, Building2, ReceiptText
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Filler,
+  Tooltip as ChartTooltip,
+  Legend as ChartLegend,
+} from 'chart.js';
 import SimulatorChat from './SimulatorChat';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Filler,
+  ChartTooltip,
+  ChartLegend,
+);
 import type { HoldingStructure } from '@/types';
 
 interface SimState {

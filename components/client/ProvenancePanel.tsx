@@ -103,7 +103,7 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
           <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">
             <span className="label-luxury text-dark-500 text-[10px] block mb-1">Square Feet</span>
             <p className="font-display text-2xl text-white">
-              {property.squareFeet.toLocaleString("en-US")} sqft
+              {(property.squareFeet ?? 0).toLocaleString("en-US")} sqft
             </p>
           </div>
           <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">

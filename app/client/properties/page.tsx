@@ -76,7 +76,7 @@ export default function ClientPropertiesPage() {
               {properties.map((property, idx) => (
                 <div key={property.id} className="bg-dark-800 border border-gold-400/10 rounded-lg overflow-hidden group hover:border-gold-400/25 transition-all duration-300" style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.1 + idx * 0.1}s both` }}>
                   <div className="relative h-56 bg-dark-700 overflow-hidden">
-                    {property.images[0] && (
+                    {property.images?.[0] && (
                       <img
                         src={property.images[0]}
                         alt={property.title}
@@ -99,7 +99,7 @@ export default function ClientPropertiesPage() {
                       <div className="property-row">
                         <span className="property-label">Price</span>
                         <span className="property-value text-gold-400">
-                          ${(property.price / 1000000).toFixed(2)}M
+                          ${((property.price ?? 0) / 1000000).toFixed(2)}M
                         </span>
                       </div>
                       <div className="property-row">

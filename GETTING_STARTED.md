@@ -198,6 +198,20 @@ npm run build     # Production build
 npm start         # Run production build
 npm run type-check # Check TypeScript
 npm run lint      # Lint code (if configured)
+
+## Using Supabase for shared storage
+
+To use a shared Supabase storage for properties (so dev and live share the same data):
+
+1. Copy `.env.example` to `.env.local` and set `STORAGE_PROVIDER=supabase`, plus `SUPABASE_URL` and `SUPABASE_KEY`.
+2. Ensure a `properties` table exists with at least `id text primary key`, `data jsonb`, and `created_at timestamptz`.
+3. To migrate local `data/properties.json` to Supabase, run:
+
+```bash
+node scripts/migrate-properties-to-supabase.js
+```
+
+After this, both dev and production using the same Supabase credentials will operate on the same property dataset.
 ```
 
 ## Environment Setup

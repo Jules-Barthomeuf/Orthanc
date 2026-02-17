@@ -50,7 +50,7 @@ export function PropertyVault({ property }: PropertyVaultProps) {
                 <div>
                   <span className="label-luxury text-dark-400 text-[10px]">Details</span>
                   <p className="text-xl text-dark-200">
-                    {property.bedroom}bd · {property.bathroom}ba · {property.squareFeet.toLocaleString('en-US')} sqft
+                    {property.bedroom ?? 0}bd · {property.bathroom ?? 0}ba · {(property.squareFeet ?? 0).toLocaleString('en-US')} sqft
                   </p>
                 </div>
               </div>
