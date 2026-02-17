@@ -1,6 +1,7 @@
+import type { HoldingStructure } from '../../types';
 'use client';
 
-import type { HoldingStructure } from '../../types';
+import type { HoldingStructure } from '@/types';
 
 interface SimState {
   // Property basics
