@@ -68,7 +68,7 @@ export async function saveProperty(property: Property): Promise<Property> {
   if (isSupabaseEnabled()) {
     const sb = getSupabaseClient()!;
     const row = { id: property.id, data: property, created_at: property.createdAt || new Date() };
-    await sb.from("properties").upsert(row, { returning: "representation" });
+    await sb.from("properties").upsert(row);
     return property;
   }
 
@@ -123,7 +123,7 @@ export async function updateProperty(id: string, updates: Partial<Property>): Pr
     if (!existing) return null;
     const merged = { ...existing, ...updates } as Property;
     const sb = getSupabaseClient()!;
-    await sb.from("properties").upsert({ id, data: merged, created_at: merged.createdAt || new Date() }, { returning: "representation" });
+    await sb.from("properties").upsert({ id, data: merged, created_at: merged.createdAt || new Date() });
     return merged;
   }
   const properties = readPropertiesSyncFallback();
