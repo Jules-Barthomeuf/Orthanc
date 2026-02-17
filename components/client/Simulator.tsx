@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DollarSign, ChevronDown, Percent, CreditCard, TrendingUp, Landmark, CalendarClock, ShieldCheck, Gem, Target, Scale, Info, HelpCircle, X, Timer, Crosshair, ArrowRight, PieChart, BarChart3, ChartNoAxesCombined, Building2, ReceiptText
+} from 'lucide-react';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import SimulatorChat from './SimulatorChat';
 import type { HoldingStructure } from '@/types';
 
 interface SimState {
