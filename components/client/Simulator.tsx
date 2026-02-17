@@ -1,5 +1,4 @@
-import type { HoldingStructure } from '../../types';
-'use client';
+"use client";
 
 import type { HoldingStructure } from '@/types';
 
