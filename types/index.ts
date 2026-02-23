@@ -23,6 +23,7 @@ export interface Property {
   riskScore?: number;
   capRate?: number;
   irr?: number;
+  locked?: boolean;
 }
 
 export interface Document {

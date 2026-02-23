@@ -77,6 +77,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [lockToggling, setLockToggling] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareLink, setShareLink] = useState("");
   const [sealed, setSealed] = useState<string | null>(null);
@@ -190,6 +191,28 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
   /* currently displayed data */
   const data = editing ? draft : property;
 
+  /* ─── Lock toggle ─── */
+  const handleToggleLock = async () => {
+    setLockToggling(true);
+    try {
+      const res = await fetch('/api/properties', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, locked: !property.locked }),
+      });
+      if (res.ok) {
+        setProperty((prev: any) => ({ ...prev, locked: !prev.locked }));
+        addToast({ type: 'success', message: property.locked ? 'Property unlocked' : 'Property locked — it cannot be deleted' });
+      } else {
+        addToast({ type: 'error', message: 'Failed to update lock status' });
+      }
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update lock status' });
+    } finally {
+      setLockToggling(false);
+    }
+  };
+
   if (!user || user.role !== "agent") {
     return null;
   }
@@ -264,8 +287,31 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                     {copied ? "✓ Copied!" : "Share with Client"}
                   </button>
                   <button
+                    onClick={handleToggleLock}
+                    disabled={lockToggling}
+                    className={`text-sm py-2 px-4 rounded-lg border transition-colors flex items-center gap-1.5 ${
+                      property.locked
+                        ? 'border-gold-400/30 text-gold-400 bg-gold-400/10 hover:bg-gold-400/20'
+                        : 'border-dark-600/30 text-dark-300 hover:text-gold-400 hover:border-gold-400/20'
+                    }`}
+                    title={property.locked ? 'Unlock property' : 'Lock property to prevent deletion'}
+                  >
+                    {property.locked ? (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    )}
+                    {lockToggling ? '...' : property.locked ? 'Locked' : 'Lock'}
+                  </button>
+                  <button
                     onClick={() => setConfirmDelete(true)}
-                    className="text-sm py-2 px-4 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors"
+                    disabled={!!property.locked}
+                    className={`text-sm py-2 px-4 rounded-lg border transition-colors ${
+                      property.locked
+                        ? 'border-dark-600/10 text-dark-600 cursor-not-allowed'
+                        : 'border-red-500/20 text-red-400 hover:bg-red-500/10'
+                    }`}
+                    title={property.locked ? 'Unlock to delete' : 'Delete property'}
                   >
                     Delete
                   </button>

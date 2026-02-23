@@ -25,8 +25,64 @@ export default function MyPropertiesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [lockingId, setLockingId] = useState<string | null>(null);
+  const [lockingAll, setLockingAll] = useState(false);
+
+  const handleToggleLock = async (id: string, currentlyLocked: boolean) => {
+    setLockingId(id);
+    try {
+      const res = await fetch('/api/properties', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, locked: !currentlyLocked }),
+      });
+      if (res.ok) {
+        setProperties((prev) => prev.map((p) => p.id === id ? { ...p, locked: !currentlyLocked } : p));
+        addToast({ type: 'success', message: currentlyLocked ? 'Property unlocked' : 'Property locked — it cannot be deleted' });
+      } else {
+        addToast({ type: 'error', message: 'Failed to update lock status' });
+      }
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update lock status' });
+    } finally {
+      setLockingId(null);
+    }
+  };
+
+  const handleLockAll = async () => {
+    const unlocked = properties.filter((p) => !p.locked);
+    if (unlocked.length === 0) {
+      addToast({ type: 'info', message: 'All properties are already locked' });
+      return;
+    }
+    setLockingAll(true);
+    try {
+      let successCount = 0;
+      for (const p of unlocked) {
+        const res = await fetch('/api/properties', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: p.id, locked: true }),
+        });
+        if (res.ok) successCount++;
+      }
+      setProperties((prev) => prev.map((p) => ({ ...p, locked: true })));
+      addToast({ type: 'success', message: `${successCount} properties locked successfully` });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to lock all properties' });
+    } finally {
+      setLockingAll(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
+    // Block deletion of locked properties client-side too
+    const prop = properties.find((p) => p.id === id);
+    if (prop?.locked) {
+      addToast({ type: 'error', message: 'This property is locked. Unlock it first before deleting.' });
+      setConfirmDeleteId(null);
+      return;
+    }
     setDeletingId(id);
     try {
       const res = await fetch(`/api/properties?id=${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -34,7 +90,8 @@ export default function MyPropertiesPage() {
         setProperties((prev) => prev.filter((p) => p.id !== id));
         addToast({ type: "success", message: "Property deleted successfully" });
       } else {
-        addToast({ type: "error", message: "Failed to delete property" });
+        const data = await res.json().catch(() => ({}));
+        addToast({ type: "error", message: data.error || "Failed to delete property" });
       }
     } catch {
       addToast({ type: "error", message: "Failed to delete property" });
@@ -248,7 +305,18 @@ export default function MyPropertiesPage() {
                 </select>
 
                 {/* View toggle */}
-                <div className="flex border border-dark-600/20 rounded-lg overflow-hidden">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleLockAll}
+                    disabled={lockingAll || properties.every((p) => p.locked)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-all disabled:opacity-40 disabled:cursor-not-allowed
+                      bg-gold-400/10 text-gold-400 border-gold-400/20 hover:bg-gold-400/20 hover:border-gold-400/30"
+                    title="Lock all properties to prevent accidental deletion"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    {lockingAll ? 'Locking...' : 'Lock All'}
+                  </button>
+                  <div className="flex border border-dark-600/20 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode("grid")}
                     className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-gold-400/10 text-gold-400" : "bg-dark-800 text-dark-400 hover:text-white"}`}
@@ -317,6 +385,7 @@ export default function MyPropertiesPage() {
                       />
                     </svg>
                   </button>
+                </div>
                 </div>
               </div>
             </div>
@@ -444,10 +513,16 @@ export default function MyPropertiesPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/70 via-dark-900/10 to-transparent" />
 
                     {/* Price badge */}
-                    <div className="absolute bottom-3 left-4">
+                    <div className="absolute bottom-3 left-4 flex items-center gap-2">
                       <span className="font-display text-xl font-bold text-white drop-shadow-lg">
                         ${property.price?.toLocaleString()}
                       </span>
+                      {property.locked && (
+                        <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold-400/30">
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          LOCKED
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -460,9 +535,26 @@ export default function MyPropertiesPage() {
                         </h3>
                       </div>
                       <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleLock(property.id, !!property.locked); }}
+                        disabled={lockingId === property.id}
+                        className={`shrink-0 p-1.5 rounded-md transition-colors ${
+                          property.locked
+                            ? 'text-gold-400 hover:text-gold-300 bg-gold-400/10'
+                            : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                        }`}
+                        title={property.locked ? 'Unlock property' : 'Lock property (prevent deletion)'}
+                      >
+                        {property.locked ? (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        )}
+                      </button>
+                      <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(property.id); }}
-                        className="shrink-0 p-1.5 rounded-md text-dark-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                        title="Delete property"
+                        className={`shrink-0 p-1.5 rounded-md transition-colors ${property.locked ? 'text-dark-600 cursor-not-allowed' : 'text-dark-500 hover:text-red-400 hover:bg-red-400/10'}`}
+                        title={property.locked ? 'Unlock to delete' : 'Delete property'}
+                        disabled={!!property.locked}
                       >
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1m2 0v9a1 1 0 01-1 1H5a1 1 0 01-1-1V4h10zM7 7v4M9 7v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
@@ -601,9 +693,17 @@ export default function MyPropertiesPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-display text-base font-bold text-white group-hover:text-gold-300 transition-colors truncate">
-                      {property.title}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-display text-base font-bold text-white group-hover:text-gold-300 transition-colors truncate">
+                        {property.title}
+                      </h3>
+                      {property.locked && (
+                        <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-gold-400/30 shrink-0">
+                          <svg width="8" height="8" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          LOCKED
+                        </span>
+                      )}
+                    </div>
                     <p className="text-dark-400 text-xs truncate">
                       {property.address}
                     </p>
@@ -622,11 +722,28 @@ export default function MyPropertiesPage() {
                     </span>
                   </div>
 
-                  {/* Delete + Arrow */}
+                  {/* Delete + Lock + Arrow */}
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleLock(property.id, !!property.locked); }}
+                    disabled={lockingId === property.id}
+                    className={`shrink-0 p-1.5 rounded-md transition-colors ${
+                      property.locked
+                        ? 'text-gold-400 hover:text-gold-300 bg-gold-400/10'
+                        : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                    }`}
+                    title={property.locked ? 'Unlock property' : 'Lock property (prevent deletion)'}
+                  >
+                    {property.locked ? (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    )}
+                  </button>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(property.id); }}
-                    className="shrink-0 p-1.5 rounded-md text-dark-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                    title="Delete property"
+                    className={`shrink-0 p-1.5 rounded-md transition-colors ${property.locked ? 'text-dark-600 cursor-not-allowed' : 'text-dark-500 hover:text-red-400 hover:bg-red-400/10'}`}
+                    title={property.locked ? 'Unlock to delete' : 'Delete property'}
+                    disabled={!!property.locked}
                   >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1m2 0v9a1 1 0 01-1 1H5a1 1 0 01-1-1V4h10zM7 7v4M9 7v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </button>

@@ -9,7 +9,8 @@ import { generateMarketData } from "@/lib/marketDataGenerator";
 export async function GET() {
   const properties = await readProperties();
   // Auto-enrich properties missing complete market data
-  let needsWrite = false;
+  // SAFE: save each enriched property individually to avoid overwriting concurrent uploads
+  const enrichedProperties: typeof properties = [];
   for (let i = 0; i < properties.length; i++) {
     const p = properties[i];
     const md = p.marketData || {} as any;
@@ -18,15 +19,18 @@ export async function GET() {
     const hasInvestment = inv.currentValue && inv.projectedValue5Year && inv.capRate;
     if ((!hasMarket || !hasInvestment) && p.address && p.price) {
       const generated = generateMarketData(p.address, p.price);
-      if (!hasMarket) properties[i] = { ...properties[i], marketData: generated.marketData };
-      if (!hasInvestment) properties[i] = { ...properties[i], investmentAnalysis: generated.investmentAnalysis };
-      needsWrite = true;
+      let enriched = properties[i];
+      if (!hasMarket) enriched = { ...enriched, marketData: generated.marketData };
+      if (!hasInvestment) enriched = { ...enriched, investmentAnalysis: generated.investmentAnalysis };
+      properties[i] = enriched;
+      enrichedProperties.push(enriched);
     }
   }
-  // Persist enriched data so it only happens once
-  if (needsWrite) {
-    const { writePropertiesBulk } = await import("@/lib/propertyStorage");
-    await writePropertiesBulk(properties);
+  // Persist ONLY the enriched properties individually (never bulk-overwrite the whole store)
+  if (enrichedProperties.length > 0) {
+    for (const ep of enrichedProperties) {
+      await saveProperty(ep);
+    }
   }
   return new Response(JSON.stringify(properties), { status: 200 });
 }
@@ -68,6 +72,7 @@ export async function POST(req: Request) {
     squareFeet: body.squareFeet || 0,
     yearBuilt: body.yearBuilt || 0,
     lot: body.lot || 0,
+    locked: body.locked !== undefined ? body.locked : true, // Auto-lock new properties
   });
 
   return new Response(JSON.stringify(newProp), { status: 201 });
@@ -107,6 +112,12 @@ export async function DELETE(req: Request) {
   }
 
   const deleted = await deleteProperty(id);
+  if (deleted === "locked") {
+    return new Response(
+      JSON.stringify({ error: "This property is locked and cannot be deleted. Unlock it first." }),
+      { status: 403 },
+    );
+  }
   if (!deleted) {
     return new Response(
       JSON.stringify({ error: "Property not found" }),

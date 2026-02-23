@@ -1,21 +1,16 @@
 import fs from "fs";
 import path from "path";
 import { Property } from "@/types";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const PROPERTIES_FILE = path.join(DATA_DIR, "properties.json");
+const BACKUP_DIR = path.join(DATA_DIR, "backups");
 
-let supabaseClient: SupabaseClient | null = null;
-
-function getSupabaseClient() {
-  if (supabaseClient) return supabaseClient;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_KEY;
-  if (!url || !key) return null;
-  supabaseClient = createClient(url, key);
-  return supabaseClient;
-}
+// ─── GitHub sync config ───
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
+const GITHUB_REPO = process.env.GITHUB_REPO || "Jules-Barthomeuf/Orthanc";
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
+const GITHUB_FILE_PATH = "data/properties.json";
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -23,19 +18,79 @@ function ensureDataDir() {
   }
 }
 
-function isSupabaseEnabled() {
-  return process.env.STORAGE_PROVIDER === "supabase" && !!getSupabaseClient();
+function ensureBackupDir() {
+  if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  }
+}
+
+// ─── GitHub API auto-sync ───
+// Pushes data/properties.json to GitHub after every write, so deploys always have latest data.
+
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function syncToGitHub() {
+  if (!GITHUB_TOKEN) {
+    console.warn("[propertyStorage] GITHUB_TOKEN not set — skipping GitHub sync. Properties will be lost on redeploy!");
+    return;
+  }
+
+  try {
+    const content = fs.readFileSync(PROPERTIES_FILE, "utf-8");
+    const base64Content = Buffer.from(content).toString("base64");
+
+    // Get current file SHA (required for update)
+    const getRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}?ref=${GITHUB_BRANCH}`,
+      { headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: "application/vnd.github.v3+json" } }
+    );
+
+    let sha: string | undefined;
+    if (getRes.ok) {
+      const fileData = await getRes.json();
+      sha = fileData.sha;
+    }
+
+    // Commit the updated file
+    const putRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: `[auto] Update properties.json (${new Date().toISOString()})`,
+          content: base64Content,
+          branch: GITHUB_BRANCH,
+          ...(sha ? { sha } : {}),
+        }),
+      }
+    );
+
+    if (putRes.ok) {
+      console.log("[propertyStorage] ✓ Synced properties.json to GitHub");
+    } else {
+      const err = await putRes.text();
+      console.error("[propertyStorage] ✗ GitHub sync failed:", putRes.status, err);
+    }
+  } catch (e) {
+    console.error("[propertyStorage] ✗ GitHub sync error:", e);
+  }
+}
+
+/** Debounced sync to avoid too many commits in quick succession */
+function scheduleSyncToGitHub() {
+  if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(() => {
+    syncToGitHub().catch(console.error);
+  }, 3000); // Wait 3s after last write before syncing
 }
 
 /** Read all properties */
 export async function readProperties(): Promise<Property[]> {
-  if (isSupabaseEnabled()) {
-    const sb = getSupabaseClient()!;
-    const { data, error } = await sb.from("properties").select("data");
-    if (error) return [];
-    return (data || []).map((r: any) => r.data as Property);
-  }
-
   ensureDataDir();
   if (!fs.existsSync(PROPERTIES_FILE)) return [];
   try {
@@ -46,32 +101,48 @@ export async function readProperties(): Promise<Property[]> {
   }
 }
 
-/** Write all properties to disk (local fallback) */
-function writeProperties(properties: Property[]) {
-  ensureDataDir();
-  fs.writeFileSync(PROPERTIES_FILE, JSON.stringify(properties, null, 2), "utf-8");
+/** Create an automatic backup before writing (local mode only) */
+function createBackup() {
+  try {
+    if (!fs.existsSync(PROPERTIES_FILE)) return;
+    ensureBackupDir();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const backupFile = path.join(BACKUP_DIR, `properties-${timestamp}.json`);
+    fs.copyFileSync(PROPERTIES_FILE, backupFile);
+
+    // Keep only last 20 backups to avoid filling disk
+    const backups = fs.readdirSync(BACKUP_DIR)
+      .filter((f) => f.startsWith("properties-") && f.endsWith(".json"))
+      .sort();
+    while (backups.length > 20) {
+      const oldest = backups.shift()!;
+      fs.unlinkSync(path.join(BACKUP_DIR, oldest));
+    }
+  } catch (e) {
+    console.error("[propertyStorage] Backup failed:", e);
+  }
 }
 
-/** Bulk write properties (supports supabase upsert) */
+/** Write all properties to disk + auto-sync to GitHub */
+function writeProperties(properties: Property[]) {
+  ensureDataDir();
+  createBackup();
+  fs.writeFileSync(PROPERTIES_FILE, JSON.stringify(properties, null, 2), "utf-8");
+  scheduleSyncToGitHub(); // Auto-push to GitHub so deploys always have latest data
+}
+
+/** Bulk write properties — MERGES with existing data, never overwrites */
 export async function writePropertiesBulk(properties: Property[]) {
-  if (isSupabaseEnabled()) {
-    const sb = getSupabaseClient()!;
-    const rows = properties.map((p) => ({ id: p.id, data: p, created_at: p.createdAt || new Date() }));
-    await sb.from("properties").upsert(rows);
-    return;
+  const existing = readPropertiesSyncFallback();
+  const existingMap = new Map(existing.map((p) => [p.id, p]));
+  for (const p of properties) {
+    existingMap.set(p.id, p);
   }
-  writeProperties(properties);
+  writeProperties(Array.from(existingMap.values()));
 }
 
 /** Add or update a property and persist */
 export async function saveProperty(property: Property): Promise<Property> {
-  if (isSupabaseEnabled()) {
-    const sb = getSupabaseClient()!;
-    const row = { id: property.id, data: property, created_at: property.createdAt || new Date() };
-    await sb.from("properties").upsert(row);
-    return property;
-  }
-
   const properties = readPropertiesSyncFallback();
   const idx = properties.findIndex((p) => p.id === property.id);
   if (idx !== -1) properties[idx] = property; else properties.push(property);
@@ -90,13 +161,12 @@ function readPropertiesSyncFallback(): Property[] {
   }
 }
 
-/** Delete a property by id */
-export async function deleteProperty(id: string): Promise<boolean> {
-  if (isSupabaseEnabled()) {
-    const sb = getSupabaseClient()!;
-    const { error } = await sb.from("properties").delete().eq("id", id);
-    return !error;
-  }
+/** Delete a property by id — locked properties cannot be deleted */
+export async function deleteProperty(id: string): Promise<boolean | "locked"> {
+  const existing = await findStoredPropertyById(id);
+  if (!existing) return false;
+  if (existing.locked) return "locked";
+
   const properties = readPropertiesSyncFallback();
   const idx = properties.findIndex((p) => p.id === id);
   if (idx === -1) return false;
@@ -107,29 +177,40 @@ export async function deleteProperty(id: string): Promise<boolean> {
 
 /** Find a property by id */
 export async function findStoredPropertyById(id: string): Promise<Property | undefined> {
-  if (isSupabaseEnabled()) {
-    const sb = getSupabaseClient()!;
-    const { data, error } = await sb.from("properties").select("data").eq("id", id).limit(1).single();
-    if (error) return undefined;
-    return (data as any).data as Property;
-  }
   return readPropertiesSyncFallback().find((p) => p.id === id);
 }
 
 /** Update a property (partial merge) */
 export async function updateProperty(id: string, updates: Partial<Property>): Promise<Property | null> {
-  if (isSupabaseEnabled()) {
-    const existing = await findStoredPropertyById(id);
-    if (!existing) return null;
-    const merged = { ...existing, ...updates } as Property;
-    const sb = getSupabaseClient()!;
-    await sb.from("properties").upsert({ id, data: merged, created_at: merged.createdAt || new Date() });
-    return merged;
-  }
   const properties = readPropertiesSyncFallback();
   const idx = properties.findIndex((p) => p.id === id);
   if (idx === -1) return null;
   properties[idx] = { ...properties[idx], ...updates };
   writeProperties(properties);
   return properties[idx];
+}
+
+/** Export all properties as a JSON backup (for download) */
+export async function exportProperties(): Promise<{ count: number; data: Property[]; exportedAt: string }> {
+  const properties = await readProperties();
+  return {
+    count: properties.length,
+    data: properties,
+    exportedAt: new Date().toISOString(),
+  };
+}
+
+/** Get storage info for diagnostics */
+export function getStorageInfo() {
+  return {
+    provider: GITHUB_TOKEN ? "github-sync" : "local-only",
+    filePath: PROPERTIES_FILE,
+    fileExists: fs.existsSync(PROPERTIES_FILE),
+    backupDir: BACKUP_DIR,
+    backupCount: fs.existsSync(BACKUP_DIR)
+      ? fs.readdirSync(BACKUP_DIR).filter((f) => f.endsWith(".json")).length
+      : 0,
+    githubRepo: GITHUB_REPO,
+    githubSyncEnabled: !!GITHUB_TOKEN,
+  };
 }
