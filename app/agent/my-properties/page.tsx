@@ -57,17 +57,18 @@ export default function MyPropertiesPage() {
     }
     setLockingAll(true);
     try {
-      let successCount = 0;
-      for (const p of unlocked) {
-        const res = await fetch('/api/properties', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: p.id, locked: true }),
-        });
-        if (res.ok) successCount++;
+      const res = await fetch('/api/properties', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lockAll: true }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProperties((prev) => prev.map((p) => ({ ...p, locked: true })));
+        addToast({ type: 'success', message: `${data.count} properties locked successfully` });
+      } else {
+        addToast({ type: 'error', message: 'Failed to lock all properties' });
       }
-      setProperties((prev) => prev.map((p) => ({ ...p, locked: true })));
-      addToast({ type: 'success', message: `${successCount} properties locked successfully` });
     } catch {
       addToast({ type: 'error', message: 'Failed to lock all properties' });
     } finally {

@@ -86,7 +86,7 @@ function scheduleSyncToGitHub() {
   if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
   syncDebounceTimer = setTimeout(() => {
     syncToGitHub().catch(console.error);
-  }, 3000); // Wait 3s after last write before syncing
+  }, 5000); // Wait 5s after last write before syncing
 }
 
 /** Read all properties */
@@ -188,6 +188,20 @@ export async function updateProperty(id: string, updates: Partial<Property>): Pr
   properties[idx] = { ...properties[idx], ...updates };
   writeProperties(properties);
   return properties[idx];
+}
+
+/** Lock or unlock ALL properties in a single write (memory-efficient) */
+export async function lockAllProperties(locked: boolean): Promise<number> {
+  const properties = readPropertiesSyncFallback();
+  let count = 0;
+  for (let i = 0; i < properties.length; i++) {
+    if (properties[i].locked !== locked) {
+      properties[i].locked = locked;
+      count++;
+    }
+  }
+  if (count > 0) writeProperties(properties);
+  return count;
 }
 
 /** Export all properties as a JSON backup (for download) */

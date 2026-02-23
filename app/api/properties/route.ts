@@ -80,6 +80,14 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const body = await req.json();
+
+  // Bulk lock/unlock: { lockAll: true/false }
+  if (body.lockAll !== undefined) {
+    const { lockAllProperties } = await import("@/lib/propertyStorage");
+    const count = await lockAllProperties(!!body.lockAll);
+    return new Response(JSON.stringify({ success: true, count }), { status: 200 });
+  }
+
   const { id, ...updates } = body;
 
   if (!id) {
