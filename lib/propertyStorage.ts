@@ -62,7 +62,7 @@ async function syncToGitHub() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: `[auto] Update properties.json (${new Date().toISOString()})`,
+          message: `[skip render] Update properties.json (${new Date().toISOString()})`,
           content: base64Content,
           branch: GITHUB_BRANCH,
           ...(sha ? { sha } : {}),
