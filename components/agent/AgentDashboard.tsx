@@ -275,11 +275,68 @@ export function AgentDashboard() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [draggedImgIdx, setDraggedImgIdx] = useState<number | null>(null);
   const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
 
   const inChat = messages.length > 0 || isTyping;
+
+  /* ── Import from Link ── */
+  const handleLinkImport = async () => {
+    const url = linkUrl.trim();
+    if (!url || linkLoading) return;
+    setLinkLoading(true);
+    try {
+      const scrapeRes = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const scraped = await scrapeRes.json();
+      if (!scrapeRes.ok) {
+        addToast({ type: 'error', message: scraped.error || 'Scraping failed' });
+        return;
+      }
+      // Save directly as a property
+      const body = {
+        title: scraped.title || 'Imported Property',
+        address: scraped.address || '',
+        price: scraped.price || 0,
+        description: scraped.description || '',
+        bedroom: scraped.bedroom || 0,
+        bathroom: scraped.bathroom || 0,
+        squareFeet: scraped.squareFeet || 0,
+        yearBuilt: scraped.yearBuilt || 0,
+        lot: scraped.lot || 0,
+        images: [],
+        agentId: user?.id || agentId,
+        locked: true,
+      };
+      const saveRes = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (saveRes.ok) {
+        const saved = await saveRes.json();
+        addToast({ type: 'success', message: `Property imported: ${scraped.title || 'Untitled'}` });
+        setLinkUrl('');
+        setMessages((prev) => [
+          ...prev,
+          { role: 'ai', content: `✅ **Property imported from link!**\n\n**${scraped.title || 'Untitled'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}${scraped.bedroom ? `🛏️ ${scraped.bedroom} bed${scraped.bedroom > 1 ? 's' : ''}` : ''}${scraped.bathroom ? ` · 🛁 ${scraped.bathroom} bath${scraped.bathroom > 1 ? 's' : ''}` : ''}${scraped.squareFeet ? ` · 📐 ${scraped.squareFeet.toLocaleString()} sqft` : ''}\n\nThe property has been saved and locked. [View in My Properties](/agent/my-properties).` },
+        ]);
+      } else {
+        const err = await saveRes.json().catch(() => ({}));
+        addToast({ type: 'error', message: err.error || 'Failed to save property' });
+      }
+    } catch {
+      addToast({ type: 'error', message: 'Import failed — check the URL and try again' });
+    } finally {
+      setLinkLoading(false);
+    }
+  };
 
   /* ── Activate Create Property mode ── */
   const activateCreateMode = () => {
@@ -783,9 +840,44 @@ export function AgentDashboard() {
           </div>
         </div>
 
+        {/* ── Import from Link bar ── */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="relative flex-1">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 pointer-events-none">
+              <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              <path d="M9 1h6v6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 1L8 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
+            <input
+              type="url"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleLinkImport(); } }}
+              placeholder="Paste a Zillow / Realtor link to import a property..."
+              className="w-full bg-dark-800/60 border border-dark-600/20 text-white/80 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gold-400/30 focus:ring-1 focus:ring-gold-400/10 transition-colors placeholder:text-dark-500/60"
+            />
+          </div>
+          <button
+            onClick={handleLinkImport}
+            disabled={linkLoading || !linkUrl.trim()}
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+              linkUrl.trim() && !linkLoading
+                ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20 hover:bg-gold-400/20'
+                : 'bg-white/[0.03] text-white/20 border border-white/[0.04] cursor-not-allowed'
+            }`}
+          >
+            {linkLoading ? (
+              <>
+                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Importing...
+              </>
+            ) : 'Import'}
+          </button>
+        </div>
+
         {/* Hint */}
-        <p className={`text-center text-dark-600 text-[10px] mt-4 transition-opacity duration-300 ${inChat ? "opacity-0 h-0" : "opacity-100"}`}>
-          Press Enter to send <span className="text-gold-400/30">·</span> Shift+Enter for new line
+        <p className={`text-center text-dark-600 text-[10px] mt-3 transition-opacity duration-300 ${inChat ? "opacity-0 h-0" : "opacity-100"}`}>
+          Press Enter to send <span className="text-gold-400/30">·</span> Shift+Enter for new line <span className="text-gold-400/30">·</span> Paste a link below to import
         </p>
       </div>
 
