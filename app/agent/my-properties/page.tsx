@@ -27,6 +27,11 @@ export default function MyPropertiesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [lockingId, setLockingId] = useState<string | null>(null);
   const [lockingAll, setLockingAll] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importPreview, setImportPreview] = useState<any>(null);
+  const [importSaving, setImportSaving] = useState(false);
 
   const handleToggleLock = async (id: string, currentlyLocked: boolean) => {
     setLockingId(id);
@@ -73,6 +78,70 @@ export default function MyPropertiesPage() {
       addToast({ type: 'error', message: 'Failed to lock all properties' });
     } finally {
       setLockingAll(false);
+    }
+  };
+
+  const handleImportScrape = async () => {
+    if (!importUrl.trim()) return;
+    setImportLoading(true);
+    setImportPreview(null);
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: importUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        addToast({ type: 'error', message: data.error || 'Scraping failed' });
+        return;
+      }
+      setImportPreview(data);
+    } catch {
+      addToast({ type: 'error', message: 'Failed to scrape URL' });
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleImportSave = async () => {
+    if (!importPreview || !user) return;
+    setImportSaving(true);
+    try {
+      const body = {
+        title: importPreview.title,
+        address: importPreview.address,
+        price: importPreview.price,
+        description: importPreview.description,
+        bedroom: importPreview.bedroom,
+        bathroom: importPreview.bathroom,
+        squareFeet: importPreview.squareFeet,
+        yearBuilt: importPreview.yearBuilt,
+        lot: importPreview.lot,
+        images: [],
+        agentId: user.id,
+        locked: true,
+      };
+      const res = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setProperties((prev) => [saved, ...prev]);
+        addToast({ type: 'success', message: 'Property imported successfully!' });
+        setImportModalOpen(false);
+        setImportUrl('');
+        setImportPreview(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        addToast({ type: 'error', message: data.error || 'Failed to save property' });
+      }
+    } catch {
+      addToast({ type: 'error', message: 'Failed to save property' });
+    } finally {
+      setImportSaving(false);
     }
   };
 
@@ -191,10 +260,22 @@ export default function MyPropertiesPage() {
                 </h1>
                 <div className="gold-line-left w-32 animate-reveal-line" />
               </div>
-              <Link
-                href="/agent/dashboard"
-                className="luxury-button-primary text-sm flex items-center gap-2 self-start lg:self-auto"
-              >
+              <div className="flex items-center gap-3 self-start lg:self-auto">
+                <button
+                  onClick={() => { setImportModalOpen(true); setImportUrl(''); setImportPreview(null); }}
+                  className="luxury-button-secondary text-sm flex items-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                    <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                    <path d="M9 1h6v6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M15 1L8 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                  Import from Link
+                </button>
+                <Link
+                  href="/agent/dashboard"
+                  className="luxury-button-primary text-sm flex items-center gap-2"
+                >
                 <svg
                   width="16"
                   height="16"
@@ -210,7 +291,8 @@ export default function MyPropertiesPage() {
                   />
                 </svg>
                 Upload Property
-              </Link>
+                </Link>
+              </div>
             </div>
 
             {/* Stats row */}
@@ -800,6 +882,129 @@ export default function MyPropertiesPage() {
                 {deletingId === confirmDeleteId ? "Deleting..." : "Delete"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import from Link Modal */}
+      {importModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-dark-800 border border-gold-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dark-600/20">
+              <div>
+                <h3 className="text-white text-lg font-display font-semibold">Import from Link</h3>
+                <p className="text-dark-400 text-xs mt-1">Paste a listing URL (Zillow, Realtor, etc.) to extract property info</p>
+              </div>
+              <button
+                onClick={() => setImportModalOpen(false)}
+                className="text-dark-400 hover:text-white transition-colors p-1"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </button>
+            </div>
+
+            {/* URL input */}
+            <div className="px-6 pt-5 pb-4">
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleImportScrape()}
+                  placeholder="https://www.zillow.com/homedetails/..."
+                  className="flex-1 bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
+                  autoFocus
+                />
+                <button
+                  onClick={handleImportScrape}
+                  disabled={importLoading || !importUrl.trim()}
+                  className="luxury-button-primary text-sm px-5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+                >
+                  {importLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Scraping...
+                    </>
+                  ) : 'Extract'}
+                </button>
+              </div>
+            </div>
+
+            {/* Preview */}
+            {importPreview && (
+              <div className="px-6 pb-5">
+                <div className="bg-dark-900/60 border border-gold-400/[0.08] rounded-xl p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="text-white font-display font-semibold text-base leading-tight">{importPreview.title || 'Untitled'}</h4>
+                    {importPreview.price > 0 && (
+                      <span className="text-gold-400 font-display font-bold text-lg shrink-0">
+                        ${importPreview.price.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {importPreview.address && (
+                    <p className="text-dark-400 text-sm">{importPreview.address}</p>
+                  )}
+
+                  {/* Key facts */}
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    {importPreview.bedroom > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-dark-300 bg-dark-800 rounded-full px-3 py-1.5 border border-dark-600/20">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1" y="7" width="14" height="6" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M3 7V4a2 2 0 012-2h6a2 2 0 012 2v3" stroke="currentColor" strokeWidth="1.2"/></svg>
+                        {importPreview.bedroom} bed{importPreview.bedroom > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {importPreview.bathroom > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-dark-300 bg-dark-800 rounded-full px-3 py-1.5 border border-dark-600/20">
+                        🛁 {importPreview.bathroom} bath{importPreview.bathroom > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {importPreview.squareFeet > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-dark-300 bg-dark-800 rounded-full px-3 py-1.5 border border-dark-600/20">
+                        📐 {importPreview.squareFeet.toLocaleString()} sqft
+                      </span>
+                    )}
+                    {importPreview.yearBuilt > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-dark-300 bg-dark-800 rounded-full px-3 py-1.5 border border-dark-600/20">
+                        🏗️ Built {importPreview.yearBuilt}
+                      </span>
+                    )}
+                    {importPreview.lot > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-dark-300 bg-dark-800 rounded-full px-3 py-1.5 border border-dark-600/20">
+                        📏 {importPreview.lot} acres
+                      </span>
+                    )}
+                  </div>
+
+                  {importPreview.description && (
+                    <p className="text-dark-400 text-xs leading-relaxed line-clamp-3 pt-1">
+                      {importPreview.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Save button */}
+                <button
+                  onClick={handleImportSave}
+                  disabled={importSaving}
+                  className="mt-4 w-full luxury-button-primary text-sm py-3 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {importSaving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      Add to My Properties
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
