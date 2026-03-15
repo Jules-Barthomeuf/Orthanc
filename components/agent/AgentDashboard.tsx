@@ -260,8 +260,12 @@ export function AgentDashboard() {
   const [creating, setCreating] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  /* ── Mode: "default" (general chat) | "create" | "analyze" | "knowledge" ── */
-  const [mode, setMode] = useState<"default" | "create" | "analyze" | "knowledge">("default");
+  /* ── Mode: "default" (general chat) | "create" | "portal" | "analyze" | "knowledge" ── */
+  const [mode, setMode] = useState<"default" | "create" | "portal" | "analyze" | "knowledge">("default");
+
+  /* ── Portal mode state ── */
+  const [portalStep, setPortalStep] = useState<"name" | "description" | "done">("name");
+  const [portalDraft, setPortalDraft] = useState<{ name: string; description: string }>({ name: "", description: "" });
 
   /* ── Create mode state ── */
   const [draft, setDraft] = useState<PropertyDraft>({});
@@ -356,6 +360,75 @@ export function AgentDashboard() {
     ]);
   };
 
+  /* ── Activate Create Portal mode ── */
+  const activatePortalMode = () => {
+    setMode("portal");
+    setPortalStep("name");
+    setPortalDraft({ name: "", description: "" });
+    setMessages([
+      { role: "ai", content: "Let's create a new portal for your clients. **What name would you like for this portal?**\n\nFor example: *Miami Luxury Collection*, *Park Avenue Residences*, or *Beachfront Portfolio*" },
+    ]);
+  };
+
+  /* ── Handle portal mode messages ── */
+  const handlePortalMessage = async (answer: string) => {
+    if (portalStep === "name") {
+      setPortalDraft((prev) => ({ ...prev, name: answer }));
+      setPortalStep("description");
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: answer },
+        { role: "ai", content: `Great — **${answer}**. Now add an optional **description** for clients to see, or type **skip** to create the portal right away.` },
+      ]);
+    } else if (portalStep === "description") {
+      const desc = /^skip$/i.test(answer.trim()) ? "" : answer;
+      const name = portalDraft.name;
+      setPortalDraft((prev) => ({ ...prev, description: desc }));
+      setPortalStep("done");
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: answer },
+        { role: "ai", content: "Creating your portal..." },
+      ]);
+      try {
+        const res = await fetch("/api/portals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description: desc, agentId: user?.id || agentId }),
+        });
+        if (res.ok) {
+          const portal = await res.json();
+          const portalUrl = `/portal/${portal.slug}`;
+          setMessages((prev) => [
+            ...prev.slice(0, -1),
+            { role: "ai", content: `✅ **Portal created!**\n\n**${portal.name}**${desc ? `\n${desc}` : ""}\n\n🔗 Share link: \`${portalUrl}\`\n\n[Manage portal & add properties →](/agent/portals/${portal.id})` },
+          ]);
+          addToast({ type: "success", message: "Portal created!" });
+        } else {
+          const err = await res.json().catch(() => ({}));
+          setMessages((prev) => [
+            ...prev.slice(0, -1),
+            { role: "ai", content: `Failed to create portal: ${err.error || "Unknown error"}. Please try again.` },
+          ]);
+          setPortalStep("name");
+        }
+      } catch {
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          { role: "ai", content: "Failed to create portal — check your connection and try again." },
+        ]);
+        setPortalStep("name");
+      }
+    } else {
+      // Portal already created — offer next steps
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: answer },
+        { role: "ai", content: "Your portal is ready! You can [manage it and add properties](/agent/portals), or switch to **Create Property** mode to add new listings." },
+      ]);
+    }
+  };
+
   /* ── Activate Import Knowledge mode ── */
   const activateKnowledgeMode = () => {
     setMode("knowledge");
@@ -373,6 +446,8 @@ export function AgentDashboard() {
     setValue("");
     setUploadedImages([]);
     setUploadedDocs([]);
+    setPortalStep("name");
+    setPortalDraft({ name: "", description: "" });
     adjustHeight(true);
   };
 
@@ -570,6 +645,8 @@ export function AgentDashboard() {
 
     if (mode === "create") {
       handleCreateModeAnswer(q);
+    } else if (mode === "portal") {
+      await handlePortalMessage(q);
     } else if (mode === "analyze") {
       await handleAnalyzeMessage(q);
     } else if (mode === "knowledge") {
@@ -661,10 +738,10 @@ export function AgentDashboard() {
           <div className="flex items-center justify-between mb-4 animate-[fadeSlideIn_0.3s_ease-out]">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${
-                mode === "create" ? "bg-gold-400" : mode === "analyze" ? "bg-blue-400" : "bg-violet-400"
+                mode === "create" ? "bg-gold-400" : mode === "portal" ? "bg-emerald-400" : mode === "analyze" ? "bg-blue-400" : "bg-violet-400"
               } animate-pulse`} />
               <span className="text-xs text-white/40 uppercase tracking-wider font-medium">
-                {mode === "create" ? "Create Property" : mode === "analyze" ? "Analyze Market" : "Import Knowledge"}
+                {mode === "create" ? "Create Property" : mode === "portal" ? "Create Portal" : mode === "analyze" ? "Analyze Market" : "Import Knowledge"}
               </span>
             </div>
             <button
@@ -727,13 +804,17 @@ export function AgentDashboard() {
             <HomeIcon />
             <span>Create Property</span>
           </button>
-          <a
-            href="/agent/portals"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
+          <button
+            onClick={() => { if (mode !== "portal") activatePortalMode(); }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
+              mode === "portal"
+                ? "bg-emerald-400/15 border-emerald-400/30 text-emerald-400 shadow-lg shadow-emerald-400/[0.08]"
+                : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
+            }`}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3"/><circle cx="4.5" cy="4.75" r="0.75" fill="currentColor"/><circle cx="7" cy="4.75" r="0.75" fill="currentColor"/></svg>
             <span>Create Portal</span>
-          </a>
+          </button>
           <button
             onClick={() => { if (mode !== "analyze") activateAnalyzeMode(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
@@ -766,7 +847,7 @@ export function AgentDashboard() {
               value={value}
               onChange={(e) => { setValue(e.target.value); adjustHeight(); }}
               onKeyDown={handleKeyDown}
-              placeholder={mode === "create" ? "Type your answer..." : mode === "analyze" ? "Enter a city, neighborhood, or address..." : mode === "knowledge" ? "Share local insights, market intel, neighborhood info..." : "Ask me anything about real estate..."}
+              placeholder={mode === "create" ? "Type your answer..." : mode === "portal" ? "Type your answer..." : mode === "analyze" ? "Enter a city, neighborhood, or address..." : mode === "knowledge" ? "Share local insights, market intel, neighborhood info..." : "Ask me anything about real estate..."}
               className="w-full px-4 py-3 resize-none bg-transparent border-none text-white/90 text-sm focus:outline-none placeholder:text-white/20"
               style={{ overflow: "hidden", minHeight: 56 }}
             />
