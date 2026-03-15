@@ -405,10 +405,12 @@ export function AgentDashboard() {
           ]);
           addToast({ type: "success", message: "Portal created!" });
         } else {
-          const err = await res.json().catch(() => ({}));
+          const text = await res.text();
+          let errMsg = `HTTP ${res.status}`;
+          try { const parsed = JSON.parse(text); errMsg = parsed.error || text; } catch { errMsg = text || errMsg; }
           setMessages((prev) => [
             ...prev.slice(0, -1),
-            { role: "ai", content: `Failed to create portal: ${err.error || "Unknown error"}. Please try again.` },
+            { role: "ai", content: `Failed to create portal: ${errMsg}` },
           ]);
           setPortalStep("name");
         }
