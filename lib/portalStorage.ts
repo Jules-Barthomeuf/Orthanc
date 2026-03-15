@@ -1,8 +1,8 @@
 import { Portal } from "@/types";
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || "";
-const TABLE_ENDPOINT = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1/portals` : "";
+function getSupabaseUrl() { return process.env.SUPABASE_URL || ""; }
+function getSupabaseKey() { return process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || ""; }
+function getTableEndpoint() { const url = getSupabaseUrl(); return url ? `${url}/rest/v1/portals` : ""; }
 
 type PortalRow = {
   id: string;
@@ -21,25 +21,26 @@ interface SupabaseRequestOptions {
 }
 
 function ensureConfig() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
+  if (!getSupabaseUrl() || !getSupabaseKey()) {
     throw new Error("[portalStorage] SUPABASE_URL and SUPABASE_SERVICE_ROLE must be configured");
   }
 }
 
 async function supabaseRequest(method: string, options: SupabaseRequestOptions = {}) {
   ensureConfig();
-  const url = new URL(TABLE_ENDPOINT);
+  const key = getSupabaseKey();
+  const url = new URL(getTableEndpoint());
   if (options.query) {
-    for (const [key, value] of Object.entries(options.query)) {
+    for (const [k, value] of Object.entries(options.query)) {
       if (value !== undefined && value !== null) {
-        url.searchParams.set(key, value);
+        url.searchParams.set(k, value);
       }
     }
   }
 
   const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_ROLE,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE}`,
+    apikey: key,
+    Authorization: `Bearer ${key}`,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
