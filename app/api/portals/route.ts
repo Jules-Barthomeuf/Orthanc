@@ -11,6 +11,21 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
     const slug = searchParams.get("slug");
+    const debug = searchParams.get("debug");
+
+    // Diagnostic endpoint: /api/portals?debug=1
+    if (debug) {
+      const url = process.env.SUPABASE_URL || "(missing)";
+      const key = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || "(missing)";
+      return new Response(JSON.stringify({
+        hasUrl: !!process.env.SUPABASE_URL,
+        urlPrefix: url.slice(0, 30),
+        hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE,
+        hasKey: !!process.env.SUPABASE_KEY,
+        keyPrefix: key.slice(0, 10) + "...",
+        keyLength: key.length,
+      }), { status: 200 });
+    }
 
     if (slug) {
       const portal = await findPortalBySlug(slug);
