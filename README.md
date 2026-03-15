@@ -55,7 +55,7 @@ Orthanc is a sophisticated two-sided platform that transforms how luxury real es
 - **Charts**: Recharts for data visualization
 - **State Management**: Zustand
 - **Auth**: JWT tokens (upgradeable to NextAuth.js)
-- **Database**: In-memory for demo (ready for PostgreSQL/MongoDB)
+- **Database**: Supabase Postgres (persistent property store)
 - **API**: Next.js API routes
 
 ## Project Structure
@@ -120,6 +120,44 @@ npm run dev
 
 The application will be available at `http://localhost:3000`
 
+### Supabase Configuration
+
+1. Create a Supabase project (free tier is fine) and wait for the database to provision.
+2. In the SQL editor, run:
+
+```sql
+create table if not exists public.properties (
+  id text primary key,
+  title text not null,
+  address text not null,
+  price bigint not null,
+  description text,
+  images jsonb default '[]'::jsonb,
+  agent_id text,
+  created_at timestamptz default now(),
+  bedroom int,
+  bathroom int,
+  square_feet int,
+  year_built int,
+  lot numeric,
+  documents jsonb default '[]'::jsonb,
+  maintenance_history jsonb default '[]'::jsonb,
+  ownership_history jsonb default '[]'::jsonb,
+  market_data jsonb default '{}'::jsonb,
+  investment_analysis jsonb default '{}'::jsonb,
+  annual_opex numeric,
+  liquidity_score numeric,
+  risk_score numeric,
+  cap_rate numeric,
+  irr numeric,
+  locked boolean default true
+);
+```
+
+3. Copy the **Project URL**, **service_role** key, and (optionally) **anon** key from Settings → API.
+4. Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE`, and `SUPABASE_ANON_KEY` in `.env.local` (and in Render/Vercel env vars for production).
+5. Seed data (optional) via `node scripts/migrate-properties-to-supabase.js` or by uploading `orthanc-backup.json` to `/api/properties/backup`.
+
 ## Development
 
 ### Available Scripts
@@ -154,12 +192,7 @@ The platform includes mock data for testing:
 
 ## Mock Data
 
-The application includes three luxury properties:
-1. **Oceanfront Villa - Miami Beach** ($15.5M)
-2. **Modern Penthouse - Brickell** ($8.75M)
-3. **Contemporary Estate - Beverly Hills** ($22M)
-
-All data is stored in-memory and resets on server restart.
+Property data now lives in Supabase, so entries survive restarts and redeploys. The repository still includes `data/properties.json` and `orthanc-backup.json` as seed files—import them via `POST /api/properties/backup` or by running `node scripts/migrate-properties-to-supabase.js` to pre-fill your Supabase project with sample luxury listings (Miami Beach villa, Brickell penthouse, Beverly Hills estate, etc.).
 
 ## Design Philosophy
 

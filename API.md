@@ -2,7 +2,7 @@
 
 ## Current Architecture
 
-The application currently uses an in-memory database with mock data for demonstration purposes. All data resets when the server restarts.
+Property data is stored in Supabase (Postgres). The repository includes sample JSON backups you can import, but once a property is saved it persists across deploys because all CRUD routes go through Supabase.
 
 ### Data Models
 

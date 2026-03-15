@@ -199,19 +199,17 @@ npm start         # Run production build
 npm run type-check # Check TypeScript
 npm run lint      # Lint code (if configured)
 
-## Using Supabase for shared storage
+## Supabase storage (default)
 
-To use a shared Supabase storage for properties (so dev and live share the same data):
+Supabase is now the source of truth for every property:
 
-1. Copy `.env.example` to `.env.local` and set `STORAGE_PROVIDER=supabase`, plus `SUPABASE_URL` and `SUPABASE_KEY`.
-2. Ensure a `properties` table exists with at least `id text primary key`, `data jsonb`, and `created_at timestamptz`.
-3. To migrate local `data/properties.json` to Supabase, run:
+1. Create a Supabase project and run the schema from the README (the `properties` table definition).
+2. Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE`, and `SUPABASE_ANON_KEY` in `.env.local`.
+3. Seed data by either:
+   - Posting the bundled `orthanc-backup.json` to `/api/properties/backup`, or
+   - Running `node scripts/migrate-properties-to-supabase.js` to upsert `data/properties.json` into Supabase.
 
-```bash
-node scripts/migrate-properties-to-supabase.js
-```
-
-After this, both dev and production using the same Supabase credentials will operate on the same property dataset.
+From that point on, both local dev and production read/write directly from Supabase, so properties survive restarts and bad gateway errors.
 ```
 
 ## Environment Setup

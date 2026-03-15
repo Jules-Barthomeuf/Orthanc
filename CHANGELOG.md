@@ -84,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **State Management**: Zustand with reactive stores
 - **Charting**: Recharts for interactive data visualization
 - **Authentication**: JWT-based with mock implementation
-- **Database**: In-memory mock data (production-ready architecture)
+- **Database**: Supabase Postgres (persistent property store)
 
 #### Documentation
 - Comprehensive README with feature overview
@@ -159,7 +159,7 @@ Documented endpoints for future real API integration:
 ### Known Limitations (Current Version)
 
 - Authentication is simulated (mock)
-- All data is in-memory (resets on restart)
+- Properties persist in Supabase (ensure env vars are configured before running the app)
 - No real external API integration yet
 - Documents are placeholders
 - Market data is mock data

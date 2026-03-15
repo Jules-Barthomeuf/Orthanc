@@ -6,6 +6,9 @@ import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+// Clé de stockage local pour les propriétés en attente d'upload
+const LOCAL_STORAGE_KEY = "pendingProperties";
+
 import { useToastStore } from "@/lib/toast";
 
 /* Page title */
@@ -32,6 +35,37 @@ export default function MyPropertiesPage() {
   const [importLoading, setImportLoading] = useState(false);
   const [importPreview, setImportPreview] = useState<any>(null);
   const [importSaving, setImportSaving] = useState(false);
+
+  // Portal state
+  const [portals, setPortals] = useState<any[]>([]);
+  const [addToPortalId, setAddToPortalId] = useState<string | null>(null);
+  const [addingToPortal, setAddingToPortal] = useState(false);
+
+  const handleAddToPortal = async (propertyId: string, portalId: string) => {
+    setAddingToPortal(true);
+    try {
+      const portal = portals.find((p: any) => p.id === portalId);
+      if (!portal) return;
+      const newIds = [...(portal.propertyIds || []), propertyId];
+      const res = await fetch('/api/portals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: portalId, propertyIds: newIds }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setPortals((prev) => prev.map((p: any) => p.id === portalId ? updated : p));
+        addToast({ type: 'success', message: `Added to ${portal.name}` });
+      } else {
+        addToast({ type: 'error', message: 'Failed to add to portal' });
+      }
+    } catch {
+      addToast({ type: 'error', message: 'Failed to add to portal' });
+    } finally {
+      setAddingToPortal(false);
+      setAddToPortalId(null);
+    }
+  };
 
   const handleToggleLock = async (id: string, currentlyLocked: boolean) => {
     setLockingId(id);
@@ -107,21 +141,21 @@ export default function MyPropertiesPage() {
   const handleImportSave = async () => {
     if (!importPreview || !user) return;
     setImportSaving(true);
+    const body = {
+      title: importPreview.title,
+      address: importPreview.address,
+      price: importPreview.price,
+      description: importPreview.description,
+      bedroom: importPreview.bedroom,
+      bathroom: importPreview.bathroom,
+      squareFeet: importPreview.squareFeet,
+      yearBuilt: importPreview.yearBuilt,
+      lot: importPreview.lot,
+      images: [],
+      agentId: user.id,
+      locked: true,
+    };
     try {
-      const body = {
-        title: importPreview.title,
-        address: importPreview.address,
-        price: importPreview.price,
-        description: importPreview.description,
-        bedroom: importPreview.bedroom,
-        bathroom: importPreview.bathroom,
-        squareFeet: importPreview.squareFeet,
-        yearBuilt: importPreview.yearBuilt,
-        lot: importPreview.lot,
-        images: [],
-        agentId: user.id,
-        locked: true,
-      };
       const res = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,15 +169,74 @@ export default function MyPropertiesPage() {
         setImportUrl('');
         setImportPreview(null);
       } else {
-        const data = await res.json().catch(() => ({}));
-        addToast({ type: 'error', message: data.error || 'Failed to save property' });
+        // Sauvegarde locale si l'upload échoue
+        const pending = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...pending, body]));
+        addToast({ type: 'error', message: 'Failed to save property. Saved locally, you can retry later.' });
       }
     } catch {
-      addToast({ type: 'error', message: 'Failed to save property' });
+      // Sauvegarde locale si l'upload échoue
+      const pending = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...pending, body]));
+      addToast({ type: 'error', message: 'Failed to save property. Saved locally, you can retry later.' });
     } finally {
       setImportSaving(false);
     }
   };
+
+  // Fonction pour réessayer l'upload des propriétés en attente
+  const retryPendingUploads = async () => {
+    const pending = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+    if (!pending.length) {
+      addToast({ type: 'info', message: 'No pending properties to upload.' });
+      return;
+    }
+    let successCount = 0;
+    let failedCount = 0;
+    for (const prop of pending) {
+      try {
+        const res = await fetch('/api/properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prop),
+        });
+        if (res.ok) {
+          const saved = await res.json();
+          setProperties((prev) => [saved, ...prev]);
+          successCount++;
+        } else {
+          failedCount++;
+        }
+      } catch {
+        failedCount++;
+      }
+    }
+    if (successCount > 0) {
+      addToast({ type: 'success', message: `${successCount} pending properties uploaded successfully!` });
+    }
+    if (failedCount > 0) {
+      addToast({ type: 'error', message: `${failedCount} properties failed to upload again.` });
+    }
+    // Nettoyage des propriétés uploadées avec succès
+    if (failedCount === 0) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } else {
+      // On garde seulement celles qui ont échoué
+      const stillPending = pending.slice(-failedCount);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stillPending));
+    }
+  };
+  // Affichage d'une alerte si des propriétés sont en attente dans le localStorage
+  const [pendingCount, setPendingCount] = useState(0);
+  useEffect(() => {
+    const checkPending = () => {
+      const pending = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+      setPendingCount(pending.length);
+    };
+    checkPending();
+    window.addEventListener('storage', checkPending);
+    return () => window.removeEventListener('storage', checkPending);
+  }, []);
 
   const handleDelete = async (id: string) => {
     // Block deletion of locked properties client-side too
@@ -176,11 +269,18 @@ export default function MyPropertiesPage() {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/properties");
-        if (!res.ok) return;
-        const all = await res.json();
-        const mine = all.filter((p: any) => p.agentId === user.id);
-        setProperties(mine);
+        const [propsRes, portalsRes] = await Promise.all([
+          fetch("/api/properties"),
+          fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`),
+        ]);
+        if (propsRes.ok) {
+          const all = await propsRes.json();
+          const mine = all.filter((p: any) => p.agentId === user.id);
+          setProperties(mine);
+        }
+        if (portalsRes.ok) {
+          setPortals(await portalsRes.json());
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -235,6 +335,11 @@ export default function MyPropertiesPage() {
 
   return (
     <>
+      {pendingCount > 0 && (
+        <div style={{ background: '#fbbf24', color: '#222', padding: 12, textAlign: 'center', fontWeight: 600 }}>
+          {pendingCount} property(ies) failed to upload. <button style={{ background: '#fff', color: '#b45309', border: '1px solid #b45309', borderRadius: 4, padding: '2px 8px', marginLeft: 8 }} onClick={retryPendingUploads}>Retry upload</button>
+        </div>
+      )}
       <Navbar />
       <div className="pt-24 pb-20 bg-dark-900 min-h-screen">
         {/* Hero header */}
@@ -261,6 +366,18 @@ export default function MyPropertiesPage() {
                 <div className="gold-line-left w-32 animate-reveal-line" />
               </div>
               <div className="flex items-center gap-3 self-start lg:self-auto">
+                <Link
+                  href="/agent/portals"
+                  className="luxury-button-secondary text-sm flex items-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                    <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                    <path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3" />
+                    <circle cx="4.5" cy="4.75" r="0.75" fill="currentColor" />
+                    <circle cx="7" cy="4.75" r="0.75" fill="currentColor" />
+                  </svg>
+                  My Portals
+                </Link>
                 <button
                   onClick={() => { setImportModalOpen(true); setImportUrl(''); setImportPreview(null); }}
                   className="luxury-button-secondary text-sm flex items-center gap-2"
@@ -728,6 +845,36 @@ export default function MyPropertiesPage() {
                         {property.squareFeet?.toLocaleString()} ft&sup2;
                       </span>
                     </div>
+
+                    {/* Add to Portal */}
+                    {portals.length > 0 && (
+                      <div className="relative mt-3">
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAddToPortalId(addToPortalId === property.id ? null : property.id); }}
+                          className="w-full flex items-center justify-center gap-1.5 text-xs text-dark-400 hover:text-gold-400 border border-dark-600/20 hover:border-gold-400/20 rounded-lg py-2 transition-colors"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3"/><circle cx="4.5" cy="4.75" r="0.75" fill="currentColor"/><circle cx="7" cy="4.75" r="0.75" fill="currentColor"/></svg>
+                          Add to Portal
+                        </button>
+                        {addToPortalId === property.id && (
+                          <div className="absolute bottom-full left-0 right-0 mb-1 bg-dark-800 border border-gold-400/10 rounded-lg shadow-xl z-20 overflow-hidden">
+                            {portals.map((portal: any) => {
+                              const alreadyIn = (portal.propertyIds || []).includes(property.id);
+                              return (
+                                <button
+                                  key={portal.id}
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!alreadyIn) handleAddToPortal(property.id, portal.id); }}
+                                  disabled={alreadyIn || addingToPortal}
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${alreadyIn ? 'text-dark-500 cursor-default' : 'text-dark-300 hover:bg-gold-400/10 hover:text-gold-400'}`}
+                                >
+                                  {portal.name} {alreadyIn && <span className="text-dark-500 ml-1">(added)</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Link>
               ))}

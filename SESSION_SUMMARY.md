@@ -197,7 +197,7 @@ Each includes:
 | Charts | Recharts 2 |
 | State Management | Zustand |
 | Authentication | JWT (mock) |
-| Database | Mock in-memory |
+| Database | Supabase (Postgres) |
 | Credentials | bcryptjs |
 
 ## 🎨 Design System

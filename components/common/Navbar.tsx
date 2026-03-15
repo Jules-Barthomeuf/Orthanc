@@ -14,6 +14,7 @@ import {
   Shield,
   TrendingUp,
   Search,
+  Globe,
 } from "lucide-react";
 
 /* ── Menu definitions per role ── */
@@ -66,6 +67,12 @@ const agentMenuItems = (navigate: (path: string) => void): MegaMenuItem[] => [
   },
   {
     id: 3,
+    label: "Portals",
+    link: "/agent/portals",
+    onClick: () => navigate("/agent/portals"),
+  },
+  {
+    id: 4,
     label: "Profile",
     link: "/agent/profile",
     onClick: () => navigate("/agent/profile"),

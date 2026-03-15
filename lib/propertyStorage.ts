@@ -1,230 +1,280 @@
-import fs from "fs";
-import path from "path";
 import { Property } from "@/types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const PROPERTIES_FILE = path.join(DATA_DIR, "properties.json");
-const BACKUP_DIR = path.join(DATA_DIR, "backups");
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || "";
+const TABLE_ENDPOINT = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1/properties` : "";
 
-// ─── GitHub sync config ───
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
-const GITHUB_REPO = process.env.GITHUB_REPO || "Jules-Barthomeuf/Orthanc";
-const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
-const GITHUB_FILE_PATH = "data/properties.json";
+type PropertyRow = {
+  id: string;
+  title: string;
+  address: string;
+  price: number;
+  description: string | null;
+  images: any[] | null;
+  agent_id: string | null;
+  created_at: string | null;
+  bedroom: number | null;
+  bathroom: number | null;
+  square_feet: number | null;
+  year_built: number | null;
+  lot: number | null;
+  documents: unknown;
+  maintenance_history: unknown;
+  ownership_history: unknown;
+  market_data: unknown;
+  investment_analysis: unknown;
+  annual_opex: number | null;
+  liquidity_score: number | null;
+  risk_score: number | null;
+  cap_rate: number | null;
+  irr: number | null;
+  locked: boolean | null;
+};
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+type PartialRow = Record<string, unknown>;
+
+interface SupabaseRequestOptions {
+  query?: Record<string, string>;
+  body?: unknown;
+  prefer?: string;
+}
+
+const COLUMN_ALIASES: Record<string, string> = {
+  agentId: "agent_id",
+  createdAt: "created_at",
+  squareFeet: "square_feet",
+  yearBuilt: "year_built",
+  maintenanceHistory: "maintenance_history",
+  ownershipHistory: "ownership_history",
+  marketData: "market_data",
+  investmentAnalysis: "investment_analysis",
+  annualOpex: "annual_opex",
+};
+
+const ARRAY_FIELDS = new Set(["images", "documents", "maintenanceHistory", "ownershipHistory"]);
+const JSON_FIELDS = new Set(["marketData", "investmentAnalysis"]);
+
+function ensureSupabaseConfig() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
+    throw new Error("[propertyStorage] SUPABASE_URL and SUPABASE_SERVICE_ROLE must be configured");
   }
 }
 
-function ensureBackupDir() {
-  if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR, { recursive: true });
-  }
+function normalizeDate(value?: Date | string | null) {
+  if (!value) return new Date().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  return new Date(value).toISOString();
 }
 
-// ─── GitHub API auto-sync ───
-// Pushes data/properties.json to GitHub after every write, so deploys always have latest data.
-
-let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-async function syncToGitHub() {
-  if (!GITHUB_TOKEN) {
-    console.warn("[propertyStorage] GITHUB_TOKEN not set — skipping GitHub sync. Properties will be lost on redeploy!");
-    return;
+function coerceObject<T>(value: unknown, fallback: T): T {
+  if (value && typeof value === "object") {
+    return value as T;
   }
+  return fallback;
+}
 
-  try {
-    const content = fs.readFileSync(PROPERTIES_FILE, "utf-8");
-    const base64Content = Buffer.from(content).toString("base64");
-
-    // Get current file SHA (required for update)
-    const getRes = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}?ref=${GITHUB_BRANCH}`,
-      { headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: "application/vnd.github.v3+json" } }
-    );
-
-    let sha: string | undefined;
-    if (getRes.ok) {
-      const fileData = await getRes.json();
-      sha = fileData.sha;
-    }
-
-    // Commit the updated file
-    const putRes = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${GITHUB_TOKEN}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `[skip render] Update properties.json (${new Date().toISOString()})`,
-          content: base64Content,
-          branch: GITHUB_BRANCH,
-          ...(sha ? { sha } : {}),
-        }),
+async function supabaseRequest(method: string, options: SupabaseRequestOptions = {}) {
+  ensureSupabaseConfig();
+  const url = new URL(TABLE_ENDPOINT);
+  if (options.query) {
+    for (const [key, value] of Object.entries(options.query)) {
+      if (value !== undefined && value !== null) {
+        url.searchParams.set(key, value);
       }
+    }
+  }
+
+  const headers: Record<string, string> = {
+    apikey: SUPABASE_SERVICE_ROLE,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+
+  if (options.prefer) {
+    headers.Prefer = options.prefer;
+  }
+
+  const res = await fetch(url.toString(), {
+    method,
+    headers,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    throw new Error(
+      `[propertyStorage] Supabase ${method} ${url.pathname}${url.search} failed: ${res.status} ${errorBody}`
     );
+  }
 
-    if (putRes.ok) {
-      console.log("[propertyStorage] ✓ Synced properties.json to GitHub");
+  return res;
+}
+
+function mapRowToProperty(row: PropertyRow): Property {
+  return {
+    id: row.id,
+    title: row.title,
+    address: row.address,
+    price: Number(row.price ?? 0),
+    description: row.description ?? "",
+    images: Array.isArray(row.images) ? row.images : [],
+    agentId: row.agent_id ?? "",
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    bedroom: row.bedroom ?? 0,
+    bathroom: row.bathroom ?? 0,
+    squareFeet: row.square_feet ?? 0,
+    yearBuilt: row.year_built ?? 0,
+    lot: row.lot ?? 0,
+    documents: Array.isArray(row.documents) ? row.documents : [],
+    maintenanceHistory: Array.isArray(row.maintenance_history) ? row.maintenance_history : [],
+    ownershipHistory: Array.isArray(row.ownership_history) ? row.ownership_history : [],
+    marketData: coerceObject(row.market_data, {} as Property["marketData"]),
+    investmentAnalysis: coerceObject(row.investment_analysis, {} as Property["investmentAnalysis"]),
+    annualOpex: row.annual_opex ?? undefined,
+    liquidityScore: row.liquidity_score ?? undefined,
+    riskScore: row.risk_score ?? undefined,
+    capRate: row.cap_rate ?? undefined,
+    irr: row.irr ?? undefined,
+    locked: row.locked ?? true,
+  };
+}
+
+function serializeProperty(property: Property): PropertyRow {
+  return {
+    id: property.id,
+    title: property.title,
+    address: property.address,
+    price: property.price,
+    description: property.description ?? "",
+    images: property.images ?? [],
+    agent_id: property.agentId ?? null,
+    created_at: normalizeDate(property.createdAt),
+    bedroom: property.bedroom ?? 0,
+    bathroom: property.bathroom ?? 0,
+    square_feet: property.squareFeet ?? 0,
+    year_built: property.yearBuilt ?? 0,
+    lot: property.lot ?? 0,
+    documents: property.documents ?? [],
+    maintenance_history: property.maintenanceHistory ?? [],
+    ownership_history: property.ownershipHistory ?? [],
+    market_data: (property.marketData ?? {}) as unknown,
+    investment_analysis: (property.investmentAnalysis ?? {}) as unknown,
+    annual_opex: property.annualOpex ?? null,
+    liquidity_score: property.liquidityScore ?? null,
+    risk_score: property.riskScore ?? null,
+    cap_rate: property.capRate ?? null,
+    irr: property.irr ?? null,
+    locked: property.locked ?? true,
+  };
+}
+
+function serializePartial(updates: Partial<Property>): PartialRow {
+  const row: PartialRow = {};
+  for (const [rawKey, rawValue] of Object.entries(updates)) {
+    if (rawValue === undefined) continue;
+    const key = rawKey as keyof Property;
+    const column = COLUMN_ALIASES[rawKey] ?? rawKey;
+
+    if (key === "createdAt") {
+      row[column] = normalizeDate(rawValue as Date | string);
+    } else if (ARRAY_FIELDS.has(rawKey)) {
+      row[column] = (rawValue as unknown[]) ?? [];
+    } else if (JSON_FIELDS.has(rawKey)) {
+      row[column] = (rawValue ?? {}) as unknown;
     } else {
-      const err = await putRes.text();
-      console.error("[propertyStorage] ✗ GitHub sync failed:", putRes.status, err);
+      row[column] = rawValue;
     }
-  } catch (e) {
-    console.error("[propertyStorage] ✗ GitHub sync error:", e);
   }
+  return row;
 }
 
-/** Debounced sync to avoid too many commits in quick succession */
-function scheduleSyncToGitHub() {
-  if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
-  syncDebounceTimer = setTimeout(() => {
-    syncToGitHub().catch(console.error);
-  }, 5000); // Wait 5s after last write before syncing
-}
-
-/** Read all properties */
 export async function readProperties(): Promise<Property[]> {
-  ensureDataDir();
-  if (!fs.existsSync(PROPERTIES_FILE)) return [];
-  try {
-    const raw = fs.readFileSync(PROPERTIES_FILE, "utf-8");
-    return JSON.parse(raw) as Property[];
-  } catch {
-    return [];
-  }
+  const res = await supabaseRequest("GET", {
+    query: { select: "*", order: "created_at.desc" },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return rows.map(mapRowToProperty);
 }
 
-/** Create an automatic backup before writing (local mode only) */
-function createBackup() {
-  try {
-    if (!fs.existsSync(PROPERTIES_FILE)) return;
-    ensureBackupDir();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const backupFile = path.join(BACKUP_DIR, `properties-${timestamp}.json`);
-    fs.copyFileSync(PROPERTIES_FILE, backupFile);
-
-    // Keep only last 20 backups to avoid filling disk
-    const backups = fs.readdirSync(BACKUP_DIR)
-      .filter((f) => f.startsWith("properties-") && f.endsWith(".json"))
-      .sort();
-    while (backups.length > 20) {
-      const oldest = backups.shift()!;
-      fs.unlinkSync(path.join(BACKUP_DIR, oldest));
-    }
-  } catch (e) {
-    console.error("[propertyStorage] Backup failed:", e);
-  }
-}
-
-/** Write all properties to disk + auto-sync to GitHub */
-function writeProperties(properties: Property[]) {
-  ensureDataDir();
-  createBackup();
-  fs.writeFileSync(PROPERTIES_FILE, JSON.stringify(properties, null, 2), "utf-8");
-  scheduleSyncToGitHub(); // Auto-push to GitHub so deploys always have latest data
-}
-
-/** Bulk write properties — MERGES with existing data, never overwrites */
 export async function writePropertiesBulk(properties: Property[]) {
-  const existing = readPropertiesSyncFallback();
-  const existingMap = new Map(existing.map((p) => [p.id, p]));
-  for (const p of properties) {
-    existingMap.set(p.id, p);
-  }
-  writeProperties(Array.from(existingMap.values()));
+  if (!properties || properties.length === 0) return;
+  await supabaseRequest("POST", {
+    query: { on_conflict: "id" },
+    body: properties.map(serializeProperty),
+    prefer: "resolution=merge-duplicates,return=minimal",
+  });
 }
 
-/** Add or update a property and persist */
 export async function saveProperty(property: Property): Promise<Property> {
-  const properties = readPropertiesSyncFallback();
-  const idx = properties.findIndex((p) => p.id === property.id);
-  if (idx !== -1) properties[idx] = property; else properties.push(property);
-  writeProperties(properties);
-  return property;
+  const res = await supabaseRequest("POST", {
+    query: { on_conflict: "id" },
+    body: [serializeProperty(property)],
+    prefer: "return=representation,resolution=merge-duplicates",
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return mapRowToProperty(rows[0]);
 }
 
-function readPropertiesSyncFallback(): Property[] {
-  ensureDataDir();
-  if (!fs.existsSync(PROPERTIES_FILE)) return [];
-  try {
-    const raw = fs.readFileSync(PROPERTIES_FILE, "utf-8");
-    return JSON.parse(raw) as Property[];
-  } catch {
-    return [];
-  }
-}
-
-/** Delete a property by id — locked properties cannot be deleted */
 export async function deleteProperty(id: string): Promise<boolean | "locked"> {
   const existing = await findStoredPropertyById(id);
   if (!existing) return false;
   if (existing.locked) return "locked";
-
-  const properties = readPropertiesSyncFallback();
-  const idx = properties.findIndex((p) => p.id === id);
-  if (idx === -1) return false;
-  properties.splice(idx, 1);
-  writeProperties(properties);
+  await supabaseRequest("DELETE", {
+    query: { id: `eq.${id}` },
+  });
   return true;
 }
 
-/** Find a property by id */
 export async function findStoredPropertyById(id: string): Promise<Property | undefined> {
-  return readPropertiesSyncFallback().find((p) => p.id === id);
+  const res = await supabaseRequest("GET", {
+    query: { select: "*", id: `eq.${id}`, limit: "1" },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  if (!rows.length) return undefined;
+  return mapRowToProperty(rows[0]);
 }
 
-/** Update a property (partial merge) */
 export async function updateProperty(id: string, updates: Partial<Property>): Promise<Property | null> {
-  const properties = readPropertiesSyncFallback();
-  const idx = properties.findIndex((p) => p.id === id);
-  if (idx === -1) return null;
-  properties[idx] = { ...properties[idx], ...updates };
-  writeProperties(properties);
-  return properties[idx];
-}
-
-/** Lock or unlock ALL properties in a single write (memory-efficient) */
-export async function lockAllProperties(locked: boolean): Promise<number> {
-  const properties = readPropertiesSyncFallback();
-  let count = 0;
-  for (let i = 0; i < properties.length; i++) {
-    if (properties[i].locked !== locked) {
-      properties[i].locked = locked;
-      count++;
-    }
+  const payload = serializePartial(updates);
+  if (Object.keys(payload).length === 0) {
+    const existing = await findStoredPropertyById(id);
+    return existing ?? null;
   }
-  if (count > 0) writeProperties(properties);
-  return count;
+  const res = await supabaseRequest("PATCH", {
+    query: { id: `eq.${id}` },
+    body: payload,
+    prefer: "return=representation",
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  if (!rows.length) return null;
+  return mapRowToProperty(rows[0]);
 }
 
-/** Export all properties as a JSON backup (for download) */
+export async function lockAllProperties(locked: boolean): Promise<number> {
+  const res = await supabaseRequest("PATCH", {
+    query: { id: "not.is.null" },
+    body: { locked },
+    prefer: "return=representation",
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return rows.length;
+}
+
 export async function exportProperties(): Promise<{ count: number; data: Property[]; exportedAt: string }> {
-  const properties = await readProperties();
+  const data = await readProperties();
   return {
-    count: properties.length,
-    data: properties,
+    count: data.length,
+    data,
     exportedAt: new Date().toISOString(),
   };
 }
 
-/** Get storage info for diagnostics */
 export function getStorageInfo() {
   return {
-    provider: GITHUB_TOKEN ? "github-sync" : "local-only",
-    filePath: PROPERTIES_FILE,
-    fileExists: fs.existsSync(PROPERTIES_FILE),
-    backupDir: BACKUP_DIR,
-    backupCount: fs.existsSync(BACKUP_DIR)
-      ? fs.readdirSync(BACKUP_DIR).filter((f) => f.endsWith(".json")).length
-      : 0,
-    githubRepo: GITHUB_REPO,
-    githubSyncEnabled: !!GITHUB_TOKEN,
+    provider: "supabase",
+    supabaseUrl: SUPABASE_URL,
+    table: "properties",
+    configured: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE),
   };
 }

@@ -140,6 +140,16 @@ export interface Client {
   createdAt: Date;
 }
 
+export interface Portal {
+  id: string;
+  name: string;
+  slug: string;
+  agentId: string;
+  description: string;
+  propertyIds: string[];
+  createdAt: Date;
+}
+
 export interface User {
   id: string;
   email: string;

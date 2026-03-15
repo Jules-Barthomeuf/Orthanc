@@ -27,7 +27,7 @@ All core features have been implemented and the application is ready for immedia
 - **State Management**: Zustand for reactive state
 - **Charts**: Recharts for interactive data visualization
 - **Authentication**: JWT-based token system
-- **Database**: In-memory mock (production-ready architecture)
+- **Database**: Supabase Postgres (persistent properties table)
 
 **Project Structure**: 40+ files organized by feature with clear separation of concerns
 
