@@ -7,11 +7,13 @@ import { TechnicalPanel } from "./TechnicalPanel";
 import { MarketInsightPanel } from "./MarketInsightPanel";
 import { InvestmentAdvisorPanel } from "./InvestmentAdvisorPanel";
 import { OverviewPanel } from "./OverviewPanel";
+import { LeaseAnalysisPanel } from "./LeaseAnalysisPanel";
 import Simulator from "./Simulator";
 
 const TABS = [
   { id: "overview", title: "Overview" },
   { id: "simulator", title: "Simulator" },
+  { id: "lease", title: "Lease Analysis" },
   { id: "provenance", title: "Provenance & Legal" },
   { id: "technical", title: "Technical & Structural" },
   { id: "market", title: "Market Insights" },
@@ -134,21 +136,21 @@ export function PropertyVault({ property }: PropertyVaultProps) {
             <div className="flex-1 min-w-0">
               <OverviewPanel property={property} />
             </div>
-            <div className="hidden lg:block w-96 flex-shrink-0">
+            <div className="hidden lg:block w-[480px] flex-shrink-0">
               <div className="sticky top-24 space-y-4">
                 <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-5">
                   <h3 className="label-luxury text-dark-300 mb-2">Location</h3>
                   <p className="text-dark-400 text-xs mb-4">{property.address}</p>
-                  <div className="rounded-lg overflow-hidden border border-gold-400/10" style={{ height: 480 }}>
+                  <div className="rounded-lg overflow-hidden border border-gold-400/10" style={{ height: 520 }}>
                     <iframe
                       title="Property Location"
                       width="100%"
                       height="100%"
-                      style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) brightness(1.1) contrast(1.1)" }}
+                      style={{ border: 0 }}
                       loading="lazy"
                       allowFullScreen
                       referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || '')}&hl=en&z=15&ie=UTF8&iwloc=B&output=embed`}
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || '')}&hl=en&z=18&t=k&ie=UTF8&iwloc=B&output=embed`}
                     />
                   </div>
                 </div>
@@ -172,6 +174,7 @@ export function PropertyVault({ property }: PropertyVaultProps) {
         ) : (
           <div>
             {activeTab === "simulator" && <Simulator address={property.address} price={property.price} />}
+            {activeTab === "lease" && <LeaseAnalysisPanel property={property} />}
             {activeTab === "provenance" && <ProvenancePanel property={property} />}
             {activeTab === "technical" && <TechnicalPanel property={property} />}
             {activeTab === "market" && <MarketInsightPanel property={property} />}
