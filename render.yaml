@@ -1,7 +1,7 @@
 services:
   - type: web
     name: Orthanc-v1
-    runtime: node
+    env: node
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
