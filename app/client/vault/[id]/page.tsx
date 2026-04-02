@@ -41,7 +41,7 @@ export default function VaultPage({ params }: VaultPageProps) {
         <Navbar />
         <div className="min-h-screen bg-dark-900 flex items-center justify-center pt-20">
           <div className="text-center">
-            <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-4" />
             <p className="text-dark-400 text-sm">Loading property...</p>
           </div>
         </div>

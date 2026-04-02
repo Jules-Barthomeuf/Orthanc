@@ -9,6 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        teal: {
+          50: "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#3ECFB4",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+        },
         gold: {
           50: "#fefcf5",
           100: "#fdf8e8",
@@ -37,10 +49,12 @@ const config: Config = {
         "luxury-bg": "#111111",
       },
       fontFamily: {
-        display: ["var(--font-display)", "DM Serif Display", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-sans)", "Montserrat", "Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "Montserrat", "Inter", "system-ui", "sans-serif"],
       },
       backgroundImage: {
+        "gradient-teal":
+          "linear-gradient(135deg, #3ECFB4 0%, #5eead4 50%, #3ECFB4 100%)",
         "gradient-gold":
           "linear-gradient(135deg, #c9a96e 0%, #f0ddb5 50%, #c9a96e 100%)",
         "gradient-dark":

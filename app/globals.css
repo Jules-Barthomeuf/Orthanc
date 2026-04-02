@@ -2,12 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
 :root {
   --background: #0a0a0a;
   --foreground: #f5f0e8;
+  --accent: #3ECFB4;
+  --accent-light: #5eead4;
+  --accent-dark: #0d9488;
   --gold: #c9a96e;
   --gold-light: #f0ddb5;
   --gold-dark: #9a7a3d;
+  --font-sans: 'Montserrat', 'Inter', system-ui, sans-serif;
+  --sidebar-width: 220px;
 }
 
 * {
@@ -23,7 +30,7 @@ html {
 body {
   background: #0a0a0a;
   color: #f5f0e8;
-  font-family: var(--font-sans), "Inter", system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,67 +42,70 @@ a {
 
 /* Typography */
 .font-display {
-  font-family: var(--font-display), "DM Serif Display", Georgia, serif;
+  font-family: var(--font-sans);
 }
 
 .heading-luxury {
-  font-family: var(--font-display), "DM Serif Display", Georgia, serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
 
 .label-luxury {
-  font-family: "Inter", system-ui, sans-serif;
-  font-weight: 400;
-  letter-spacing: 0.25em;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 /* Inputs */
 .luxury-input {
-  @apply bg-dark-900 border border-dark-600/30 text-white rounded px-4 py-3 focus:outline-none focus:border-gold-400/50 focus:ring-1 focus:ring-gold-400/30 transition-colors font-sans;
+  @apply bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-teal-400/50 focus:ring-1 focus:ring-teal-400/30 transition-colors font-sans;
 }
 
 /* Buttons */
 .luxury-button {
-  @apply px-6 py-3 rounded font-sans font-medium transition-all duration-300;
+  @apply px-6 py-3 rounded-lg font-sans font-semibold transition-all duration-300;
 }
 
 .luxury-button-primary {
-  @apply luxury-button bg-gold-400 text-dark-900 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-400/20;
+  @apply luxury-button bg-teal-400 text-dark-900 hover:bg-teal-300 hover:shadow-lg hover:shadow-teal-400/20;
 }
 
 .luxury-button-secondary {
-  @apply luxury-button bg-transparent border border-gold-400/30 text-gold-400 hover:bg-gold-400/10 hover:border-gold-400/60;
+  @apply luxury-button bg-transparent border border-dark-600/40 text-white hover:bg-dark-700/50 hover:border-dark-500;
 }
 
 /* Cards */
 .luxury-card {
-  @apply bg-dark-800 border border-dark-600/20 rounded-lg p-6 hover:border-gold-400/20 transition-colors;
+  @apply bg-dark-800 border border-dark-600/20 rounded-xl p-6 hover:border-teal-400/20 transition-colors;
 }
 
-/* Gold gradient text */
+/* Teal gradient text */
 .gradient-text {
-  @apply bg-gradient-to-r from-gold-300 via-gold-400 to-gold-300 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-teal-300 via-teal-400 to-teal-300 bg-clip-text text-transparent;
 }
 
-/* Gold separator line */
+/* Accent separator line */
 .gold-line {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #c9a96e, transparent);
+  height: 2px;
+  width: 40px;
+  background: #3ECFB4;
+  border-radius: 1px;
 }
 
 .gold-line-left {
-  height: 1px;
-  background: linear-gradient(90deg, #c9a96e, transparent);
+  height: 2px;
+  background: linear-gradient(90deg, #3ECFB4, transparent);
+  border-radius: 1px;
 }
 
 /* Property detail row */
 .property-row {
   @apply flex justify-between items-center py-4;
-  border-bottom: 1px solid rgba(201, 169, 110, 0.15);
+  border-bottom: 1px solid rgba(62, 207, 180, 0.1);
 }
 
 .property-row:last-child {
@@ -103,7 +113,9 @@ a {
 }
 
 .property-label {
-  @apply text-gold-400 font-sans text-sm tracking-wide;
+  @apply text-dark-400 font-sans text-sm tracking-wide uppercase;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .property-value {
@@ -113,7 +125,7 @@ a {
 /* AI Score bar */
 .ai-score-bar {
   height: 3px;
-  background: linear-gradient(90deg, #c9a96e 0%, #f0ddb5 50%, #c9a96e 100%);
+  background: linear-gradient(90deg, #3ECFB4 0%, #5eead4 50%, #3ECFB4 100%);
   border-radius: 2px;
 }
 
@@ -293,11 +305,12 @@ a {
 .portal-day .text-dark-500 { color: #888 !important; }
 .portal-day [class*="text-white/"] { color: rgba(26,26,26,0.75) !important; }
 
-.portal-day [class*="border-gold-400/"] { border-color: rgba(180,155,100,0.2) !important; }
+.portal-day [class*="border-teal-400/"] { border-color: rgba(62,207,180,0.2) !important; }
+.portal-day [class*="border-teal-400/"] { border-color: rgba(62,207,180,0.2) !important; }
 .portal-day [class*="border-dark-600/"] { border-color: rgba(200,195,185,0.5) !important; }
 
 .portal-day .property-row {
-  border-bottom-color: rgba(180,155,100,0.12) !important;
+  border-bottom-color: rgba(62,207,180,0.12) !important;
 }
 
 .portal-day .luxury-button-primary {
@@ -310,15 +323,15 @@ a {
 
 .portal-day .luxury-input {
   background: #f0ede6 !important;
-  border-color: rgba(180,155,100,0.2) !important;
+  border-color: rgba(62,207,180,0.2) !important;
   color: #1a1a1a !important;
 }
 
 .portal-day .gold-line {
-  background: linear-gradient(90deg, transparent, #9a7a3d, transparent) !important;
+  background: #0d9488 !important;
 }
 .portal-day .gold-line-left {
-  background: linear-gradient(90deg, #9a7a3d, transparent) !important;
+  background: linear-gradient(90deg, #0d9488, transparent) !important;
 }
 
 .portal-day ::-webkit-scrollbar-track { background: #f8f6f1; }

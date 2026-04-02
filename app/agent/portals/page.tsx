@@ -114,7 +114,7 @@ export default function MyPortalsPage() {
           <div className="max-w-7xl mx-auto px-6 pt-4 pb-10 relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-10 animate-fade-up">
               <div>
-                <p className="label-luxury text-gold-400/50 mb-3 tracking-[0.3em]">Agent Portal</p>
+                <p className="label-luxury text-teal-400/50 mb-3 tracking-[0.3em]">Agent Portal</p>
                 <h1 className="heading-luxury text-5xl lg:text-6xl text-white mb-4">My Portals</h1>
                 <div className="gold-line-left w-32 animate-reveal-line" />
               </div>
@@ -150,8 +150,8 @@ export default function MyPortalsPage() {
           {/* Empty */}
           {!loading && portals.length === 0 && (
             <div className="flex flex-col items-center justify-center py-28 animate-fade-up">
-              <div className="w-20 h-20 rounded-2xl bg-dark-800 border border-gold-400/10 flex items-center justify-center mb-6">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-gold-400/40">
+              <div className="w-20 h-20 rounded-2xl bg-dark-800 border border-teal-400/10 flex items-center justify-center mb-6">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-teal-400/40">
                   <rect x="4" y="6" width="24" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
                   <path d="M4 12h24" stroke="currentColor" strokeWidth="1.5" />
                   <circle cx="8" cy="9" r="1" fill="currentColor" />
@@ -175,13 +175,13 @@ export default function MyPortalsPage() {
               {portals.map((portal, idx) => (
                 <div
                   key={portal.id}
-                  className="group bg-dark-800/70 border border-gold-400/[0.06] rounded-xl overflow-hidden hover:border-gold-400/20 hover:bg-dark-800 transition-all duration-500"
+                  className="group bg-dark-800/70 border border-teal-400/[0.06] rounded-xl overflow-hidden hover:border-teal-400/20 hover:bg-dark-800 transition-all duration-500"
                   style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.08}s both` }}
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div className="min-w-0">
-                        <h3 className="font-display text-lg font-bold text-white mb-1 group-hover:text-gold-300 transition-colors line-clamp-1">
+                        <h3 className="font-display text-lg font-bold text-white mb-1 group-hover:text-teal-300 transition-colors line-clamp-1">
                           {portal.name}
                         </h3>
                         {portal.description && (
@@ -201,7 +201,7 @@ export default function MyPortalsPage() {
 
                     <div className="flex items-center gap-3 text-xs text-dark-400 mb-4">
                       <span className="flex items-center gap-1.5 bg-dark-700/50 px-2.5 py-1.5 rounded-md">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-gold-400/60">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-teal-400/60">
                           <path d="M4 28V12l12-8 12 8v16H4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                         </svg>
                         {portal.propertyIds.length} propert{portal.propertyIds.length === 1 ? "y" : "ies"}
@@ -222,7 +222,7 @@ export default function MyPortalsPage() {
                           navigator.clipboard.writeText(url);
                           addToast({ type: "success", message: "Portal link copied!" });
                         }}
-                        className="shrink-0 text-gold-400 hover:text-gold-300 transition-colors text-xs"
+                        className="shrink-0 text-teal-400 hover:text-teal-300 transition-colors text-xs"
                       >
                         Copy
                       </button>
@@ -245,7 +245,7 @@ export default function MyPortalsPage() {
       {/* Create modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-gold-400/10 rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl">
+          <div className="bg-dark-800 border border-teal-400/10 rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dark-600/20">
               <h3 className="text-white text-lg font-display font-semibold">Create Portal</h3>
               <button onClick={() => setShowCreate(false)} className="text-dark-400 hover:text-white transition-colors p-1">
@@ -263,7 +263,7 @@ export default function MyPortalsPage() {
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="e.g. Miami Luxury Collection"
-                  className="w-full bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
+                  className="w-full bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/20 transition-colors placeholder:text-dark-500"
                   autoFocus
                 />
               </div>
@@ -274,7 +274,7 @@ export default function MyPortalsPage() {
                   onChange={(e) => setNewDesc(e.target.value)}
                   placeholder="A curated selection of premium properties..."
                   rows={3}
-                  className="w-full bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500 resize-none"
+                  className="w-full bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/20 transition-colors placeholder:text-dark-500 resize-none"
                 />
               </div>
               <button
@@ -302,7 +302,7 @@ export default function MyPortalsPage() {
       {/* Delete confirmation */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-gold-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+          <div className="bg-dark-800 border border-teal-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
             <h3 className="font-display text-lg text-white mb-2">Delete Portal</h3>
             <p className="text-dark-400 text-sm mb-6">
               Are you sure? This will delete the portal but not the properties inside it.

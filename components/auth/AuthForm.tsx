@@ -31,7 +31,7 @@ function GlowInput({
   return (
     <div className="w-full relative">
       {label && (
-        <label className="block mb-2 text-xs tracking-wider uppercase text-gold-400/60 font-medium">
+        <label className="block mb-2 text-xs tracking-wider uppercase text-teal-400/60 font-medium">
           {label}
         </label>
       )}
@@ -40,7 +40,7 @@ function GlowInput({
           type={type}
           value={value}
           onChange={onChange}
-          className="peer relative z-10 border border-gold-400/[0.12] h-12 w-full rounded-lg bg-dark-800/60 px-4 text-sm text-white font-light outline-none transition-all duration-200 ease-in-out focus:bg-dark-900 focus:border-gold-400/30 placeholder:text-dark-500 placeholder:font-normal"
+          className="peer relative z-10 border border-teal-400/[0.12] h-12 w-full rounded-lg bg-dark-800/60 px-4 text-sm text-white font-light outline-none transition-all duration-200 ease-in-out focus:bg-dark-900 focus:border-teal-400/30 placeholder:text-dark-500 placeholder:font-normal"
           placeholder={placeholder}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsHovering(true)}
@@ -150,7 +150,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(201,169,110,0.03)_0%,_transparent_60%)]" />
 
       {/* Card */}
-      <div className="w-[90%] lg:w-[70%] max-w-5xl flex bg-dark-800/50 border border-gold-400/[0.08] rounded-2xl overflow-hidden h-[600px] lg:h-[640px] relative z-10 shadow-2xl shadow-black/40">
+      <div className="w-[90%] lg:w-[70%] max-w-5xl flex bg-dark-800/50 border border-teal-400/[0.08] rounded-2xl overflow-hidden h-[600px] lg:h-[640px] relative z-10 shadow-2xl shadow-black/40">
 
         {/* ── Left: Form ── */}
         <div
@@ -164,7 +164,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         >
           {/* Cursor glow */}
           <div
-            className={`absolute pointer-events-none w-[400px] h-[400px] bg-gradient-to-r from-gold-400/10 via-gold-400/5 to-gold-400/10 rounded-full blur-3xl transition-opacity duration-300 ${
+            className={`absolute pointer-events-none w-[400px] h-[400px] bg-gradient-to-r from-teal-400/10 via-teal-400/5 to-teal-400/10 rounded-full blur-3xl transition-opacity duration-300 ${
               isHovering ? "opacity-100" : "opacity-0"
             }`}
             style={{
@@ -188,7 +188,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     <li key={index}>
                       <a
                         href="#"
-                        className="w-10 h-10 rounded-full border border-gold-400/20 bg-dark-900/50 flex items-center justify-center text-dark-400 transition-all duration-300 hover:bg-gold-400/10 hover:text-gold-400 hover:border-gold-400/40 group"
+                        className="w-10 h-10 rounded-full border border-teal-400/20 bg-dark-900/50 flex items-center justify-center text-dark-400 transition-all duration-300 hover:bg-teal-400/10 hover:text-teal-400 hover:border-teal-400/40 group"
                       >
                         <span className="transition-transform duration-300 group-hover:scale-110">
                           {social.icon}
@@ -240,7 +240,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
             {/* Forgot password (login only) */}
             {mode === "login" && (
-              <a href="#" className="text-dark-500 hover:text-gold-400 transition text-xs text-center">
+              <a href="#" className="text-dark-500 hover:text-teal-400 transition text-xs text-center">
                 Forgot your password?
               </a>
             )}
@@ -250,7 +250,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative inline-flex justify-center items-center overflow-hidden rounded-lg bg-gold-400/10 border border-gold-400/20 px-8 py-2.5 text-sm font-medium text-gold-400 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-gold-400/10 hover:bg-gold-400/15 hover:border-gold-400/40 disabled:opacity-50 cursor-pointer"
+                className="group relative inline-flex justify-center items-center overflow-hidden rounded-lg bg-teal-400/10 border border-teal-400/20 px-8 py-2.5 text-sm font-medium text-teal-400 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-teal-400/10 hover:bg-teal-400/15 hover:border-teal-400/40 disabled:opacity-50 cursor-pointer"
               >
                 <span className="relative z-10">
                   {loading
@@ -260,7 +260,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       : "Create Account"}
                 </span>
                 <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover:duration-1000 group-hover:[transform:skew(-13deg)_translateX(100%)]">
-                  <div className="relative h-full w-10 bg-gold-400/10" />
+                  <div className="relative h-full w-10 bg-teal-400/10" />
                 </div>
               </button>
             </div>
@@ -273,14 +273,14 @@ export function AuthForm({ mode }: AuthFormProps) {
               {mode === "login" ? (
                 <p>
                   Don&apos;t have an account?{" "}
-                  <Link href="/signup" className="text-gold-400 hover:text-gold-300 transition font-medium">
+                  <Link href="/signup" className="text-teal-400 hover:text-teal-300 transition font-medium">
                     Sign up
                   </Link>
                 </p>
               ) : (
                 <p>
                   Already have an account?{" "}
-                  <Link href="/login" className="text-gold-400 hover:text-gold-300 transition font-medium">
+                  <Link href="/login" className="text-teal-400 hover:text-teal-300 transition font-medium">
                     Sign in
                   </Link>
                 </p>
@@ -303,7 +303,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-dark-800/80 via-transparent to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-dark-900/50 via-transparent to-dark-900/30" />
           {/* Gold corner accent */}
-          <div className="absolute bottom-8 right-8 w-16 h-16 border-b border-r border-gold-400/[0.15] rounded-br-2xl" />
+          <div className="absolute bottom-8 right-8 w-16 h-16 border-b border-r border-teal-400/[0.15] rounded-br-2xl" />
         </div>
       </div>
     </div>

@@ -19,10 +19,10 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Executive Summary */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-4">Executive Summary</h3>
         <p className="text-white/80 leading-relaxed text-base">
-          This property at <span className="text-gold-400 font-medium">{property.address}</span> presents
+          This property at <span className="text-teal-400 font-medium">{property.address}</span> presents
           a compelling lease profile for high-net-worth investors seeking stable, long-term cash flow.
           The current lease structure is a Triple-Net (NNN) arrangement with an institutional-grade
           tenant, providing predictable income with minimal landlord obligations. The lease features
@@ -32,12 +32,12 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Key Lease Terms */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-6">Key Lease Terms</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
           <div className="property-row">
             <span className="property-label">Lease Type</span>
-            <span className="property-value text-gold-400 font-medium">Triple-Net (NNN)</span>
+            <span className="property-value text-teal-400 font-medium">Triple-Net (NNN)</span>
           </div>
           <div className="property-row">
             <span className="property-label">Lease Commencement</span>
@@ -53,7 +53,7 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
           </div>
           <div className="property-row">
             <span className="property-label">Base Rent (Annual)</span>
-            <span className="property-value text-gold-400 font-medium">
+            <span className="property-value text-teal-400 font-medium">
               ${Math.round(property.price * 0.045).toLocaleString("en-US")}
             </span>
           </div>
@@ -83,7 +83,7 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Rent Schedule */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-6">Projected Rent Schedule</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -107,7 +107,7 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
                 return (
                   <tr
                     key={i}
-                    className={`border-b border-dark-600/10 ${i === 0 ? "text-gold-400" : "text-white/80"}`}
+                    className={`border-b border-dark-600/10 ${i === 0 ? "text-teal-400" : "text-white/80"}`}
                   >
                     <td className="py-3">{2024 + i}</td>
                     <td className="py-3 text-right font-medium">
@@ -131,20 +131,20 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Tenant Profile */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-4">Tenant Profile</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5">
+          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5">
             <p className="label-luxury text-dark-400 text-xs mb-2">Credit Rating</p>
             <p className="font-display text-2xl text-emerald-400">A+</p>
             <p className="text-dark-500 text-xs mt-1">S&P Global Rating</p>
           </div>
-          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5">
+          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5">
             <p className="label-luxury text-dark-400 text-xs mb-2">Tenant Type</p>
             <p className="font-display text-2xl text-white">Corporate</p>
             <p className="text-dark-500 text-xs mt-1">Institutional-grade occupant</p>
           </div>
-          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5">
+          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5">
             <p className="label-luxury text-dark-400 text-xs mb-2">Payment History</p>
             <p className="font-display text-2xl text-emerald-400">100%</p>
             <p className="text-dark-500 text-xs mt-1">On-time payments (24/24 months)</p>
@@ -153,12 +153,12 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Agent Notes */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-4">Agent Commentary</h3>
         <div className="space-y-4 text-white/80 leading-relaxed text-base">
           <p>
             The NNN structure effectively transfers all operating expenses — property taxes,
-            insurance, and maintenance — to the tenant. This results in a <span className="text-gold-400 font-medium">net
+            insurance, and maintenance — to the tenant. This results in a <span className="text-teal-400 font-medium">net
             effective yield</span> that closely mirrors the gross rent, a significant advantage
             for passive investors.
           </p>
@@ -170,7 +170,7 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
           </p>
           <p>
             The 18-month termination notice paired with a 12-month rent penalty creates a
-            <span className="text-gold-400 font-medium"> 30-month effective protection window</span>,
+            <span className="text-teal-400 font-medium"> 30-month effective protection window</span>,
             giving the landlord ample time to secure replacement tenancy. Combined with the
             tenant&apos;s A+ credit profile, vacancy risk over the primary term is assessed
             as <span className="text-emerald-400 font-medium">minimal</span>.
@@ -179,7 +179,7 @@ export function LeaseAnalysisPanel({ property }: LeaseAnalysisPanelProps) {
       </div>
 
       {/* Risk Assessment */}
-      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-6">Lease Risk Assessment</h3>
         <div className="space-y-4">
           {[

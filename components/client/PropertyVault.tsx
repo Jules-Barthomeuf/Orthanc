@@ -12,18 +12,19 @@ import Simulator from "./Simulator";
 
 const TABS = [
   { id: "overview", title: "Overview" },
-  { id: "market", title: "Market Insights" },
-  { id: "technical", title: "Technical" },
+  { id: "market", title: "Market" },
+  { id: "technical", title: "Property" },
   { id: "lease", title: "Lease Analysis" },
-  { id: "provenance", title: "Provenance & Legal" },
-  { id: "advisor", title: "Investment Advisor" },
+  { id: "provenance", title: "Provenance" },
+  { id: "advisor", title: "Documents" },
 ];
 
 interface PropertyVaultProps {
   property: Property;
+  portalSlug?: string;
 }
 
-export function PropertyVault({ property }: PropertyVaultProps) {
+export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [activeThumb, setActiveThumb] = useState(0);
   const [showSimulator, setShowSimulator] = useState(false);
@@ -56,7 +57,7 @@ export function PropertyVault({ property }: PropertyVaultProps) {
                   key={i}
                   onClick={() => setActiveThumb(i)}
                   className={`rounded-lg overflow-hidden border-2 transition-colors flex-1 min-h-0 ${
-                    activeThumb === i ? "border-gold-400" : "border-transparent hover:border-gold-400/30"
+                    activeThumb === i ? "border-teal-400" : "border-transparent hover:border-teal-400/30"
                   }`}
                 >
                   <img src={img} alt={`${property.title} ${i + 1}`} className="w-full h-full object-cover" />
@@ -78,11 +79,11 @@ export function PropertyVault({ property }: PropertyVaultProps) {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-dark-500 text-xs uppercase tracking-wider mb-1">Price</p>
-            <p className="font-display text-3xl lg:text-4xl text-gold-400 font-bold">
-              ${property.price >= 1000000
-                ? `${(property.price / 1000000).toFixed(2)}M`
-                : property.price.toLocaleString("en-US")}
+            <p className="text-dark-500 text-xs uppercase tracking-wider mb-1">Asking Price</p>
+            <p className="text-3xl lg:text-4xl text-white font-bold">
+              {property.price >= 1000000
+                ? `$${(property.price / 1000000).toFixed(2)}M`
+                : `$${property.price.toLocaleString("en-US")}`}
             </p>
           </div>
         </div>
@@ -96,7 +97,7 @@ export function PropertyVault({ property }: PropertyVaultProps) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
-            View Full Simulator
+            Full Simulator
           </button>
         </div>
 
@@ -118,7 +119,7 @@ export function PropertyVault({ property }: PropertyVaultProps) {
                 {tab.title}
               </span>
               <span
-                className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gold-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+                className={`absolute bottom-0 left-0 right-0 h-[2px] bg-teal-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
                   activeTab === tab.id ? "opacity-100" : "opacity-0"
                 }`}
               />
@@ -146,14 +147,14 @@ export function PropertyVault({ property }: PropertyVaultProps) {
             onClick={() => setShowSimulator(false)}
           />
           {/* Modal */}
-          <div className="relative w-full max-w-[1400px] max-h-[92vh] mt-[4vh] mx-4 bg-dark-900 border border-gold-400/10 rounded-2xl overflow-hidden flex flex-col">
+          <div className="relative w-full max-w-[1400px] max-h-[92vh] mt-[4vh] mx-4 bg-dark-900 border border-dark-600/30 rounded-2xl overflow-hidden flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-dark-600/30 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                 </svg>
-                <h2 className="font-display text-lg text-white">Financial Simulator</h2>
+                <h2 className="text-lg font-semibold text-white">Financial Simulator</h2>
                 <span className="text-dark-500 text-sm">— {property.title}</span>
               </div>
               <button

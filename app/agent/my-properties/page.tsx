@@ -6,7 +6,7 @@ import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
-// Clé de stockage local pour les propriétés en attente d'upload
+// Local storage key for pending property uploads
 const LOCAL_STORAGE_KEY = "pendingProperties";
 
 import { useToastStore } from "@/lib/toast";
@@ -184,7 +184,7 @@ export default function MyPropertiesPage() {
     }
   };
 
-  // Fonction pour réessayer l'upload des propriétés en attente
+  // Function to retry uploading pending properties
   const retryPendingUploads = async () => {
     const pending = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
     if (!pending.length) {
@@ -217,7 +217,7 @@ export default function MyPropertiesPage() {
     if (failedCount > 0) {
       addToast({ type: 'error', message: `${failedCount} properties failed to upload again.` });
     }
-    // Nettoyage des propriétés uploadées avec succès
+    // Clean up successfully uploaded properties
     if (failedCount === 0) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } else {
@@ -226,7 +226,7 @@ export default function MyPropertiesPage() {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stillPending));
     }
   };
-  // Affichage d'une alerte si des propriétés sont en attente dans le localStorage
+  // Show alert if there are pending properties in localStorage
   const [pendingCount, setPendingCount] = useState(0);
   useEffect(() => {
     const checkPending = () => {
@@ -357,7 +357,7 @@ export default function MyPropertiesPage() {
           <div className="max-w-7xl mx-auto px-6 pt-4 pb-10 relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-10 animate-fade-up">
               <div>
-                <p className="label-luxury text-gold-400/50 mb-3 tracking-[0.3em]">
+                <p className="label-luxury text-teal-400/50 mb-3 tracking-[0.3em]">
                   Agent Portfolio
                 </p>
                 <h1 className="heading-luxury text-5xl lg:text-6xl text-white mb-4">
@@ -435,7 +435,7 @@ export default function MyPropertiesPage() {
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-dark-800/60 border border-gold-400/[0.07] rounded-xl px-5 py-4 backdrop-blur-sm"
+                    className="bg-dark-800/60 border border-teal-400/[0.07] rounded-xl px-5 py-4 backdrop-blur-sm"
                   >
                     <p className="text-dark-400 text-[11px] font-sans uppercase tracking-widest mb-1">
                       {stat.label}
@@ -482,7 +482,7 @@ export default function MyPropertiesPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name or address..."
-                  className="w-full bg-dark-800 border border-dark-600/20 text-white rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
+                  className="w-full bg-dark-800 border border-dark-600/20 text-white rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/20 transition-colors placeholder:text-dark-500"
                 />
               </div>
 
@@ -491,7 +491,7 @@ export default function MyPropertiesPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortKey)}
-                  className="bg-dark-800 border border-dark-600/20 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 cursor-pointer appearance-none pr-8"
+                  className="bg-dark-800 border border-dark-600/20 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 cursor-pointer appearance-none pr-8"
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b8b8b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: "no-repeat",
@@ -510,7 +510,7 @@ export default function MyPropertiesPage() {
                     onClick={handleLockAll}
                     disabled={lockingAll || properties.every((p) => p.locked)}
                     className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-all disabled:opacity-40 disabled:cursor-not-allowed
-                      bg-gold-400/10 text-gold-400 border-gold-400/20 hover:bg-gold-400/20 hover:border-gold-400/30"
+                      bg-teal-400/10 text-teal-400 border-teal-400/20 hover:bg-teal-400/20 hover:border-teal-400/30"
                     title="Lock all properties to prevent accidental deletion"
                   >
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -519,7 +519,7 @@ export default function MyPropertiesPage() {
                   <div className="flex border border-dark-600/20 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-gold-400/10 text-gold-400" : "bg-dark-800 text-dark-400 hover:text-white"}`}
+                    className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-teal-400/10 text-teal-400" : "bg-dark-800 text-dark-400 hover:text-white"}`}
                     title="Grid view"
                   >
                     <svg
@@ -568,7 +568,7 @@ export default function MyPropertiesPage() {
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`p-2.5 transition-colors ${viewMode === "list" ? "bg-gold-400/10 text-gold-400" : "bg-dark-800 text-dark-400 hover:text-white"}`}
+                    className={`p-2.5 transition-colors ${viewMode === "list" ? "bg-teal-400/10 text-teal-400" : "bg-dark-800 text-dark-400 hover:text-white"}`}
                     title="List view"
                   >
                     <svg
@@ -613,13 +613,13 @@ export default function MyPropertiesPage() {
           {/* Empty state */}
           {!loading && properties.length === 0 && (
             <div className="flex flex-col items-center justify-center py-28 animate-fade-up">
-              <div className="w-20 h-20 rounded-2xl bg-dark-800 border border-gold-400/10 flex items-center justify-center mb-6">
+              <div className="w-20 h-20 rounded-2xl bg-dark-800 border border-teal-400/10 flex items-center justify-center mb-6">
                 <svg
                   width="32"
                   height="32"
                   viewBox="0 0 32 32"
                   fill="none"
-                  className="text-gold-400/40"
+                  className="text-teal-400/40"
                 >
                   <path
                     d="M4 28V12l12-8 12 8v16H4z"
@@ -665,7 +665,7 @@ export default function MyPropertiesPage() {
                 </p>
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="text-gold-400 text-sm mt-3 hover:underline"
+                  className="text-teal-400 text-sm mt-3 hover:underline"
                 >
                   Clear search
                 </button>
@@ -679,7 +679,7 @@ export default function MyPropertiesPage() {
                 <Link
                   key={property.id}
                   href={`/agent/properties/${property.id}`}
-                  className="group bg-dark-800/70 border border-gold-400/[0.06] rounded-xl overflow-hidden hover:border-gold-400/20 hover:bg-dark-800 transition-all duration-500"
+                  className="group bg-dark-800/70 border border-teal-400/[0.06] rounded-xl overflow-hidden hover:border-teal-400/20 hover:bg-dark-800 transition-all duration-500"
                   style={{
                     animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.08}s both`,
                   }}
@@ -718,7 +718,7 @@ export default function MyPropertiesPage() {
                         ${property.price?.toLocaleString()}
                       </span>
                       {property.locked && (
-                        <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold-400/30">
+                        <span className="flex items-center gap-1 bg-teal-400/20 text-teal-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-400/30">
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                           LOCKED
                         </span>
@@ -730,7 +730,7 @@ export default function MyPropertiesPage() {
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="font-display text-lg font-bold text-white mb-0.5 group-hover:text-gold-300 transition-colors line-clamp-1">
+                        <h3 className="font-display text-lg font-bold text-white mb-0.5 group-hover:text-teal-300 transition-colors line-clamp-1">
                           {property.title}
                         </h3>
                       </div>
@@ -739,8 +739,8 @@ export default function MyPropertiesPage() {
                         disabled={lockingId === property.id}
                         className={`shrink-0 p-1.5 rounded-md transition-colors ${
                           property.locked
-                            ? 'text-gold-400 hover:text-gold-300 bg-gold-400/10'
-                            : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                            ? 'text-teal-400 hover:text-teal-300 bg-teal-400/10'
+                            : 'text-dark-500 hover:text-teal-400 hover:bg-teal-400/10'
                         }`}
                         title={property.locked ? 'Unlock property' : 'Lock property (prevent deletion)'}
                       >
@@ -791,7 +791,7 @@ export default function MyPropertiesPage() {
                           height="14"
                           viewBox="0 0 14 14"
                           fill="none"
-                          className="text-gold-400/60"
+                          className="text-teal-400/60"
                         >
                           <path
                             d="M1 11V7a1 1 0 011-1h3a1 1 0 011 1v4M8 11V4a1 1 0 011-1h3a1 1 0 011 1v7"
@@ -808,7 +808,7 @@ export default function MyPropertiesPage() {
                           height="14"
                           viewBox="0 0 14 14"
                           fill="none"
-                          className="text-gold-400/60"
+                          className="text-teal-400/60"
                         >
                           <path
                             d="M1 7h12v2a2 2 0 01-2 2H3a2 2 0 01-2-2V7zM2 7V4"
@@ -824,7 +824,7 @@ export default function MyPropertiesPage() {
                           height="14"
                           viewBox="0 0 14 14"
                           fill="none"
-                          className="text-gold-400/60"
+                          className="text-teal-400/60"
                         >
                           <rect
                             x="2"
@@ -851,13 +851,13 @@ export default function MyPropertiesPage() {
                       <div className="relative mt-3">
                         <button
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAddToPortalId(addToPortalId === property.id ? null : property.id); }}
-                          className="w-full flex items-center justify-center gap-1.5 text-xs text-dark-400 hover:text-gold-400 border border-dark-600/20 hover:border-gold-400/20 rounded-lg py-2 transition-colors"
+                          className="w-full flex items-center justify-center gap-1.5 text-xs text-dark-400 hover:text-teal-400 border border-dark-600/20 hover:border-teal-400/20 rounded-lg py-2 transition-colors"
                         >
                           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3"/><circle cx="4.5" cy="4.75" r="0.75" fill="currentColor"/><circle cx="7" cy="4.75" r="0.75" fill="currentColor"/></svg>
                           Add to Portal
                         </button>
                         {addToPortalId === property.id && (
-                          <div className="absolute bottom-full left-0 right-0 mb-1 bg-dark-800 border border-gold-400/10 rounded-lg shadow-xl z-20 overflow-hidden">
+                          <div className="absolute bottom-full left-0 right-0 mb-1 bg-dark-800 border border-teal-400/10 rounded-lg shadow-xl z-20 overflow-hidden">
                             {portals.map((portal: any) => {
                               const alreadyIn = (portal.propertyIds || []).includes(property.id);
                               return (
@@ -865,7 +865,7 @@ export default function MyPropertiesPage() {
                                   key={portal.id}
                                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!alreadyIn) handleAddToPortal(property.id, portal.id); }}
                                   disabled={alreadyIn || addingToPortal}
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${alreadyIn ? 'text-dark-500 cursor-default' : 'text-dark-300 hover:bg-gold-400/10 hover:text-gold-400'}`}
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${alreadyIn ? 'text-dark-500 cursor-default' : 'text-dark-300 hover:bg-teal-400/10 hover:text-teal-400'}`}
                                 >
                                   {portal.name} {alreadyIn && <span className="text-dark-500 ml-1">(added)</span>}
                                 </button>
@@ -888,7 +888,7 @@ export default function MyPropertiesPage() {
                 <Link
                   key={property.id}
                   href={`/agent/properties/${property.id}`}
-                  className="group flex items-center gap-5 bg-dark-800/70 border border-gold-400/[0.06] rounded-xl p-3 pr-6 hover:border-gold-400/20 hover:bg-dark-800 transition-all duration-500"
+                  className="group flex items-center gap-5 bg-dark-800/70 border border-teal-400/[0.06] rounded-xl p-3 pr-6 hover:border-teal-400/20 hover:bg-dark-800 transition-all duration-500"
                   style={{
                     animation: `fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${0.03 + idx * 0.05}s both`,
                   }}
@@ -924,11 +924,11 @@ export default function MyPropertiesPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-display text-base font-bold text-white group-hover:text-gold-300 transition-colors truncate">
+                      <h3 className="font-display text-base font-bold text-white group-hover:text-teal-300 transition-colors truncate">
                         {property.title}
                       </h3>
                       {property.locked && (
-                        <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-gold-400/30 shrink-0">
+                        <span className="flex items-center gap-1 bg-teal-400/20 text-teal-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-teal-400/30 shrink-0">
                           <svg width="8" height="8" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                           LOCKED
                         </span>
@@ -947,7 +947,7 @@ export default function MyPropertiesPage() {
 
                   {/* Price */}
                   <div className="shrink-0 text-right">
-                    <span className="font-display text-lg font-bold text-gold-400">
+                    <span className="font-display text-lg font-bold text-teal-400">
                       ${property.price?.toLocaleString()}
                     </span>
                   </div>
@@ -958,8 +958,8 @@ export default function MyPropertiesPage() {
                     disabled={lockingId === property.id}
                     className={`shrink-0 p-1.5 rounded-md transition-colors ${
                       property.locked
-                        ? 'text-gold-400 hover:text-gold-300 bg-gold-400/10'
-                        : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                        ? 'text-teal-400 hover:text-teal-300 bg-teal-400/10'
+                        : 'text-dark-500 hover:text-teal-400 hover:bg-teal-400/10'
                     }`}
                     title={property.locked ? 'Unlock property' : 'Lock property (prevent deletion)'}
                   >
@@ -982,7 +982,7 @@ export default function MyPropertiesPage() {
                     height="16"
                     viewBox="0 0 16 16"
                     fill="none"
-                    className="text-dark-500 group-hover:text-gold-400 transition-colors shrink-0"
+                    className="text-dark-500 group-hover:text-teal-400 transition-colors shrink-0"
                   >
                     <path
                       d="M6 3l5 5-5 5"
@@ -1009,7 +1009,7 @@ export default function MyPropertiesPage() {
       {/* Delete confirmation modal */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-gold-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+          <div className="bg-dark-800 border border-teal-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
             <h3 className="font-display text-lg text-white mb-2">Delete Property</h3>
             <p className="text-dark-400 text-sm mb-6">
               Are you sure you want to permanently delete this property? This action cannot be undone.
@@ -1036,7 +1036,7 @@ export default function MyPropertiesPage() {
       {/* Import from Link Modal */}
       {importModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-gold-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
+          <div className="bg-dark-800 border border-teal-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
             {/* Modal header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dark-600/20">
               <div>
@@ -1060,7 +1060,7 @@ export default function MyPropertiesPage() {
                   onChange={(e) => setImportUrl(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleImportScrape()}
                   placeholder="https://www.zillow.com/homedetails/..."
-                  className="flex-1 bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
+                  className="flex-1 bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/20 transition-colors placeholder:text-dark-500"
                   autoFocus
                 />
                 <button
@@ -1081,11 +1081,11 @@ export default function MyPropertiesPage() {
             {/* Preview */}
             {importPreview && (
               <div className="px-6 pb-5">
-                <div className="bg-dark-900/60 border border-gold-400/[0.08] rounded-xl p-5 space-y-3">
+                <div className="bg-dark-900/60 border border-teal-400/[0.08] rounded-xl p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <h4 className="text-white font-display font-semibold text-base leading-tight">{importPreview.title || 'Untitled'}</h4>
                     {importPreview.price > 0 && (
-                      <span className="text-gold-400 font-display font-bold text-lg shrink-0">
+                      <span className="text-teal-400 font-display font-bold text-lg shrink-0">
                         ${importPreview.price.toLocaleString()}
                       </span>
                     )}

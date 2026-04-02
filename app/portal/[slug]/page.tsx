@@ -1,21 +1,9 @@
 "use client";
 
-import { Footer } from "@/components/common/Footer";
+import { PortalSidebar } from "@/components/common/PortalSidebar";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Property } from "@/types";
-
-/* Sun / Moon icons */
-const SunIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-  </svg>
-);
-const MoonIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-  </svg>
-);
 
 interface Portal {
   id: string;
@@ -37,7 +25,6 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [dayMode, setDayMode] = useState(false);
   const [search, setSearch] = useState("");
 
   const filteredProperties = properties.filter((p) => {
@@ -83,12 +70,18 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
     })();
   }, [slug]);
 
+  const formatPrice = (price: number) => {
+    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
+    if (price >= 1000) return `$${Math.round(price / 1000)}K`;
+    return `$${price.toLocaleString("en-US")}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-dark-400 text-sm">Loading portal...</p>
+          <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-dark-400 text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -98,156 +91,90 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="heading-luxury text-3xl text-white mb-4">Portal Not Found</h1>
-          <div className="gold-line w-16 mx-auto mb-6" />
-          <p className="text-dark-400 text-sm mb-6">This portal link may be invalid or expired.</p>
-          <Link href="/" className="luxury-button-secondary text-sm">Go to Homepage</Link>
+          <h1 className="text-3xl font-bold text-white mb-4">Portal Not Found</h1>
+          <div className="gold-line mx-auto mb-6" />
+          <p className="text-dark-400 text-sm mb-6">This link is invalid or expired.</p>
+          <Link href="/" className="luxury-button-secondary text-sm">Go Back</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={dayMode ? "portal-day" : ""}>
-      {/* Nav */}
-      <nav className="fixed top-0 w-full bg-dark-900/95 backdrop-blur-md border-b border-gold-400/10 z-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href={`/portal/${slug}`} className="flex items-center">
-              <img src="/logo.svg" alt="Orthanc" className="h-10 w-auto" />
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link
-                href={`/portal/${slug}`}
-                className="text-sm text-white hover:text-gold-400 transition-colors font-medium"
-              >
-                My Properties
-              </Link>
-              <Link
-                href={`/portal/${slug}/simulator`}
-                className="text-sm text-dark-400 hover:text-gold-400 transition-colors"
-              >
-                Simulator
-              </Link>
-              <button
-                onClick={() => setDayMode(!dayMode)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold-400/20 hover:border-gold-400/40 transition-all text-dark-400 hover:text-gold-400"
-                title={dayMode ? "Switch to Night" : "Switch to Day"}
-              >
-                {dayMode ? <MoonIcon /> : <SunIcon />}
-                <span className="text-xs tracking-wide">{dayMode ? "Night" : "Day"}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-dark-900">
+      <PortalSidebar slug={slug} portalName={portal.name} />
 
-      <main className="pt-24 pb-16 bg-dark-900 min-h-screen">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Portal header */}
-          <div className="mb-10 animate-fade-up">
-            <p className="label-luxury text-gold-400 mb-3">Portfolio</p>
-            <h1 className="font-display text-4xl lg:text-5xl text-white mb-3">{portal.name}</h1>
-            <div className="gold-line-left w-24 animate-reveal-line" />
-            {portal.description && (
-              <p className="text-dark-400 text-sm mt-4 max-w-2xl">{portal.description}</p>
-            )}
-            <p className="text-dark-500 text-sm mt-3">
-              {properties.length} project{properties.length === 1 ? "" : "s"}
-            </p>
+      <main className="ml-[220px] min-h-screen">
+        <div className="px-8 py-8">
+          {/* Header */}
+          <div className="mb-8 animate-fade-up">
+            <p className="label-luxury text-teal-400 mb-2">PORTFOLIO</p>
+            <h1 className="text-3xl font-bold text-white mb-2">My Projects</h1>
+            <div className="gold-line mb-4" />
+            <p className="text-dark-500 text-sm">{properties.length} project{properties.length === 1 ? "" : "s"} in progress</p>
           </div>
 
-          {/* Search bar */}
-          <div className="mb-10 max-w-xl animate-fade-up">
+          {/* Search */}
+          <div className="mb-8 max-w-2xl animate-fade-up">
             <div className="relative">
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
-              <input
-                type="text"
-                placeholder="Search a project..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-dark-800 border border-dark-600/30 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-gold-400/40 transition-colors text-sm"
-              />
+              <input type="text" placeholder="Search a project..." value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 bg-dark-800 border border-dark-600/30 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-teal-400/40 transition-colors text-sm" />
             </div>
           </div>
 
           {/* Empty */}
           {filteredProperties.length === 0 && (
             <div className="flex flex-col items-center justify-center py-28 animate-fade-up">
-              <h3 className="font-display text-xl text-white mb-2">
-                {search ? "No matching projects" : "No properties yet"}
-              </h3>
-              <p className="text-dark-400 text-sm">
-                {search ? "Try a different search term." : "Properties will appear here once the agent adds them."}
-              </p>
+              <h3 className="text-xl font-semibold text-white mb-2">{search ? "No project found" : "No projects"}</h3>
+              <p className="text-dark-400 text-sm">{search ? "Try a different term." : "Projects will appear here."}</p>
             </div>
           )}
 
-          {/* Properties grid — 2 columns like the reference */}
+          {/* Grid */}
           {filteredProperties.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredProperties.map((property, idx) => (
-                <Link
-                  key={property.id}
-                  href={`/portal/${portal.slug}/${property.id}`}
-                  className="group relative rounded-2xl overflow-hidden hover:ring-1 hover:ring-gold-400/20 transition-all duration-300"
-                  style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.07}s both` }}
-                >
-                  {/* Card image background */}
-                  <div className="relative h-72 md:h-80 bg-dark-700 overflow-hidden">
+                <Link key={property.id} href={`/portal/${portal.slug}/${property.id}`}
+                  className="group relative rounded-2xl overflow-hidden hover:ring-1 hover:ring-teal-400/20 transition-all duration-300 bg-dark-800"
+                  style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.07}s both` }}>
+                  <div className="relative h-64 md:h-72 bg-dark-700 overflow-hidden">
                     {property.images?.[0] ? (
-                      <img
-                        src={property.images[0]}
-                        alt={property.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+                      <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     ) : (
-                      <div className="w-full h-full bg-dark-800" />
+                      <div className="w-full h-full bg-dark-800 flex items-center justify-center">
+                        <svg className="w-12 h-12 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+                        </svg>
+                      </div>
                     )}
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/40 to-transparent" />
-
-                    {/* Badge */}
-                    <div className="absolute top-5 left-5">
-                      <span className="px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-dark-800/70 backdrop-blur-sm text-gold-400 border border-gold-400/20">
-                        Featured
-                      </span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/30 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-400/90 text-dark-900">PROSPECT</span>
                     </div>
-
-                    {/* Title & Address overlaid on image */}
-                    <div className="absolute bottom-5 left-5 right-5">
-                      <h3 className="font-display text-xl lg:text-2xl font-bold text-white mb-1 leading-tight">
-                        {property.title}
-                      </h3>
+                    <div className="absolute bottom-4 left-5 right-5">
+                      <h3 className="text-lg lg:text-xl font-bold text-white mb-1 leading-tight">{property.title}</h3>
                       <p className="text-white/60 text-sm">{property.address}</p>
                     </div>
                   </div>
-
-                  {/* Stats row at bottom */}
-                  <div className="bg-dark-800 px-6 py-4 flex items-center justify-between">
+                  <div className="px-6 py-4 flex items-center justify-between">
                     <div className="flex gap-8">
                       <div>
-                        <p className="label-luxury text-dark-500 text-[10px] mb-1">Price</p>
-                        <p className="font-display text-lg text-gold-400 font-bold">
-                          ${((property.price ?? 0) / 1000000).toFixed(2)}M
-                        </p>
+                        <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-dark-500 mb-1">ASKING PRICE</p>
+                        <p className="text-base font-bold text-teal-400">{formatPrice(property.price ?? 0)}</p>
                       </div>
                       <div>
-                        <p className="label-luxury text-dark-500 text-[10px] mb-1">Yield</p>
-                        <p className="text-white text-lg font-semibold">
-                          {property.capRate ? `${property.capRate}%` : property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}
-                        </p>
+                        <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-dark-500 mb-1">YIELD</p>
+                        <p className="text-base font-bold text-white">{property.capRate ? `${property.capRate}%` : property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}</p>
                       </div>
                       <div>
-                        <p className="label-luxury text-dark-500 text-[10px] mb-1">Surface</p>
-                        <p className="text-white text-lg font-semibold">
-                          {property.squareFeet ? `${property.squareFeet.toLocaleString()} sqft` : "—"}
-                        </p>
+                        <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-dark-500 mb-1">AREA</p>
+                        <p className="text-base font-bold text-white">{property.squareFeet ? `${property.squareFeet.toLocaleString()} sqft` : "—"}</p>
                       </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full border border-dark-600/40 flex items-center justify-center text-dark-400 group-hover:border-gold-400/40 group-hover:text-gold-400 transition-colors">
+                    <div className="w-10 h-10 rounded-full border border-dark-600/40 flex items-center justify-center text-dark-400 group-hover:border-teal-400/40 group-hover:text-teal-400 transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                       </svg>
@@ -259,8 +186,6 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

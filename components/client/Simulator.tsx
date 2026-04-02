@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  DollarSign, ChevronDown, Percent, CreditCard, TrendingUp, Landmark, CalendarClock, ShieldCheck, Gem, Target, Scale, Info, HelpCircle, X, Timer, Crosshair, ArrowRight, PieChart, BarChart3, ChartNoAxesCombined, Building2, ReceiptText
+  DollarSign, ChevronDown, Percent, CreditCard, TrendingUp, Landmark, ShieldCheck, Gem, Target, Scale, Info, HelpCircle, X, Timer, Crosshair, ArrowRight, PieChart, BarChart3, ChartNoAxesCombined, Building2, ReceiptText
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -432,7 +432,7 @@ function Section({ title, icon, children, defaultOpen = false }: {
         className="w-full flex items-center justify-between py-4 px-5 text-left group hover:bg-white/[0.02] transition-colors"
       >
         <span className="flex items-center gap-3">
-          <span className="text-gold-400/50 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
+          <span className="text-teal-400/50 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
           <span className="text-base font-medium text-white/90 tracking-wide">{title}</span>
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -459,7 +459,7 @@ function SliderInput({ label, value, onChange, min, max, step = 1, unit = '', fo
     <div>
       <div className="flex justify-between items-center mb-2">
         <span className="text-xs uppercase tracking-[0.15em] text-white/40 font-medium">{label}</span>
-        <span className="text-sm text-gold-400/80 font-mono">{display}</span>
+        <span className="text-sm text-white font-mono">{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -479,7 +479,7 @@ function ToggleGroup({ label, options, value, onChange }: {
           <button key={opt.value} onClick={() => onChange(opt.value)}
             className={`px-3.5 py-2 text-sm rounded-lg border transition-all duration-200 ${
               value === opt.value
-                ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
+                ? 'bg-teal-400/10 border-teal-400/25 text-teal-400'
                 : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15 hover:text-white/60'
             }`}
           >{opt.label}</button>
@@ -525,10 +525,10 @@ function ToggleSwitch({ label, value, onChange, tooltip }: {
         )}
       </span>
       <button onClick={() => onChange(!value)}
-        className={`w-11 h-6 rounded-full transition-all duration-300 relative ${value ? 'bg-gold-400/20' : 'bg-white/10'}`}
+        className={`w-11 h-6 rounded-full transition-all duration-300 relative ${value ? 'bg-teal-400/20' : 'bg-white/10'}`}
       >
         <span className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-300 ${
-          value ? 'left-[22px] bg-gold-400' : 'left-0.5 bg-white/40'
+          value ? 'left-[22px] bg-teal-400' : 'left-0.5 bg-white/40'
         }`} />
       </button>
     </div>
@@ -553,7 +553,7 @@ function KpiCard({ label, value, sub, color = 'white', icon }: {
     green: 'text-emerald-400',
     red: 'text-red-400',
     amber: 'text-amber-400',
-    gold: 'text-gold-400',
+    gold: 'text-teal-400',
     white: 'text-white/80',
   };
   return (
@@ -585,19 +585,19 @@ function OverviewDashboard({ state, fin }: { state: SimState; fin: ReturnType<ty
 
         {/* Chiffres avancés et scores synthétiques */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Initial Investment</div>
             <div className="font-display text-lg text-white">{fmt$(fin.totalCashInvested)}</div>
           </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Annual Opex</div>
             <div className="font-display text-lg text-white">{fmt$(fin.totalCarryCost)}</div>
           </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Liquidity Score</div>
             <div className="font-display text-lg text-emerald-400">{fin.liquidityScore ? fin.liquidityScore : '—'}</div>
           </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Risk Score</div>
             <div className="font-display text-lg text-red-400">{fin.riskScore ? fin.riskScore : '—'}</div>
           </div>
@@ -637,18 +637,12 @@ function OverviewDashboard({ state, fin }: { state: SimState; fin: ReturnType<ty
       </div>
 
       {/* Secondary KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
         <KpiCard
           label="LTV"
           value={`${state.ltvRatio}%`}
           sub={`Loan: ${fmt$(fin.loanAmount)}`}
           icon={<Landmark size={14} />}
-        />
-        <KpiCard
-          label="Annual Debt Service"
-          value={fmt$(fin.annualDebtService)}
-          sub={`Monthly: ${fmt$(fin.monthlyPayment)}`}
-          icon={<CalendarClock size={14} />}
         />
         <KpiCard
           label="DSCR"
@@ -658,49 +652,12 @@ function OverviewDashboard({ state, fin }: { state: SimState; fin: ReturnType<ty
           icon={<ShieldCheck size={14} />}
         />
         <KpiCard
-          label="Carry Cost Ratio"
-          value={`${fin.carryRatio.toFixed(2)}%`}
-          sub={`${fmt$(fin.totalCarryCost)}/yr to hold ${fmt$(state.propertyValue)}`}
-          color={fin.carryRatio <= 1.5 ? 'green' : fin.carryRatio <= 3 ? 'amber' : 'red'}
-          icon={<Gem size={14} />}
-        />
-        <KpiCard
           label="Break-Even Appreciation"
           value={`${fin.breakEvenAppreciation.toFixed(2)}%`}
-          sub={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'Covered by expected growth' : `Need ${(fin.breakEvenAppreciation - fin.effectiveAppreciation).toFixed(1)}% more growth`}
-          color={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'green' : fin.breakEvenAppreciation <= fin.effectiveAppreciation + 2 ? 'amber' : 'red'}
+          sub={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'Covered by growth' : `Need ${(fin.breakEvenAppreciation - fin.effectiveAppreciation).toFixed(1)}% more`}
+          color={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'green' : 'amber'}
           icon={<Target size={14} />}
         />
-        <KpiCard
-          label="Scarcity Multiplier"
-          value={`+${fin.scarcityBonus.toFixed(1)}%`}
-          sub={`Effective: ${fin.effectiveAppreciation.toFixed(1)}%/yr`}
-          color={fin.scarcityBonus > 0 ? 'gold' : 'white'}
-          icon={<Gem size={14} />}
-        />
-      </div>
-
-      {/* Comparison bar: Cap rate vs benchmarks */}
-      <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-4">Cap Rate vs Asset Classes</div>
-        <div className="space-y-3">
-          {[
-            { label: 'This Property', value: fin.capRate, color: 'bg-gold-400' },
-            { label: 'S&P 500 Div Yield', value: 1.5, color: 'bg-blue-400/60' },
-            { label: '10Y Treasury', value: 4.2, color: 'bg-emerald-400/60' },
-            { label: 'Prime Commercial RE', value: 5.5, color: 'bg-purple-400/60' },
-            { label: 'REIT Average', value: 4.0, color: 'bg-amber-400/60' },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
-              <span className="text-xs text-white/40 w-36 flex-shrink-0">{item.label}</span>
-              <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${item.color} transition-all duration-500`}
-                  style={{ width: `${Math.min(100, (item.value / 8) * 100)}%` }} />
-              </div>
-              <span className="text-xs font-mono text-white/50 w-12 text-right">{item.value.toFixed(1)}%</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -772,7 +729,7 @@ function FinancialProjectionsChart({ state, fin }: { state: SimState; fin: Retur
               <span className="text-sm text-white/30 ml-2">&middot;</span>
               <span className="text-sm text-white/40 ml-2">{state.ltvRatio}% LTV</span>
               {fin.scarcityBonus > 0 && (
-                <span className="text-sm text-gold-400/60 ml-2">+{fin.scarcityBonus.toFixed(1)}% scarcity</span>
+                <span className="text-sm text-teal-400/60 ml-2">+{fin.scarcityBonus.toFixed(1)}% scarcity</span>
               )}
             </span>
             <GraphExplainer
@@ -970,7 +927,7 @@ function CarryCostBreakdown({ state, fin }: { state: SimState; fin: ReturnType<t
         <div className="mt-3 flex gap-4 text-xs text-white/35">
           <span>Year-end costs: <span className="text-red-400 font-mono">{fmt$(fin.totalCarryCost)}</span></span>
           <span>Year-end income: <span className="text-emerald-400 font-mono">{fmt$(fin.effectiveRent)}</span></span>
-          <span>Year-end net: <span className={`font-mono ${fin.noi >= 0 ? 'text-gold-400' : 'text-red-400'}`}>{fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}</span></span>
+          <span>Year-end net: <span className={`font-mono ${fin.noi >= 0 ? 'text-teal-400' : 'text-red-400'}`}>{fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}</span></span>
         </div>
       </div>
     </div>
@@ -1008,7 +965,7 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
           <div key={s.key}
             className={`relative rounded-xl border p-5 transition-all ${
               s.isActive
-                ? 'bg-gold-400/[0.06] border-gold-400/25'
+                ? 'bg-teal-400/[0.06] border-teal-400/25'
                 : 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1]'
             }`}
           >
@@ -1018,8 +975,8 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
               </span>
             )}
             <div className="flex items-center gap-2 mb-3">
-              <Scale size={14} className={s.isActive ? 'text-gold-400' : 'text-white/30'} />
-              <span className={`text-sm font-semibold ${s.isActive ? 'text-gold-400' : 'text-white/70'}`}>{s.label}</span>
+              <Scale size={14} className={s.isActive ? 'text-teal-400' : 'text-white/30'} />
+              <span className={`text-sm font-semibold ${s.isActive ? 'text-teal-400' : 'text-white/70'}`}>{s.label}</span>
             </div>
             <p className="text-xs text-white/30 mb-4 leading-relaxed">{s.description}</p>
             <div className="space-y-2">
@@ -1053,11 +1010,11 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
       {/* Scarcity Value section */}
       <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Gem size={14} className="text-gold-400/60" />
+          <Gem size={14} className="text-teal-400/60" />
           <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">Scarcity Value Premium</span>
         </div>
         <div className="flex items-baseline gap-3 mb-4">
-          <span className="text-3xl font-mono font-bold text-gold-400">+{fin.scarcityBonus.toFixed(1)}%</span>
+          <span className="text-3xl font-mono font-bold text-teal-400">+{fin.scarcityBonus.toFixed(1)}%</span>
           <span className="text-sm text-white/35">added to {state.baseAppreciationRate}% base &rarr; {fin.effectiveAppreciation.toFixed(1)}% effective</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -1068,7 +1025,7 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
             { label: 'Unique Panoramic View', active: state.scarcityUniqueView, bonus: '+0.6%' },
           ].map((f) => (
             <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
-              f.active ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
+              f.active ? 'bg-teal-400/10 text-teal-400 border border-teal-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
             }`}>
               {f.active ? '\u2605' : '\u2606'} {f.label} <span className="ml-auto font-mono">{f.bonus}</span>
             </div>
@@ -1150,7 +1107,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
       {/* Liquidity Forecasting */}
       <div className="sim-visual-card">
         <div className="flex items-center gap-2 mb-5">
-          <Timer size={16} className="text-gold-400/60" />
+          <Timer size={16} className="text-teal-400/60" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Liquidity Forecasting</div>
             <div className="text-lg font-display text-white/80">
@@ -1197,15 +1154,15 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
                 const active = key === state.marketRegion;
                 return (
                   <div key={key} className="flex items-center gap-3">
-                    <span className={`text-xs w-40 flex-shrink-0 ${active ? 'text-gold-400 font-semibold' : 'text-white/40'}`}>
+                    <span className={`text-xs w-40 flex-shrink-0 ${active ? 'text-teal-400 font-semibold' : 'text-white/40'}`}>
                       {active ? '\u25B8 ' : ''}{mktDataItem.label}
                     </span>
                     <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-500 ${
-                        active ? 'bg-gold-400/70' : dom > 360 ? 'bg-red-400/40' : dom > 200 ? 'bg-amber-400/40' : 'bg-emerald-400/40'
+                        active ? 'bg-teal-400/70' : dom > 360 ? 'bg-red-400/40' : dom > 200 ? 'bg-amber-400/40' : 'bg-emerald-400/40'
                       }`} style={{ width: `${Math.min(100, (dom / 550) * 100)}%` }} />
                     </div>
-                    <span className={`text-xs font-mono w-16 text-right ${active ? 'text-gold-400' : 'text-white/40'}`}>{dom}d</span>
+                    <span className={`text-xs font-mono w-16 text-right ${active ? 'text-teal-400' : 'text-white/40'}`}>{dom}d</span>
                   </div>
                 );
               })}
@@ -1216,7 +1173,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
       {/* Target Exit Price */}
       <div className="sim-visual-card">
         <div className="flex items-center gap-2 mb-5">
-          <Crosshair size={16} className="text-gold-400/60" />
+          <Crosshair size={16} className="text-teal-400/60" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Target Exit Price Solver</div>
             <div className="text-lg font-display text-white/80">What appreciation do you need?</div>
@@ -1226,7 +1183,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
             <div className="text-[11px] uppercase tracking-wider text-white/30 mb-2">Your Target Profit</div>
-            <div className="text-3xl font-mono font-bold text-gold-400">{fmt$(state.targetExitProfit)}</div>
+            <div className="text-3xl font-mono font-bold text-teal-400">{fmt$(state.targetExitProfit)}</div>
             <div className="text-xs text-white/30 mt-1">Net of taxes & fees</div>
           </div>
           <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5 flex flex-col items-center justify-center">
@@ -1261,7 +1218,7 @@ function GraphExplainer({ title, explanation }: { title: string; explanation: st
     <span className="relative inline-flex ml-2">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs text-white/30 hover:text-gold-400/70 transition-colors cursor-pointer"
+        className="flex items-center gap-1.5 text-xs text-white/30 hover:text-teal-400/70 transition-colors cursor-pointer"
         title="What does this graph mean?"
       >
         <HelpCircle size={15} />
@@ -1287,400 +1244,6 @@ function GraphExplainer({ title, explanation }: { title: string; explanation: st
         )}
       </AnimatePresence>
     </span>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   A. MACRO-SHOCK SENSITIVITY HEATMAP
-   ═══════════════════════════════════════════════════════════════ */
-
-function MacroShockHeatmap({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  // Stress-test: how does property value change with ±rate shifts?
-  const rateShifts = [-2, -1, -0.5, 0, +0.5, +1, +2];
-  const appreciationShifts = [-2, -1, 0, +1, +2];
-
-  const grid = appreciationShifts.map((appShift) =>
-    rateShifts.map((rateShift) => {
-      const newRate = state.interestRate + rateShift;
-      const newAppreciation = fin.effectiveAppreciation + appShift;
-      const futureValue = state.propertyValue * Math.pow(1 + newAppreciation / 100, state.holdPeriodYears);
-      // Recalculate debt service
-      const loan = state.propertyValue * (state.ltvRatio / 100);
-      const mRate = Math.max(0.001, newRate) / 100 / 12;
-      const nPay = state.loanTermYears * 12;
-      const monthly = loan > 0 ? loan * (mRate * Math.pow(1 + mRate, nPay)) / (Math.pow(1 + mRate, nPay) - 1) : 0;
-      const annualDS = monthly * 12;
-      const netCF = fin.effectiveRent - fin.totalCarryCost - annualDS;
-      const totalReturn = (futureValue - state.propertyValue) + (netCF * state.holdPeriodYears);
-      return totalReturn;
-    })
-  );
-
-  const maxAbs = Math.max(...grid.flat().map(Math.abs), 1);
-
-  function cellColor(val: number): string {
-    const ratio = val / maxAbs;
-    if (ratio > 0.5) return 'bg-emerald-500/40 text-emerald-300';
-    if (ratio > 0.15) return 'bg-emerald-500/20 text-emerald-400/80';
-    if (ratio > -0.15) return 'bg-white/[0.04] text-white/50';
-    if (ratio > -0.5) return 'bg-red-500/20 text-red-400/80';
-    return 'bg-red-500/40 text-red-300';
-  }
-
-  return (
-    <div className="sim-visual-card">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Macro-Shock Sensitivity</div>
-          <div className="flex items-center">
-            <span className="text-2xl font-display text-white/85">Interest Rate × Appreciation Stress Test</span>
-            <GraphExplainer
-              title="Macro-Shock Sensitivity Heatmap"
-              explanation="This grid shows how your total investment return changes under different economic scenarios. Each cell combines an interest rate shift (columns) with an appreciation rate shift (rows). Green cells mean positive return, red cells mean negative. It stress-tests your investment against the economy — so you can see exactly what happens if rates spike or the market slows."
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto sim-scrollbar-h">
-        <table className="w-full min-w-[600px]">
-          <thead>
-            <tr>
-              <th className="text-[10px] uppercase tracking-wider text-white/25 text-left p-2 w-32">Apprec. \ Rate</th>
-              {rateShifts.map((s) => (
-                <th key={s} className="text-[10px] uppercase tracking-wider text-white/35 p-2 text-center font-mono">
-                  {s >= 0 ? '+' : ''}{s}%
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {appreciationShifts.map((appShift, rowIdx) => (
-              <tr key={appShift}>
-                <td className="text-xs text-white/40 p-2 font-mono">
-                  {appShift >= 0 ? '+' : ''}{appShift}% appr.
-                </td>
-                {grid[rowIdx].map((val, colIdx) => (
-                  <td key={colIdx} className="p-1.5">
-                    <div className={`rounded-lg p-2.5 text-center text-xs font-mono font-semibold transition-colors ${cellColor(val)}`}>
-                      {val >= 0 ? '+' : ''}{fmt$(val)}
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex items-center gap-4 mt-4 text-[10px] text-white/30 uppercase tracking-wider">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500/40" /> Strong Return</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-white/[0.06]" /> Neutral</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-red-500/40" /> Loss</span>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   B. LIFESTYLE BURN RATE GAUGE
-   ═══════════════════════════════════════════════════════════════ */
-
-function LifestyleBurnRateGauge({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const dailyCost = fin.totalCarryCost / 365;
-  const hourlyCost = dailyCost / 24;
-  const monthlyCost = fin.totalCarryCost / 12;
-  const perMinute = hourlyCost / 60;
-
-  // Gauge: fill from 0 to max (let max be $2000/day for perspective)
-  const maxDailyCost = 2000;
-  const fillPercent = Math.min(100, (dailyCost / maxDailyCost) * 100);
-
-  return (
-    <div className="sim-visual-card">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Lifestyle Burn Rate</div>
-          <div className="flex items-center">
-            <span className="text-2xl font-display text-white/85">Daily Cost of Ownership</span>
-            <GraphExplainer
-              title="Lifestyle Burn Rate Gauge"
-              explanation="This gauge turns your scary annual tax and maintenance bill into a digestible daily number. UHNW individuals think in terms of 'burn rates' — this shows you exactly what it costs to own this estate every single day, hour, and minute. It also compares the daily cost to luxury lifestyle benchmarks for perspective."
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Main gauge */}
-      <div className="flex flex-col items-center py-8">
-        <div className="relative w-64 h-32 overflow-hidden">
-          {/* Gauge background arc */}
-          <svg viewBox="0 0 200 100" className="w-full h-full">
-            {/* Background arc */}
-            <path
-              d="M 10 95 A 85 85 0 0 1 190 95"
-              fill="none"
-              stroke="rgba(255,255,255,0.06)"
-              strokeWidth="12"
-              strokeLinecap="round"
-            />
-            {/* Filled arc */}
-            <path
-              d="M 10 95 A 85 85 0 0 1 190 95"
-              fill="none"
-              stroke="url(#gaugeGradient)"
-              strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray={`${fillPercent * 2.67} 267`}
-            />
-            <defs>
-              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4ade80" />
-                <stop offset="50%" stopColor="#fbbf24" />
-                <stop offset="100%" stopColor="#f87171" />
-              </linearGradient>
-            </defs>
-          </svg>
-          {/* Center value */}
-          <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-            <span className="text-4xl font-mono font-bold text-white/90">${Math.round(dailyCost).toLocaleString()}</span>
-            <span className="text-xs text-white/35 uppercase tracking-wider">per day</span>
-          </div>
-        </div>
-
-        {/* Sub-metrics */}
-        <div className="grid grid-cols-3 gap-8 mt-8 text-center">
-          <div>
-            <div className="text-xl font-mono font-bold text-white/70">${Math.round(hourlyCost).toLocaleString()}</div>
-            <div className="text-[10px] uppercase tracking-wider text-white/30">per hour</div>
-          </div>
-          <div>
-            <div className="text-xl font-mono font-bold text-gold-400">{fmt$(monthlyCost)}</div>
-            <div className="text-[10px] uppercase tracking-wider text-white/30">per month</div>
-          </div>
-          <div>
-            <div className="text-xl font-mono font-bold text-white/70">${perMinute.toFixed(1)}</div>
-            <div className="text-[10px] uppercase tracking-wider text-white/30">per minute</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   C. HIDDEN DNA LAYER CAKE
-   ═══════════════════════════════════════════════════════════════ */
-
-function HiddenDNALayerCake({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  // Estimate value breakdown — these ratios shift by price bracket
-  const isUltra = state.propertyValue >= 10_000_000;
-  const isPremium = state.propertyValue >= 5_000_000;
-
-  // Land value tends to be higher for ultra-luxury (location drives price)
-  const landRatio = isUltra ? 0.55 : isPremium ? 0.45 : 0.35;
-  const structureRatio = isUltra ? 0.25 : isPremium ? 0.35 : 0.45;
-  const intangibleRatio = 1 - landRatio - structureRatio;
-
-  const landValue = state.propertyValue * landRatio;
-  const structureValue = state.propertyValue * structureRatio;
-  const intangibleValue = state.propertyValue * intangibleRatio;
-
-  // Intangible breakdown
-  const intangibles = [
-    { label: 'Water Frontage / Views', pct: state.scarcityUniqueView || state.scarcityPrivateBeach ? 40 : 15 },
-    { label: 'Zoning & Development Rights', pct: 20 },
-    { label: 'Privacy & Exclusivity', pct: state.scarcityPrivateBeach ? 25 : 15 },
-    { label: 'Brand / Architect Premium', pct: state.scarcityStarchitect ? 30 : 10 },
-    { label: 'Heritage & Provenance', pct: state.scarcityHistoricHeritage ? 25 : 10 },
-  ];
-  const intangibleTotal = intangibles.reduce((a, b) => a + b.pct, 0);
-  const normalizedIntangibles = intangibles.map((i) => ({ ...i, value: intangibleValue * (i.pct / intangibleTotal) }));
-
-  const layers = [
-    { label: 'Land Value', value: landValue, color: 'from-emerald-600/30 to-emerald-500/10', border: 'border-emerald-500/25', textColor: 'text-emerald-400', pct: landRatio * 100 },
-    { label: 'Structure Value', value: structureValue, color: 'from-blue-600/30 to-blue-500/10', border: 'border-blue-500/25', textColor: 'text-blue-400', pct: structureRatio * 100 },
-    { label: 'Intangible Value', value: intangibleValue, color: 'from-gold-400/20 to-gold-400/5', border: 'border-gold-400/25', textColor: 'text-gold-400', pct: intangibleRatio * 100 },
-  ];
-
-  // Safety score: higher land ratio = safer investment
-  const safetyScore = landRatio >= 0.5 ? 'High' : landRatio >= 0.35 ? 'Moderate' : 'Low';
-  const safetyColor = landRatio >= 0.5 ? 'text-emerald-400' : landRatio >= 0.35 ? 'text-amber-400' : 'text-red-400';
-
-  return (
-    <div className="sim-visual-card">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Hidden DNA</div>
-          <div className="flex items-center">
-            <span className="text-2xl font-display text-white/85">Value Layer Breakdown</span>
-            <GraphExplainer
-              title="Hidden DNA Layer Cake"
-              explanation="This vertical stack shows the different layers that make up your property's value: Land, Structure, and Intangibles (e.g., water frontage, zoning rights, architect prestige). If a $10M house sits on $5.5M of land, you're much safer than if it's $3.5M of land and $4.5M of architecture that could become dated. Higher land percentage = more resilient investment."
-            />
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Investment Safety</div>
-          <div className={`text-xl font-mono font-bold ${safetyColor}`}>{safetyScore}</div>
-        </div>
-      </div>
-
-      {/* Vertical layer cake */}
-      <div className="space-y-2 mb-6">
-        {layers.map((layer) => (
-          <div key={layer.label} className={`bg-gradient-to-r ${layer.color} border ${layer.border} rounded-xl p-5 transition-all`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className={`text-sm font-semibold ${layer.textColor}`}>{layer.label}</div>
-                <div className="text-xs text-white/30 mt-1">{layer.pct.toFixed(0)}% of total value</div>
-              </div>
-              <div className="text-right">
-                <div className={`text-2xl font-mono font-bold ${layer.textColor}`}>{fmt$(layer.value)}</div>
-              </div>
-            </div>
-            {/* Proportional bar */}
-            <div className="mt-3 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-700 ${layer.textColor.replace('text-', 'bg-')}/30`}
-                style={{ width: `${layer.pct}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Intangible breakdown */}
-      <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-4">Intangible Value Breakdown</div>
-        <div className="space-y-2.5">
-          {normalizedIntangibles.map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
-              <span className="text-xs text-white/40 w-44 flex-shrink-0">{item.label}</span>
-              <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-gold-400/30 transition-all duration-500"
-                  style={{ width: `${(item.pct / intangibleTotal) * 100}%` }} />
-              </div>
-              <span className="text-xs font-mono text-gold-400/70 w-16 text-right">{fmt$(item.value)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   D. UPGRADE ROI FRONTIER
-   ═══════════════════════════════════════════════════════════════ */
-
-function UpgradeROIFrontier({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  // Potential upgrades with estimated cost and ARV (After Repair Value) boost
-  const isUltra = state.propertyValue >= 10_000_000;
-  const priceFactor = state.propertyValue / 15_000_000; // normalize to $15M baseline
-
-  const upgrades = [
-    { label: 'Chef\'s Kitchen Remodel', cost: round(350_000 * priceFactor, 25_000) || 100_000, arvBoost: round(550_000 * priceFactor, 25_000) || 175_000, roi: 0, icon: '🍽️' },
-    { label: 'Primary Suite Expansion', cost: round(250_000 * priceFactor, 25_000) || 75_000, arvBoost: round(400_000 * priceFactor, 25_000) || 125_000, roi: 0, icon: '🛏️' },
-    { label: 'Infinity Pool / Water Feature', cost: round(450_000 * priceFactor, 25_000) || 150_000, arvBoost: round(600_000 * priceFactor, 25_000) || 200_000, roi: 0, icon: '🏊' },
-    { label: 'Smart Home Integration', cost: round(180_000 * priceFactor, 10_000) || 60_000, arvBoost: round(250_000 * priceFactor, 10_000) || 80_000, roi: 0, icon: '🤖' },
-    { label: 'Home Theater / Entertainment', cost: round(200_000 * priceFactor, 25_000) || 75_000, arvBoost: round(280_000 * priceFactor, 25_000) || 100_000, roi: 0, icon: '🎬' },
-    { label: 'Sea Wall / Coastal Protection', cost: round(300_000 * priceFactor, 25_000) || 100_000, arvBoost: round(500_000 * priceFactor, 25_000) || 175_000, roi: 0, icon: '🌊' },
-    { label: 'Landscaping & Outdoor Living', cost: round(220_000 * priceFactor, 25_000) || 75_000, arvBoost: round(380_000 * priceFactor, 25_000) || 125_000, roi: 0, icon: '🌿' },
-    { label: 'Wine Cellar & Tasting Room', cost: round(150_000 * priceFactor, 10_000) || 50_000, arvBoost: round(200_000 * priceFactor, 10_000) || 70_000, roi: 0, icon: '🍷' },
-  ].map((u) => ({ ...u, roi: ((u.arvBoost - u.cost) / u.cost) * 100, netGain: u.arvBoost - u.cost }))
-   .sort((a, b) => b.roi - a.roi);
-
-  const labels = upgrades.map((u) => u.label);
-  const costs = upgrades.map((u) => u.cost);
-  const arvBoosts = upgrades.map((u) => u.arvBoost);
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'Investment Cost',
-        data: costs,
-        backgroundColor: 'rgba(248,113,113,0.35)',
-        borderColor: 'rgba(248,113,113,0.6)',
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-      {
-        label: 'Value Added (ARV)',
-        data: arvBoosts,
-        backgroundColor: 'rgba(74,222,128,0.35)',
-        borderColor: 'rgba(74,222,128,0.6)',
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    indexAxis: 'y' as const,
-    interaction: { mode: 'index' as const, intersect: false },
-    plugins: {
-      legend: { display: true, position: 'top' as const, labels: { color: '#888', font: { size: 11 }, boxWidth: 12, padding: 14 } },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 12,
-        callbacks: { label: (ctx: any) => `${ctx.dataset.label}: ${fmt$(ctx.parsed.x)}` },
-      },
-    },
-    scales: {
-      x: { ticks: { color: '#555', font: { size: 10 }, callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.03)' } },
-      y: { ticks: { color: '#777', font: { size: 11 } }, grid: { display: false } },
-    },
-  };
-
-  const totalCostAll = upgrades.reduce((a, b) => a + b.cost, 0);
-  const totalARVAll = upgrades.reduce((a, b) => a + b.arvBoost, 0);
-
-  return (
-    <div className="sim-visual-card">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Upgrade ROI Frontier</div>
-          <div className="flex items-center">
-            <span className="text-2xl font-display text-white/85">After Repair Value Potential</span>
-            <GraphExplainer
-              title="Upgrade ROI Frontier"
-              explanation="This chart shows how much value each potential upgrade adds compared to its cost. The green bar is the estimated value added (After Repair Value), while the red bar is the investment cost. The ROI percentage tells you your return on each upgrade dollar. It turns the 'work' of renovation into a clear profit calculation — showing exactly where your renovation budget creates the most equity."
-            />
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Total Potential ARV</div>
-          <div className="text-xl font-mono font-bold text-emerald-400">+{fmt$(totalARVAll)}</div>
-          <div className="text-xs text-white/30">for {fmt$(totalCostAll)} invested</div>
-        </div>
-      </div>
-
-      <div className="h-[380px]">
-        <Bar data={data} options={options} />
-      </div>
-
-      {/* ROI detail cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-5">
-        {upgrades.slice(0, 4).map((u) => (
-          <div key={u.label} className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3.5">
-            <div className="text-lg mb-1">{u.icon}</div>
-            <div className="text-[11px] text-white/40 mb-1 truncate">{u.label}</div>
-            <div className="flex items-baseline gap-1.5">
-              <span className={`text-lg font-mono font-bold ${u.roi >= 40 ? 'text-emerald-400' : u.roi >= 20 ? 'text-amber-400' : 'text-white/50'}`}>
-                {u.roi.toFixed(0)}%
-              </span>
-              <span className="text-[10px] text-white/25">ROI</span>
-            </div>
-            <div className="text-xs text-white/30 mt-1">
-              +{fmt$(u.netGain)} net gain
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -1712,8 +1275,7 @@ export default function Simulator({ address, price }: { address?: string; price?
 
   const tabs = [
     { key: 'overview', label: 'Overview', icon: <ChartNoAxesCombined size={15} /> },
-    { key: 'projections', label: 'Projections', icon: <TrendingUp size={15} /> },
-    { key: 'carry', label: 'Ownership Economics', icon: <PieChart size={15} /> },
+    { key: 'carry', label: 'Costs', icon: <PieChart size={15} /> },
     { key: 'tax', label: 'Tax & Structure', icon: <Scale size={15} /> },
     { key: 'exit', label: 'Exit & Liquidity', icon: <BarChart3 size={15} /> },
   ];
@@ -1723,14 +1285,14 @@ export default function Simulator({ address, price }: { address?: string; price?
       {/* LEFT PANEL: Parameters */}
       <div className="w-full lg:w-[340px] xl:w-[380px] flex-shrink-0 flex flex-col border-r border-white/[0.04] bg-[#0c0c0e]">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-white/[0.06] bg-gradient-to-b from-gold-400/[0.04] to-transparent">
+        <div className="px-5 py-4 border-b border-white/[0.06] bg-gradient-to-b from-teal-400/[0.04] to-transparent">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 border border-gold-400/25 flex items-center justify-center">
-              <Building2 size={18} className="text-gold-400" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400/20 to-teal-400/5 border border-teal-400/25 flex items-center justify-center">
+              <Building2 size={18} className="text-teal-400" />
             </div>
             <div>
               <div className="text-base font-semibold text-white/80 tracking-wide">Luxury Investment Simulator</div>
-              <div className="text-xs text-gold-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
+              <div className="text-xs text-teal-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
             </div>
           </div>
         </div>
@@ -1869,7 +1431,7 @@ export default function Simulator({ address, price }: { address?: string; price?
                 <button key={opt.value} onClick={() => update({ marketRegion: opt.value })}
                   className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
                     state.marketRegion === opt.value
-                      ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
+                      ? 'bg-teal-400/10 border-teal-400/25 text-teal-400'
                       : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15'
                   }`}
                 >{opt.label}</button>
@@ -1890,7 +1452,7 @@ export default function Simulator({ address, price }: { address?: string; price?
               <button key={t.key} onClick={() => setActiveTab(t.key)}
                 className={`flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === t.key
-                    ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20'
+                    ? 'bg-teal-400/10 text-teal-400 border border-teal-400/20'
                     : 'text-white/40 hover:text-white/60 hover:bg-white/[0.03] border border-transparent'
                 }`}
               >{t.icon}{t.label}</button>
@@ -1902,14 +1464,10 @@ export default function Simulator({ address, price }: { address?: string; price?
         <div className="p-4 lg:p-6 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="space-y-4">
-              {activeTab === 'overview' && <OverviewDashboard state={state} fin={fin} />}
-              {activeTab === 'projections' && (
+              {activeTab === 'overview' && (
                 <div className="space-y-4">
+                  <OverviewDashboard state={state} fin={fin} />
                   <FinancialProjectionsChart state={state} fin={fin} />
-                  <MacroShockHeatmap state={state} fin={fin} />
-                  <LifestyleBurnRateGauge state={state} fin={fin} />
-                  <HiddenDNALayerCake state={state} fin={fin} />
-                  <UpgradeROIFrontier state={state} fin={fin} />
                 </div>
               )}
               {activeTab === 'carry' && <CarryCostBreakdown state={state} fin={fin} />}
