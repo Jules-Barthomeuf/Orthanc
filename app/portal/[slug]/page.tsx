@@ -109,14 +109,26 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
 
   return (
     <div className={dayMode ? "portal-day" : ""}>
-      {/* Minimal nav */}
+      {/* Nav */}
       <nav className="fixed top-0 w-full bg-dark-900/95 backdrop-blur-md border-b border-gold-400/10 z-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center">
+            <Link href={`/portal/${slug}`} className="flex items-center">
               <img src="/logo.svg" alt="Orthanc" className="h-10 w-auto" />
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              <Link
+                href={`/portal/${slug}`}
+                className="text-sm text-white hover:text-gold-400 transition-colors font-medium"
+              >
+                My Properties
+              </Link>
+              <Link
+                href={`/portal/${slug}/simulator`}
+                className="text-sm text-dark-400 hover:text-gold-400 transition-colors"
+              >
+                Simulator
+              </Link>
               <button
                 onClick={() => setDayMode(!dayMode)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold-400/20 hover:border-gold-400/40 transition-all text-dark-400 hover:text-gold-400"
@@ -125,9 +137,10 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                 {dayMode ? <MoonIcon /> : <SunIcon />}
                 <span className="text-xs tracking-wide">{dayMode ? "Night" : "Day"}</span>
               </button>
-              <span className="text-dark-400 text-xs tracking-widest uppercase">Client Portal</span>
             </div>
           </div>
+        </div>
+      </nav>
         </div>
       </nav>
 

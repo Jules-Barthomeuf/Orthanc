@@ -98,12 +98,6 @@ export function PropertyVault({ property }: PropertyVaultProps) {
             </svg>
             View Full Simulator
           </button>
-          <button className="luxury-button-secondary text-sm flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-4.328a4.5 4.5 0 00-1.242-7.244l-4.5-4.5A4.5 4.5 0 003.122 3.122l-1.757 1.757" />
-            </svg>
-            Share
-          </button>
         </div>
 
         {/* ── Tab Navigation ── */}
