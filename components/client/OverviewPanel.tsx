@@ -46,7 +46,7 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
           </div>
           <div className="bg-dark-900 border border-dark-700/50 rounded-lg p-5">
             <p className="label-luxury text-dark-400 text-xs mb-2">Price / sqft</p>
-            <p className="font-sans text-3xl text-teal-400">
+            <p className="font-sans text-3xl text-gold-400">
               ${property.squareFeet ? Math.round(property.price / property.squareFeet).toLocaleString('en-US') : "—"}
             </p>
           </div>
@@ -67,7 +67,7 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
                 <tbody>
                   <tr className="bg-dark-900/40">
                     <td className="text-white font-medium">Subject Property</td>
-                    <td className="text-teal-400 font-semibold">{property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}</td>
+                    <td className="text-gold-400 font-semibold">{property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}</td>
                   </tr>
                   <tr>
                     <td className="text-white/80">Prime Residential (Miami)</td>
@@ -95,9 +95,9 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
             <div className="flex-1 flex items-center justify-center">
               {/* Mini bar chart visuel */}
               <div className="w-full max-w-xs">
-                {[{label:'Property',val:property.investmentAnalysis?.capRate||0,color:'bg-teal-400'},
+                {[{label:'Property',val:property.investmentAnalysis?.capRate||0,color:'bg-gold-400'},
                   {label:'Prime Res.',val:3.8,color:'bg-emerald-400/80'},
-                  {label:'Office',val:5.7,color:'bg-blue-400/80'},
+                  {label:'Office',val:5.7,color:'bg-gold-400/80'},
                   {label:'Retail',val:5.2,color:'bg-pink-400/80'},
                   {label:'UST 10Y',val:3.8,color:'bg-cyan-400/80'},
                   {label:'S&P 500',val:1.6,color:'bg-gray-400/60'}].map((d)=>(
@@ -116,7 +116,7 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
       </div>
 
       {/* Neighborhood & Market Summary */}
-      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-6">Neighborhood & Market</h3>
         <div className="space-y-0">
           <div className="property-row">
@@ -141,28 +141,28 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
       </div>
 
       {/* Investment Snapshot */}
-      <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-8">
+      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
         <h3 className="font-display text-xl text-white mb-6">Investment Snapshot</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Current Value</p>
-            <p className="font-display text-2xl text-teal-400">
+            <p className="font-display text-2xl text-gold-400">
               ${((property.investmentAnalysis?.currentValue || property.price) / 1_000_000).toFixed(2)}M
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">5-Year Projection</p>
-            <p className="font-display text-2xl text-teal-400">
+            <p className="font-display text-2xl text-gold-400">
               ${((property.investmentAnalysis?.projectedValue5Year || property.price) / 1_000_000).toFixed(2)}M
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Cap Rate</p>
             <p className="font-display text-2xl text-white">
               {property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">ROI Projection</p>
             <p className="font-display text-2xl text-white">
               {property.investmentAnalysis?.roiProjection ? `${property.investmentAnalysis.roiProjection}%` : "—"}
@@ -172,25 +172,25 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
 
         {/* Autres chiffres et métriques avancées */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Initial Investment</p>
             <p className="font-display text-xl text-white">
               {property.investmentAnalysis?.scenarios?.[0]?.downPayment ? `$${property.investmentAnalysis.scenarios[0].downPayment.toLocaleString('en-US')}` : "—"}
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Annual Opex</p>
             <p className="font-display text-xl text-white">
               {property.annualOpex ? `$${property.annualOpex.toLocaleString('en-US')}` : "—"}
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Liquidity Score</p>
             <p className="font-display text-xl text-emerald-400">
               {property.liquidityScore ? property.liquidityScore : "—"}
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-5 text-center">
             <p className="label-luxury text-dark-400 text-xs mb-2">Risk Score</p>
             <p className="font-display text-xl text-red-400">
               {property.riskScore ? property.riskScore : "—"}

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Property } from "@/types";
-import { ProvenancePanel } from "./ProvenancePanel";
-import { TechnicalPanel } from "./TechnicalPanel";
-import { MarketInsightPanel } from "./MarketInsightPanel";
-import { InvestmentAdvisorPanel } from "./InvestmentAdvisorPanel";
-import { OverviewPanel } from "./OverviewPanel";
-import { LeaseAnalysisPanel } from "./LeaseAnalysisPanel";
-import Simulator from "./Simulator";
+
+const ProvenancePanel = lazy(() => import("./ProvenancePanel").then(m => ({ default: m.ProvenancePanel })));
+const TechnicalPanel = lazy(() => import("./TechnicalPanel").then(m => ({ default: m.TechnicalPanel })));
+const MarketInsightPanel = lazy(() => import("./MarketInsightPanel").then(m => ({ default: m.MarketInsightPanel })));
+const InvestmentAdvisorPanel = lazy(() => import("./InvestmentAdvisorPanel").then(m => ({ default: m.InvestmentAdvisorPanel })));
+const OverviewPanel = lazy(() => import("./OverviewPanel").then(m => ({ default: m.OverviewPanel })));
+const LeaseAnalysisPanel = lazy(() => import("./LeaseAnalysisPanel").then(m => ({ default: m.LeaseAnalysisPanel })));
+const Simulator = lazy(() => import("./Simulator"));
 
 const TABS = [
   { id: "overview", title: "Overview" },
@@ -32,47 +33,39 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
   const images = property.images || [];
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="max-w-7xl mx-auto px-6">
 
-        {/* ── Hero: Map + Thumbnails ── */}
-        <div className="mb-8 grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-3">
-          {/* Map */}
-          <div className="rounded-xl overflow-hidden border border-dark-600/20 relative cursor-pointer group" style={{ height: 420 }}
-            onClick={() => images[activeThumb] && setLightboxImg(images[activeThumb])}
-          >
-            {images[activeThumb] ? (
-              <>
-                <img src={images[activeThumb]} alt={property.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">Click to enlarge</span>
-                </div>
-              </>
-            ) : (
-              <iframe
-                title="Property Location"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || "")}&hl=en&z=16&ie=UTF8&iwloc=B&output=embed`}
-              />
-            )}
+        {/* ── Hero: Map + Images ── */}
+        <div className="mb-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3">
+          {/* Map - always visible */}
+          <div className="rounded-xl overflow-hidden border border-dark-600/20" style={{ height: 420 }}>
+            <iframe
+              title="Property Location"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="eager"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || "")}&hl=en&z=16&ie=UTF8&iwloc=B&output=embed`}
+            />
           </div>
-          {/* Thumbnail column */}
+          {/* Image column */}
           {images.length > 0 && (
             <div className="hidden lg:flex flex-col gap-2">
               {images.slice(0, 3).map((img: string, i: number) => (
                 <button
                   key={i}
-                  onClick={() => setActiveThumb(i)}
-                  className={`rounded-lg overflow-hidden border-2 transition-colors flex-1 min-h-0 cursor-pointer ${
-                    activeThumb === i ? "border-gold-400" : "border-transparent hover:border-gold-400/30"
-                  }`}
+                  onClick={() => setLightboxImg(img)}
+                  className="rounded-lg overflow-hidden border-2 border-transparent hover:border-gold-400/30 transition-colors flex-1 min-h-0 cursor-pointer relative group"
                 >
-                  <img src={img} alt={`${property.title} ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  <img src={img} alt={`${property.title} ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
                 </button>
               ))}
             </div>
@@ -142,16 +135,19 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
 
       {/* ── Panel Content ── */}
       <div className="max-w-7xl mx-auto px-6 overflow-hidden">
-        {activeTab === "overview" && <OverviewPanel property={property} />}
-        {activeTab === "lease" && <LeaseAnalysisPanel property={property} />}
-        {activeTab === "provenance" && <ProvenancePanel property={property} />}
-        {activeTab === "technical" && <TechnicalPanel property={property} />}
-        {activeTab === "market" && <MarketInsightPanel property={property} />}
-        {activeTab === "advisor" && <InvestmentAdvisorPanel property={property} />}
+        <Suspense fallback={<div className="h-64 flex items-center justify-center text-dark-500 text-sm">Loading...</div>}>
+          {activeTab === "overview" && <OverviewPanel property={property} />}
+          {activeTab === "lease" && <LeaseAnalysisPanel property={property} />}
+          {activeTab === "provenance" && <ProvenancePanel property={property} />}
+          {activeTab === "technical" && <TechnicalPanel property={property} />}
+          {activeTab === "market" && <MarketInsightPanel property={property} />}
+          {activeTab === "advisor" && <InvestmentAdvisorPanel property={property} />}
+        </Suspense>
       </div>
 
       {/* ── Simulator Modal ── */}
       {showSimulator && (
+        <Suspense fallback={null}>
         <div className="fixed inset-0 z-[100] flex items-start justify-center">
           {/* Backdrop */}
           <div
@@ -184,6 +180,7 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
             </div>
           </div>
         </div>
+        </Suspense>
       )}
 
       {/* ── Image Lightbox ── */}

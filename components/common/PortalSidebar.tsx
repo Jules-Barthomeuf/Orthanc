@@ -19,7 +19,7 @@ export function PortalSidebar({ slug, portalName, mode = "client" }: PortalSideb
 
   const navItems = [
     { label: "Dashboard", href: `/portal/${slug}` },
-    { label: "My Projects", href: `/portal/${slug}` },
+    { label: "My Properties", href: `/portal/${slug}` },
     { label: "Simulator", href: `/portal/${slug}/simulator` },
   ];
 

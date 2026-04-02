@@ -75,9 +75,9 @@ interface ChatMessage {
 function TypingDots() {
   return (
     <span className="inline-flex items-center gap-0.5 ml-1">
-      <span className="w-1.5 h-1.5 bg-teal-400/80 rounded-full animate-bounce" style={{ animationDelay: "0ms", animationDuration: "0.8s" }} />
-      <span className="w-1.5 h-1.5 bg-teal-400/80 rounded-full animate-bounce" style={{ animationDelay: "150ms", animationDuration: "0.8s" }} />
-      <span className="w-1.5 h-1.5 bg-teal-400/80 rounded-full animate-bounce" style={{ animationDelay: "300ms", animationDuration: "0.8s" }} />
+      <span className="w-1.5 h-1.5 bg-gold-400/80 rounded-full animate-bounce" style={{ animationDelay: "0ms", animationDuration: "0.8s" }} />
+      <span className="w-1.5 h-1.5 bg-gold-400/80 rounded-full animate-bounce" style={{ animationDelay: "150ms", animationDuration: "0.8s" }} />
+      <span className="w-1.5 h-1.5 bg-gold-400/80 rounded-full animate-bounce" style={{ animationDelay: "300ms", animationDuration: "0.8s" }} />
     </span>
   );
 }
@@ -705,14 +705,14 @@ export function AgentDashboard() {
     <div className={`flex-1 w-full flex ${showPreview ? 'flex-row' : 'flex-col items-center justify-center'} relative overflow-hidden px-6 gap-0`}>
       {/* Background glow orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] bg-teal-400/[0.035] rounded-full blur-[160px]" />
-        <div className="absolute bottom-0 left-1/4 w-[28rem] h-[28rem] bg-teal-400/[0.025] rounded-full blur-[140px] animate-pulse" style={{ animationDelay: "700ms" }} />
-        <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-teal-400/[0.02] rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1200ms" }} />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] bg-gold-400/[0.035] rounded-full blur-[160px]" />
+        <div className="absolute bottom-0 left-1/4 w-[28rem] h-[28rem] bg-gold-400/[0.025] rounded-full blur-[140px] animate-pulse" style={{ animationDelay: "700ms" }} />
+        <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-gold-400/[0.02] rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1200ms" }} />
       </div>
 
       {/* Decorative corners */}
-      <div className="absolute top-8 left-8 w-16 h-16 border-t border-l border-teal-400/[0.08] rounded-tl-2xl pointer-events-none" />
-      <div className="absolute bottom-8 right-8 w-16 h-16 border-b border-r border-teal-400/[0.08] rounded-br-2xl pointer-events-none" />
+      <div className="absolute top-8 left-8 w-16 h-16 border-t border-l border-gold-400/[0.08] rounded-tl-2xl pointer-events-none" />
+      <div className="absolute bottom-8 right-8 w-16 h-16 border-b border-r border-gold-400/[0.08] rounded-br-2xl pointer-events-none" />
 
       {/* Hidden file inputs */}
       <input ref={imgInputRef} type="file" multiple accept="image/*" className="hidden" onChange={onImageUpload} />
@@ -722,14 +722,14 @@ export function AgentDashboard() {
 
         {/* ─── Header (fades when chatting) ─── */}
         <div className={`text-center transition-all duration-500 ${inChat ? "mb-4 opacity-0 h-0 overflow-hidden" : "mb-10"}`}>
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-400/[0.06] border border-teal-400/[0.12] mb-5">
-            <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gold-400/[0.06] border border-gold-400/[0.12] mb-5">
+            <svg className="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
             </svg>
           </div>
           <div className="inline-block">
             <h1 className="text-4xl font-display tracking-normal pb-2">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-white to-teal-400/60">Hi {displayName}, How can I help today?</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gold-400 via-white to-gold-400/60">Hi {displayName}, How can I help today?</span>
             </h1>
           </div>
           <p className="text-sm text-white/30 mt-4">Select a mode and start typing</p>
@@ -740,7 +740,7 @@ export function AgentDashboard() {
           <div className="flex items-center justify-between mb-4 animate-[fadeSlideIn_0.3s_ease-out]">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${
-                mode === "create" ? "bg-teal-400" : mode === "portal" ? "bg-emerald-400" : mode === "analyze" ? "bg-blue-400" : "bg-violet-400"
+                mode === "create" ? "bg-gold-400" : mode === "portal" ? "bg-gold-400" : mode === "analyze" ? "bg-gold-400" : "bg-gold-400"
               } animate-pulse`} />
               <span className="text-xs text-white/40 uppercase tracking-wider font-medium">
                 {mode === "create" ? "Create Property" : mode === "portal" ? "Create Portal" : mode === "analyze" ? "Analyze Market" : "Import Knowledge"}
@@ -769,7 +769,7 @@ export function AgentDashboard() {
                 <div
                   className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-teal-400/10 text-white border border-teal-400/10"
+                      ? "bg-gold-400/10 text-white border border-gold-400/10"
                       : "bg-white/[0.03] text-dark-200 border border-white/[0.05]"
                   }`}
                 >
@@ -799,7 +799,7 @@ export function AgentDashboard() {
             onClick={() => { if (mode !== "create") activateCreateMode(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
               mode === "create"
-                ? "bg-teal-400/15 border-teal-400/30 text-teal-400 shadow-lg shadow-teal-400/[0.08]"
+                ? "bg-gold-400/15 border-gold-400/30 text-gold-400 shadow-lg shadow-gold-400/[0.08]"
                 : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
             }`}
           >
@@ -810,7 +810,7 @@ export function AgentDashboard() {
             onClick={() => { if (mode !== "portal") activatePortalMode(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
               mode === "portal"
-                ? "bg-emerald-400/15 border-emerald-400/30 text-emerald-400 shadow-lg shadow-emerald-400/[0.08]"
+                ? "bg-gold-400/15 border-gold-400/30 text-gold-400 shadow-lg shadow-gold-400/[0.08]"
                 : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
             }`}
           >
@@ -821,7 +821,7 @@ export function AgentDashboard() {
             onClick={() => { if (mode !== "analyze") activateAnalyzeMode(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
               mode === "analyze"
-                ? "bg-blue-400/15 border-blue-400/30 text-blue-400 shadow-lg shadow-blue-400/[0.08]"
+                ? "bg-gold-400/15 border-gold-400/30 text-gold-400 shadow-lg shadow-gold-400/[0.08]"
                 : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
             }`}
           >
@@ -832,7 +832,7 @@ export function AgentDashboard() {
             onClick={() => { if (mode !== "knowledge") activateKnowledgeMode(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
               mode === "knowledge"
-                ? "bg-violet-400/15 border-violet-400/30 text-violet-400 shadow-lg shadow-violet-400/[0.08]"
+                ? "bg-gold-400/15 border-gold-400/30 text-gold-400 shadow-lg shadow-gold-400/[0.08]"
                 : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
             }`}
           >
@@ -842,7 +842,7 @@ export function AgentDashboard() {
         </div>
 
         {/* ─── Input Box (always visible) ─── */}
-        <div className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-teal-400/20 shadow-lg shadow-teal-400/[0.04] transition-all duration-500 hover:shadow-[0_0_30px_rgba(45,212,191,0.08)] hover:border-teal-400/30 focus-within:border-teal-400/40 focus-within:shadow-[0_0_40px_rgba(45,212,191,0.12)]">
+        <div className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-gold-400/20 shadow-lg shadow-gold-400/[0.04] transition-all duration-500 hover:shadow-[0_0_30px_rgba(201,169,110,0.08)] hover:border-gold-400/30 focus-within:border-gold-400/40 focus-within:shadow-[0_0_40px_rgba(201,169,110,0.12)]">
           <div className="p-4">
             <textarea
               ref={textareaRef}
@@ -891,14 +891,14 @@ export function AgentDashboard() {
           )}
 
           {/* Action bar */}
-          <div className="px-4 py-3 border-t border-teal-400/[0.06] flex items-center justify-between gap-4">
+          <div className="px-4 py-3 border-t border-gold-400/[0.06] flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               {mode === "create" && (
                 <>
                   <button
                     type="button"
                     onClick={() => imgInputRef.current?.click()}
-                    className="p-2 text-white/30 hover:text-teal-400/80 rounded-lg transition-colors hover:bg-teal-400/[0.05]"
+                    className="p-2 text-white/30 hover:text-gold-400/80 rounded-lg transition-colors hover:bg-gold-400/[0.05]"
                     title="Upload images"
                   >
                     <PaperclipIcon />
@@ -906,7 +906,7 @@ export function AgentDashboard() {
                   <button
                     type="button"
                     onClick={() => docInputRef.current?.click()}
-                    className="p-2 text-white/30 hover:text-teal-400/80 rounded-lg transition-colors hover:bg-teal-400/[0.05]"
+                    className="p-2 text-white/30 hover:text-gold-400/80 rounded-lg transition-colors hover:bg-gold-400/[0.05]"
                     title="Upload documents"
                   >
                     <DocIcon />
@@ -920,7 +920,7 @@ export function AgentDashboard() {
               disabled={isTyping || creating || !value.trim()}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                 value.trim() && !isTyping && !creating
-                  ? "bg-teal-400 text-dark-900 shadow-lg shadow-teal-400/10 hover:bg-teal-300"
+                  ? "bg-gold-400 text-dark-900 shadow-lg shadow-gold-400/10 hover:bg-gold-300"
                   : "bg-white/[0.05] text-white/30 cursor-not-allowed"
               }`}
             >
@@ -944,7 +944,7 @@ export function AgentDashboard() {
               onChange={(e) => setLinkUrl(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleLinkImport(); } }}
               placeholder="Paste a Zillow / Realtor link to import a property..."
-              className="w-full bg-dark-800/60 border border-dark-600/20 text-white/80 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-teal-400/30 focus:ring-1 focus:ring-teal-400/10 transition-colors placeholder:text-dark-500/60"
+              className="w-full bg-dark-800/60 border border-dark-600/20 text-white/80 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gold-400/30 focus:ring-1 focus:ring-gold-400/10 transition-colors placeholder:text-dark-500/60"
             />
           </div>
           <button
@@ -952,7 +952,7 @@ export function AgentDashboard() {
             disabled={linkLoading || !linkUrl.trim()}
             className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 ${
               linkUrl.trim() && !linkLoading
-                ? 'bg-teal-400/10 text-teal-400 border border-teal-400/20 hover:bg-teal-400/20'
+                ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20 hover:bg-gold-400/20'
                 : 'bg-white/[0.03] text-white/20 border border-white/[0.04] cursor-not-allowed'
             }`}
           >
@@ -967,7 +967,7 @@ export function AgentDashboard() {
 
         {/* Hint */}
         <p className={`text-center text-dark-600 text-[10px] mt-3 transition-opacity duration-300 ${inChat ? "opacity-0 h-0" : "opacity-100"}`}>
-          Press Enter to send <span className="text-teal-400/30">·</span> Shift+Enter for new line <span className="text-teal-400/30">·</span> Paste a link below to import
+          Press Enter to send <span className="text-gold-400/30">·</span> Shift+Enter for new line <span className="text-gold-400/30">·</span> Paste a link below to import
         </p>
       </div>
 
@@ -1016,7 +1016,7 @@ export function AgentDashboard() {
                 ))}
                 <button
                   onClick={() => imgInputRef.current?.click()}
-                  className="w-20 h-16 rounded-lg border border-dashed border-white/15 flex flex-col items-center justify-center gap-1 text-white/25 hover:text-teal-400/60 hover:border-teal-400/30 transition-colors cursor-pointer"
+                  className="w-20 h-16 rounded-lg border border-dashed border-white/15 flex flex-col items-center justify-center gap-1 text-white/25 hover:text-gold-400/60 hover:border-gold-400/30 transition-colors cursor-pointer"
                 >
                   <ImageIcon />
                   <span className="text-[9px]">Add</span>
@@ -1029,67 +1029,67 @@ export function AgentDashboard() {
               <div className="col-span-2">
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Address</label>
                 <input value={draft.address || ''} onChange={e => updateDraftField('address', e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Price ($)</label>
                 <input type="number" value={draft.price || ''} onChange={e => updateDraftField('price', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Home Type</label>
                 <input value={draft.homeType || ''} onChange={e => updateDraftField('homeType', e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Bedrooms</label>
                 <input type="number" value={draft.bedrooms || ''} onChange={e => updateDraftField('bedrooms', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Bathrooms</label>
                 <input type="number" value={draft.bathrooms || ''} onChange={e => updateDraftField('bathrooms', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Sqft</label>
                 <input type="number" value={draft.squareFeet || ''} onChange={e => updateDraftField('squareFeet', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Year Built</label>
                 <input type="number" value={draft.yearBuilt || ''} onChange={e => updateDraftField('yearBuilt', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Lot (acres)</label>
                 <input type="number" step="0.01" value={draft.lot || ''} onChange={e => updateDraftField('lot', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">HOA ($/mo)</label>
                 <input type="number" value={draft.hoa || ''} onChange={e => updateDraftField('hoa', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Parking Spaces</label>
                 <input type="number" value={draft.parking || ''} onChange={e => updateDraftField('parking', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Annual Property Tax ($)</label>
                 <input type="number" value={draft.propertyTax || ''} onChange={e => updateDraftField('propertyTax', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Rent Estimate ($/mo)</label>
                 <input type="number" value={draft.rentEstimate || ''} onChange={e => updateDraftField('rentEstimate', Number(e.target.value) || undefined)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
               </div>
               <div className="col-span-2">
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Description</label>
                 <textarea value={draft.description || ''} onChange={e => updateDraftField('description', e.target.value)} rows={3}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-teal-400/30 resize-none" />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30 resize-none" />
               </div>
             </div>
 
@@ -1099,7 +1099,7 @@ export function AgentDashboard() {
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-2 block">Features</label>
                 <div className="flex flex-wrap gap-1.5">
                   {draft.features.map((f, i) => (
-                    <span key={i} className="px-2.5 py-1 rounded-lg bg-teal-400/10 border border-teal-400/15 text-[11px] text-teal-400/70">{f}</span>
+                    <span key={i} className="px-2.5 py-1 rounded-lg bg-gold-400/10 border border-gold-400/15 text-[11px] text-gold-400/70">{f}</span>
                   ))}
                 </div>
               </div>
@@ -1109,7 +1109,7 @@ export function AgentDashboard() {
             <button
               onClick={() => createPropertyFromDraft(draft)}
               disabled={creating || (!draft.address && !draft.price)}
-              className="w-full py-3.5 rounded-xl bg-teal-400 text-dark-900 font-semibold text-sm hover:bg-teal-300 transition-all shadow-lg shadow-teal-400/15 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-xl bg-gold-400 text-dark-900 font-semibold text-sm hover:bg-gold-300 transition-all shadow-lg shadow-gold-400/15 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {creating ? 'Creating...' : 'Create Property'}
             </button>

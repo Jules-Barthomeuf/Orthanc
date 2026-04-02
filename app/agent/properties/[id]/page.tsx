@@ -256,7 +256,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
         <div className="max-w-7xl mx-auto px-6">
           {/* Navigation & Actions */}
           <div className="flex justify-between items-center mb-8 pt-4">
-            <Link href="/agent/my-properties" className="text-dark-400 hover:text-teal-400 transition text-sm flex items-center gap-2">
+            <Link href="/agent/my-properties" className="text-dark-400 hover:text-gold-400 transition text-sm flex items-center gap-2">
               <span>←</span> Back to Properties
             </Link>
             <div className="flex gap-3">
@@ -291,8 +291,8 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                     disabled={lockToggling}
                     className={`text-sm py-2 px-4 rounded-lg border transition-colors flex items-center gap-1.5 ${
                       property.locked
-                        ? 'border-teal-400/30 text-teal-400 bg-teal-400/10 hover:bg-teal-400/20'
-                        : 'border-dark-600/30 text-dark-300 hover:text-teal-400 hover:border-teal-400/20'
+                        ? 'border-gold-400/30 text-gold-400 bg-gold-400/10 hover:bg-gold-400/20'
+                        : 'border-dark-600/30 text-dark-300 hover:text-gold-400 hover:border-gold-400/20'
                     }`}
                     title={property.locked ? 'Unlock property' : 'Lock property to prevent deletion'}
                   >
@@ -331,16 +331,16 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
 
           {/* Editing banner */}
           {editing && (
-            <div className="mb-6 bg-teal-400/5 border border-teal-400/20 rounded-lg p-4 flex items-center gap-3">
-              <span className="text-teal-400 text-lg">✎</span>
-              <p className="text-teal-400 text-sm">You are editing this property. Click any field to modify it.</p>
+            <div className="mb-6 bg-gold-400/5 border border-gold-400/20 rounded-lg p-4 flex items-center gap-3">
+              <span className="text-gold-400 text-lg">✎</span>
+              <p className="text-gold-400 text-sm">You are editing this property. Click any field to modify it.</p>
             </div>
           )}
 
           {/* Sealed Hash Banner */}
           {sealed && !editing && (
-            <div className="mb-6 bg-dark-800 border border-teal-400/15 rounded-lg p-4">
-              <p className="label-luxury text-teal-400/60 mb-1">Sealed On-Chain</p>
+            <div className="mb-6 bg-dark-800 border border-gold-400/15 rounded-lg p-4">
+              <p className="label-luxury text-gold-400/60 mb-1">Sealed On-Chain</p>
               <p className="text-xs text-dark-300 font-mono break-all">{sealed}</p>
             </div>
           )}
@@ -351,12 +351,12 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
               {/* Left: Property Info */}
               <div className="flex flex-col justify-end space-y-4">
                 <div>
-                  <p className="label-luxury text-teal-400 mb-3">Single-Family</p>
+                  <p className="label-luxury text-gold-400 mb-3">Single-Family</p>
                   {editing ? (
                     <input
                       value={draft.title}
                       onChange={(e) => setField("title", e.target.value)}
-                      className="bg-transparent border-b border-teal-400/30 text-white font-display text-5xl lg:text-6xl tracking-tight w-full focus:outline-none focus:border-teal-400 transition-colors pb-1"
+                      className="bg-transparent border-b border-gold-400/30 text-white font-display text-5xl lg:text-6xl tracking-tight w-full focus:outline-none focus:border-gold-400 transition-colors pb-1"
                     />
                   ) : (
                     <h1 className="font-display text-5xl lg:text-6xl text-white mb-3 tracking-tight">{data.title}</h1>
@@ -383,7 +383,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                     type="number"
                     onChange={(v) => setField("price", Number(v))}
                     displayValue={
-                      <span className="font-display text-3xl font-bold text-teal-400">
+                      <span className="font-display text-3xl font-bold text-gold-400">
                         ${(data.price / 1000000).toFixed(2)}M
                       </span>
                     }
@@ -458,7 +458,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                       ))}
                       <button
                         onClick={() => imgInputRef.current?.click()}
-                        className="h-44 border-2 border-dashed border-dark-600 hover:border-teal-400/40 rounded-lg flex flex-col items-center justify-center text-dark-500 hover:text-teal-400 transition-colors"
+                        className="h-44 border-2 border-dashed border-dark-600 hover:border-gold-400/40 rounded-lg flex flex-col items-center justify-center text-dark-500 hover:text-gold-400 transition-colors"
                       >
                         <span className="text-3xl mb-1">+</span>
                         <span className="text-xs">Add Image</span>
@@ -502,7 +502,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                                 <button
                                   key={i}
                                   onClick={() => setImgIdx(i)}
-                                  className={`w-2 h-2 rounded-full transition-colors ${i === imgIdx % data.images.length ? "bg-teal-400" : "bg-white/40 hover:bg-white/70"}`}
+                                  className={`w-2 h-2 rounded-full transition-colors ${i === imgIdx % data.images.length ? "bg-gold-400" : "bg-white/40 hover:bg-white/70"}`}
                                 />
                               ))}
                             </div>
@@ -523,7 +523,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
           {/* Editable investment & market fields (shown when editing) */}
           {editing && (
             <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-6 space-y-4">
+              <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-6 space-y-4">
                 <h3 className="label-luxury text-dark-300 mb-2">Investment Analysis</h3>
                 <EditableField
                   label="Current Value ($)"
@@ -554,7 +554,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                   onChange={(v) => setNestedField("investmentAnalysis", "roiProjection", Number(v))}
                 />
               </div>
-              <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-6 space-y-4">
+              <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-6 space-y-4">
                 <h3 className="label-luxury text-dark-300 mb-2">Market Data</h3>
                 <EditableField
                   label="Neighborhood Vibe"
@@ -589,14 +589,14 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                 <span
                   className={`transition-colors duration-300 ${
                     activeTab === tab.id
-                      ? "text-teal-400"
+                      ? "text-gold-400"
                       : "text-dark-500 group-hover:text-dark-300"
                   }`}
                 >
                   {tab.title}
                 </span>
                 <span
-                  className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-teal-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+                  className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-gold-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
                     activeTab === tab.id
                       ? "w-full opacity-100"
                       : "w-0 opacity-0"
@@ -619,10 +619,10 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
             {activeTab === "overview" && (
               <div className="hidden lg:block w-96 flex-shrink-0">
                 <div className="sticky top-24 space-y-4">
-                  <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-5">
+                  <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-5">
                     <h3 className="label-luxury text-dark-300 mb-2">Location</h3>
                     <p className="text-dark-400 text-xs mb-4">{data.address}</p>
-                    <div className="rounded-lg overflow-hidden border border-teal-400/10" style={{ height: 480 }}>
+                    <div className="rounded-lg overflow-hidden border border-gold-400/10" style={{ height: 480 }}>
                       <iframe
                         title="Property Location"
                         width="100%"
@@ -635,10 +635,10 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                       />
                     </div>
                   </div>
-                  <div className="bg-dark-800 border border-teal-400/10 rounded-lg p-5 space-y-3">
+                  <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-5 space-y-3">
                     <div className="flex justify-between">
                       <span className="text-dark-500 text-xs uppercase tracking-wider">Price</span>
-                      <span className="font-display text-teal-400 font-bold">${(data.price / 1000000).toFixed(2)}M</span>
+                      <span className="font-display text-gold-400 font-bold">${(data.price / 1000000).toFixed(2)}M</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-dark-500 text-xs uppercase tracking-wider">Cap Rate</span>
@@ -659,7 +659,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-teal-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+          <div className="bg-dark-800 border border-gold-400/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
             <h3 className="font-display text-lg text-white mb-2">Delete Property</h3>
             <p className="text-dark-400 text-sm mb-6">
               Are you sure you want to permanently delete &ldquo;{property?.title}&rdquo;? This action cannot be undone.

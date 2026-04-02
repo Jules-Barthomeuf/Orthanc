@@ -250,9 +250,9 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
       <div className="gold-line-left w-20 mb-6"></div>
 
       {/* Disclaimer */}
-      <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg px-5 py-4 mb-8">
+      <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg px-5 py-4 mb-8">
         <p className="text-dark-400 text-sm leading-relaxed">
-          <span className="text-teal-400/70 font-semibold">Illustrative Data</span> — The
+          <span className="text-gold-400/70 font-semibold">Illustrative Data</span> — The
           records below represent a sample structural timeline generated for demonstration
           purposes. In a live engagement, this section is populated from verified permit
           records, inspection reports, and contractor documentation uploaded to the
@@ -263,7 +263,7 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
       {/* Inspection Summary Table */}
       <div className="mb-10">
         <h3 className="font-display text-xl text-white mb-4">Latest Inspection Summary</h3>
-        <div className="border border-teal-400/10 rounded-lg overflow-hidden">
+        <div className="border border-gold-400/10 rounded-lg overflow-hidden">
           {inspectionSummary.map((row, i) => (
             <div
               key={row.label}
@@ -292,24 +292,24 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
       {/* Renovation & Permit Timeline */}
       <div className="mb-10">
         <h3 className="font-display text-xl text-white mb-6">Renovation & Permit Timeline</h3>
-        <div className="relative pl-6 border-l border-teal-400/20 space-y-6">
+        <div className="relative pl-6 border-l border-gold-400/20 space-y-6">
           {timeline.map((item) => (
             <div key={item.id} className="relative">
               {/* dot */}
-              <div className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-teal-400/80 border-2 border-dark-900" />
+              <div className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-gold-400/80 border-2 border-dark-900" />
               <button
                 onClick={() => toggle(item.id)}
                 className="w-full text-left group"
               >
                 <div className="flex items-baseline gap-3 mb-1">
-                  <span className="text-teal-400 font-display text-base font-bold">{item.year}</span>
-                  <span className="text-white font-semibold text-base group-hover:text-teal-400 transition-colors">
+                  <span className="text-gold-400 font-display text-base font-bold">{item.year}</span>
+                  <span className="text-white font-semibold text-base group-hover:text-gold-400 transition-colors">
                     {item.title}
                   </span>
                   <span className="ml-auto text-dark-500 text-sm uppercase tracking-wider">
                     {item.category}
                   </span>
-                  <span className="text-teal-400/60 text-sm ml-2">
+                  <span className="text-gold-400/60 text-sm ml-2">
                     {expandedSection === item.id ? "−" : "+"}
                   </span>
                 </div>
@@ -339,8 +339,8 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
               onClick={() => setActiveStructure(s.id)}
               className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeStructure === s.id
-                  ? "bg-teal-400/20 text-teal-400 border border-teal-400/40"
-                  : "bg-dark-900/40 text-dark-300 border border-dark-600/20 hover:border-teal-400/20 hover:text-white"
+                  ? "bg-gold-400/20 text-gold-400 border border-gold-400/40"
+                  : "bg-dark-900/40 text-dark-300 border border-dark-600/20 hover:border-gold-400/20 hover:text-white"
               }`}
             >
               <span className="mr-2">{s.icon}</span>
@@ -374,8 +374,8 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
                 "\u2022 Essential for non-residents to avoid the $60k estate tax exemption cliff.";
             }
             return (
-              <div className="bg-dark-900/70 border border-teal-400/15 rounded-lg px-5 py-4">
-                <div className="text-teal-400/80 font-semibold mb-1 flex items-center gap-2">
+              <div className="bg-dark-900/70 border border-gold-400/15 rounded-lg px-5 py-4">
+                <div className="text-gold-400/80 font-semibold mb-1 flex items-center gap-2">
                   <span className="text-lg">{s.icon}</span>
                   <span>Résumé d'impact sur l'investissement</span>
                 </div>
@@ -391,12 +391,12 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
           .map((s) => (
             <div key={s.id} className="space-y-5">
               {/* Header */}
-              <div className="bg-dark-900/60 border border-teal-400/15 rounded-lg p-5">
+              <div className="bg-dark-900/60 border border-gold-400/15 rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-3xl">{s.icon}</span>
                   <div>
                     <h4 className="text-white font-display text-lg">{s.title}</h4>
-                    <span className="text-teal-400/70 text-sm font-medium">{s.subtitle}</span>
+                    <span className="text-gold-400/70 text-sm font-medium">{s.subtitle}</span>
                   </div>
                 </div>
                 <p className="text-white/70 text-sm leading-relaxed">{s.process}</p>
@@ -428,7 +428,7 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
                       key={k.label}
                       className="bg-dark-900/30 border border-dark-600/10 rounded-lg p-4"
                     >
-                      <div className="text-teal-400/80 font-semibold text-sm mb-1">{k.label}</div>
+                      <div className="text-gold-400/80 font-semibold text-sm mb-1">{k.label}</div>
                       <p className="text-white/70 text-sm leading-relaxed">{k.detail}</p>
                     </div>
                   ))}
@@ -440,7 +440,7 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
                 <h5 className="text-white font-medium text-sm uppercase tracking-wider mb-3">
                   Orthanc Metric Impact
                 </h5>
-                <div className="border border-teal-400/10 rounded-lg overflow-hidden">
+                <div className="border border-gold-400/10 rounded-lg overflow-hidden">
                   {s.orthanc.map((o, i) => (
                     <div
                       key={o.label}
@@ -477,7 +477,7 @@ export function TechnicalPanel({ property, defaultHoldingStructure }: TechnicalP
             {property.documents.map((doc) => (
               <div
                 key={doc.id}
-                className="border border-teal-400/10 rounded-lg p-5 bg-dark-900 hover:border-teal-400/25 transition"
+                className="border border-gold-400/10 rounded-lg p-5 bg-dark-900 hover:border-gold-400/25 transition"
               >
                 <h4 className="font-semibold text-white text-base mb-1">{doc.name}</h4>
                 <p className="text-dark-400 text-sm">

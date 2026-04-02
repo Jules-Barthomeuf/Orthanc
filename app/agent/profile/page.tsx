@@ -108,7 +108,7 @@ function InlineField({
           )}
           <button
             onClick={confirm}
-            className="p-2 rounded-lg bg-teal-400/10 text-teal-400 hover:bg-teal-400/20 transition-colors mt-0.5"
+            className="p-2 rounded-lg bg-gold-400/10 text-gold-400 hover:bg-gold-400/20 transition-colors mt-0.5"
             title="Confirm"
           >
             <CheckIcon />
@@ -127,7 +127,7 @@ function InlineField({
           className="flex items-start gap-2 cursor-pointer group/val rounded-lg -mx-2 px-2 py-1 hover:bg-dark-700/40 transition-colors"
         >
           <p
-            className={`flex-1 ${large ? "font-display text-2xl font-bold" : "text-sm"} ${gold ? "text-teal-400" : "text-white"} ${multiline ? "whitespace-pre-wrap leading-relaxed" : ""}`}
+            className={`flex-1 ${large ? "font-display text-2xl font-bold" : "text-sm"} ${gold ? "text-gold-400" : "text-white"} ${multiline ? "whitespace-pre-wrap leading-relaxed" : ""}`}
           >
             {value}
             {suffix && <span className="text-dark-400 font-normal text-xs ml-1">{suffix}</span>}
@@ -161,9 +161,9 @@ function CredentialRow({
   };
 
   return (
-    <div className="flex items-start gap-3 p-4 bg-dark-900/60 rounded-xl border border-teal-400/[0.06] group/cred hover:border-teal-400/15 transition-colors">
-      <span className="w-7 h-7 rounded-full bg-teal-400/10 flex items-center justify-center shrink-0 mt-0.5">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-teal-400">
+    <div className="flex items-start gap-3 p-4 bg-dark-900/60 rounded-xl border border-gold-400/[0.06] group/cred hover:border-gold-400/15 transition-colors">
+      <span className="w-7 h-7 rounded-full bg-gold-400/10 flex items-center justify-center shrink-0 mt-0.5">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-gold-400">
           <path d="M3 8.5l3.5 3.5L13 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
@@ -183,7 +183,7 @@ function CredentialRow({
             placeholder="Details (e.g. Active - Expires Dec 2026)"
           />
           <div className="flex gap-2 pt-1">
-            <button onClick={save} className="text-teal-400 text-xs hover:underline">
+            <button onClick={save} className="text-gold-400 text-xs hover:underline">
               Save
             </button>
             <button onClick={() => setEditing(false)} className="text-dark-400 text-xs hover:underline">
@@ -306,7 +306,7 @@ export default function AgentProfilePage() {
           {/* ── breadcrumb ── */}
           <Link
             href="/agent/dashboard"
-            className="inline-flex items-center gap-1.5 text-dark-400 hover:text-teal-400 text-xs tracking-wide transition-colors mb-8"
+            className="inline-flex items-center gap-1.5 text-dark-400 hover:text-gold-400 text-xs tracking-wide transition-colors mb-8"
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -315,7 +315,7 @@ export default function AgentProfilePage() {
           </Link>
 
           {/* ── hero card ── */}
-          <div className="bg-dark-800/70 border border-teal-400/[0.07] rounded-2xl overflow-hidden mb-8 animate-fade-up backdrop-blur-sm">
+          <div className="bg-dark-800/70 border border-gold-400/[0.07] rounded-2xl overflow-hidden mb-8 animate-fade-up backdrop-blur-sm">
             {/* cover band */}
             <div className="h-28 bg-gradient-to-r from-dark-800 via-dark-700/60 to-dark-800 relative">
               <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(201,169,110,0.08) 0%, transparent 60%)" }} />
@@ -329,7 +329,7 @@ export default function AgentProfilePage() {
                   alt={name}
                   className="w-28 h-28 rounded-2xl border-4 border-dark-800 object-cover shadow-xl bg-dark-700"
                 />
-                <button className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-teal-400 text-dark-900 flex items-center justify-center shadow-lg hover:bg-teal-300 transition-colors">
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gold-400 text-dark-900 flex items-center justify-center shadow-lg hover:bg-gold-300 transition-colors">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <path d="M12 2a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2h8z" stroke="currentColor" strokeWidth="1.2" />
                     <circle cx="8" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
@@ -341,7 +341,7 @@ export default function AgentProfilePage() {
               {/* name + title */}
               <div className="flex-1 min-w-0">
                 <InlineField label="" value={name} onChange={setName} large />
-                <p className="text-teal-400/70 text-sm tracking-wide mt-0.5">Real Estate Agent</p>
+                <p className="text-gold-400/70 text-sm tracking-wide mt-0.5">Real Estate Agent</p>
               </div>
 
               {/* quick stats */}
@@ -378,7 +378,7 @@ export default function AgentProfilePage() {
                 onClick={() => setActiveTab(t.key)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-200 ${
                   activeTab === t.key
-                    ? "bg-teal-400/10 text-teal-400 shadow-sm"
+                    ? "bg-gold-400/10 text-gold-400 shadow-sm"
                     : "text-dark-400 hover:text-white hover:bg-dark-700/40"
                 }`}
               >
@@ -392,9 +392,9 @@ export default function AgentProfilePage() {
           {activeTab === "profile" && (
             <div className="grid lg:grid-cols-2 gap-6 animate-fade-up-d2">
               {/* Contact */}
-              <div className="bg-dark-800/60 border border-teal-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
+              <div className="bg-dark-800/60 border border-gold-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
                 <h3 className="label-luxury text-dark-300 text-[11px] mb-5 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-teal-400/50">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-gold-400/50">
                     <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
                     <path d="M2 6l6 3.5L14 6" stroke="currentColor" strokeWidth="1.2" />
                   </svg>
@@ -407,9 +407,9 @@ export default function AgentProfilePage() {
               </div>
 
               {/* Professional */}
-              <div className="bg-dark-800/60 border border-teal-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
+              <div className="bg-dark-800/60 border border-gold-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
                 <h3 className="label-luxury text-dark-300 text-[11px] mb-5 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-teal-400/50">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-gold-400/50">
                     <path d="M4 14V2h8v12" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
                     <path d="M7 5h2M7 8h2M7 11h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                   </svg>
@@ -423,9 +423,9 @@ export default function AgentProfilePage() {
               </div>
 
               {/* Bio — full width */}
-              <div className="lg:col-span-2 bg-dark-800/60 border border-teal-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
+              <div className="lg:col-span-2 bg-dark-800/60 border border-gold-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
                 <h3 className="label-luxury text-dark-300 text-[11px] mb-5 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-teal-400/50">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-gold-400/50">
                     <path d="M3 3h10M3 7h10M3 11h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                   </svg>
                   Professional Bio
@@ -438,17 +438,17 @@ export default function AgentProfilePage() {
           {/* ═══ TAB: Credentials ═══ */}
           {activeTab === "credentials" && (
             <div className="max-w-2xl animate-fade-up-d2">
-              <div className="bg-dark-800/60 border border-teal-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
+              <div className="bg-dark-800/60 border border-gold-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="label-luxury text-dark-300 text-[11px] flex items-center gap-2">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-teal-400/50">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-gold-400/50">
                       <path d="M3 8.5l3.5 3.5L13 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     Certifications & Licenses
                   </h3>
                   <button
                     onClick={addCredential}
-                    className="text-xs text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1.5"
+                    className="text-xs text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1.5"
                   >
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -485,9 +485,9 @@ export default function AgentProfilePage() {
           {/* ═══ TAB: Market Knowledge ═══ */}
           {activeTab === "market" && (
             <div className="max-w-3xl animate-fade-up-d2">
-              <div className="bg-dark-800/60 border border-teal-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
+              <div className="bg-dark-800/60 border border-gold-400/[0.06] rounded-xl p-6 backdrop-blur-sm">
                 <h3 className="label-luxury text-dark-300 text-[11px] mb-5 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-teal-400/50">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-gold-400/50">
                     <path d="M2 12l4-4 3 2 5-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Market Knowledge & Insights

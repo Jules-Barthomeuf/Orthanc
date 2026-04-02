@@ -62,9 +62,9 @@ export default function PortalVaultPage({ params }: PortalVaultPageProps) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Project Not Found</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">Property Not Found</h1>
           <div className="gold-line mx-auto mb-6" />
-          <Link href={`/portal/${slug}`} className="luxury-button-primary text-sm">Back to Projects</Link>
+          <Link href={`/portal/${slug}`} className="luxury-button-primary text-sm">Back to Properties</Link>
         </div>
       </div>
     );

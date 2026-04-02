@@ -240,7 +240,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
       <>
         <Navbar />
         <div className="min-h-screen bg-dark-900 flex items-center justify-center pt-20">
-          <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin" />
         </div>
         <Footer />
       </>
@@ -271,7 +271,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
       <div className="pt-24 pb-20 bg-dark-900 min-h-screen">
         <div className="max-w-7xl mx-auto px-6">
           {/* Back link */}
-          <Link href="/agent/portals" className="inline-flex items-center gap-2 text-dark-400 hover:text-teal-400 text-sm mb-6 transition-colors">
+          <Link href="/agent/portals" className="inline-flex items-center gap-2 text-dark-400 hover:text-gold-400 text-sm mb-6 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -287,13 +287,13 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="bg-dark-800 border border-dark-600/30 text-white rounded-lg px-4 py-2 text-2xl font-display focus:outline-none focus:border-teal-400/40"
+                    className="bg-dark-800 border border-dark-600/30 text-white rounded-lg px-4 py-2 text-2xl font-display focus:outline-none focus:border-gold-400/40"
                   />
                   <textarea
                     value={editDesc}
                     onChange={(e) => setEditDesc(e.target.value)}
                     rows={2}
-                    className="w-full bg-dark-800 border border-dark-600/30 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-teal-400/40 resize-none"
+                    className="w-full bg-dark-800 border border-dark-600/30 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-gold-400/40 resize-none"
                   />
                   <div className="flex gap-2">
                     <button onClick={handleSaveDetails} disabled={saving} className="luxury-button-primary text-xs px-4 py-2">
@@ -306,10 +306,10 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                 </div>
               ) : (
                 <>
-                  <p className="label-luxury text-teal-400/50 mb-3 tracking-[0.3em]">Portal</p>
+                  <p className="label-luxury text-gold-400/50 mb-3 tracking-[0.3em]">Portal</p>
                   <div className="flex items-center gap-3">
                     <h1 className="heading-luxury text-4xl lg:text-5xl text-white">{portal.name}</h1>
-                    <button onClick={() => setEditing(true)} className="text-dark-500 hover:text-teal-400 transition-colors p-1" title="Edit">
+                    <button onClick={() => setEditing(true)} className="text-dark-500 hover:text-gold-400 transition-colors p-1" title="Edit">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
@@ -331,7 +331,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                     navigator.clipboard.writeText(url);
                     addToast({ type: "success", message: "Link copied!" });
                   }}
-                  className="text-teal-400 hover:text-teal-300 transition-colors text-sm font-medium"
+                  className="text-gold-400 hover:text-gold-300 transition-colors text-sm font-medium"
                 >
                   Copy
                 </button>
@@ -382,7 +382,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
               {portalProperties.map((property, idx) => (
                 <div
                   key={property.id}
-                  className="group bg-dark-800/70 border border-teal-400/[0.06] rounded-xl overflow-hidden hover:border-teal-400/20 hover:bg-dark-800 transition-all duration-500"
+                  className="group bg-dark-800/70 border border-gold-400/[0.06] rounded-xl overflow-hidden hover:border-gold-400/20 hover:bg-dark-800 transition-all duration-500"
                   style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.08}s both` }}
                 >
                   <div className="relative h-48 bg-dark-700 overflow-hidden">
@@ -433,7 +433,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
       {/* Add existing property modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-teal-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl max-h-[80vh] flex flex-col">
+          <div className="bg-dark-800 border border-gold-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dark-600/20 shrink-0">
               <div>
                 <h3 className="text-white text-lg font-display font-semibold">Add Property to Portal</h3>
@@ -455,7 +455,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                       key={prop.id}
                       onClick={() => { handleAddProperty(prop.id); setShowAddModal(false); }}
                       disabled={saving}
-                      className="w-full flex items-center gap-4 p-3 rounded-xl bg-dark-900/50 border border-dark-600/20 hover:border-teal-400/20 hover:bg-dark-800 transition-all text-left disabled:opacity-50"
+                      className="w-full flex items-center gap-4 p-3 rounded-xl bg-dark-900/50 border border-dark-600/20 hover:border-gold-400/20 hover:bg-dark-800 transition-all text-left disabled:opacity-50"
                     >
                       <div className="w-16 h-12 rounded-lg bg-dark-700 overflow-hidden shrink-0">
                         {prop.images?.[0] ? (
@@ -472,7 +472,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                         <h4 className="text-white text-sm font-medium truncate">{prop.title}</h4>
                         <p className="text-dark-400 text-xs truncate">{prop.address}</p>
                       </div>
-                      <span className="text-teal-400 text-sm font-display font-bold shrink-0">
+                      <span className="text-gold-400 text-sm font-display font-bold shrink-0">
                         ${prop.price?.toLocaleString()}
                       </span>
                     </button>
@@ -487,7 +487,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
       {/* Import from Link Modal */}
       {importModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-dark-800 border border-teal-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
+          <div className="bg-dark-800 border border-gold-400/10 rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dark-600/20">
               <div>
                 <h3 className="text-white text-lg font-display font-semibold">Import from Link</h3>
@@ -507,7 +507,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                   onChange={(e) => setImportUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleImportScrape()}
                   placeholder="https://www.zillow.com/homedetails/..."
-                  className="flex-1 bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/20 transition-colors placeholder:text-dark-500"
+                  className="flex-1 bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
                   autoFocus
                 />
                 <button
@@ -521,11 +521,11 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
             </div>
             {importPreview && (
               <div className="px-6 pb-5">
-                <div className="bg-dark-900/60 border border-teal-400/[0.08] rounded-xl p-5 space-y-3">
+                <div className="bg-dark-900/60 border border-gold-400/[0.08] rounded-xl p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <h4 className="text-white font-display font-semibold text-base leading-tight">{importPreview.title || "Untitled"}</h4>
                     {importPreview.price > 0 && (
-                      <span className="text-teal-400 font-display font-bold text-lg shrink-0">${importPreview.price.toLocaleString()}</span>
+                      <span className="text-gold-400 font-display font-bold text-lg shrink-0">${importPreview.price.toLocaleString()}</span>
                     )}
                   </div>
                   {importPreview.address && <p className="text-dark-400 text-sm">{importPreview.address}</p>}

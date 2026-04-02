@@ -1136,7 +1136,7 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 shadow-lg shadow-teal-400/30 flex items-center justify-center hover:shadow-teal-400/50 transition-shadow group"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 shadow-lg shadow-gold-400/30 flex items-center justify-center hover:shadow-gold-400/50 transition-shadow group"
           >
             <MessageCircle size={24} className="text-dark-900 group-hover:scale-110 transition-transform" />
             <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-dark-900 animate-pulse" />
@@ -1171,15 +1171,15 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
             {/* Header - draggable */}
             <div
               onMouseDown={handleDragStart}
-              className={`flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-gradient-to-r from-teal-400/[0.08] to-transparent flex-shrink-0 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              className={`flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-gradient-to-r from-gold-400/[0.08] to-transparent flex-shrink-0 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-400/5 border border-teal-400/25 flex items-center justify-center">
-                  <Sparkles size={14} className="text-teal-400" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-400/5 border border-gold-400/25 flex items-center justify-center">
+                  <Sparkles size={14} className="text-gold-400" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-white/80">Investment Advisor</div>
-                  <div className="text-[10px] text-teal-400/50 uppercase tracking-wider">AI-Powered Analysis</div>
+                  <div className="text-[10px] text-gold-400/50 uppercase tracking-wider">AI-Powered Analysis</div>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
@@ -1205,14 +1205,14 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${
                     msg.role === 'user'
-                      ? 'bg-blue-500/20 border border-blue-500/30'
-                      : 'bg-teal-400/15 border border-teal-400/25'
+                      ? 'bg-gold-400/15 border border-gold-400/25'
+                      : 'bg-gold-400/15 border border-gold-400/25'
                   }`}>
-                    {msg.role === 'user' ? <User size={12} className="text-blue-400" /> : <Bot size={12} className="text-teal-400" />}
+                    {msg.role === 'user' ? <User size={12} className="text-gold-400" /> : <Bot size={12} className="text-gold-400" />}
                   </div>
                   <div className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-blue-500/10 border border-blue-500/15 text-white/80'
+                      ? 'bg-gold-400/10 border border-gold-400/15 text-white/80'
                       : 'bg-white/[0.03] border border-white/[0.06] text-white/70'
                   }`}>
                     {msg.role === 'assistant' ? (
@@ -1235,7 +1235,7 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
                     {msg.params && Object.keys(msg.params).length > 0 && (
                       <div className="mt-2 pt-2 border-t border-white/[0.06] flex flex-wrap gap-1.5">
                         {Object.entries(msg.params).map(([k, v]) => (
-                          <span key={k} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-400/10 border border-teal-400/15 text-[10px] text-teal-400/70 font-mono">
+                          <span key={k} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gold-400/10 border border-gold-400/15 text-[10px] text-gold-400/70 font-mono">
                             {k}
                           </span>
                         ))}
@@ -1247,15 +1247,15 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
 
               {isThinking && (
                 <div className="flex gap-3">
-                  <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center bg-teal-400/15 border border-teal-400/25">
-                    <Bot size={12} className="text-teal-400" />
+                  <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center bg-gold-400/15 border border-gold-400/25">
+                    <Bot size={12} className="text-gold-400" />
                   </div>
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400/40 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400/40 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400/40 animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                       <span className="text-xs text-white/30">Analyzing...</span>
                     </div>
@@ -1277,12 +1277,12 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
                   placeholder="Tell me everything about the property…"
                   disabled={isThinking}
                   rows={Math.min(5, Math.max(1, input.split('\n').length))}
-                  className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white/80 placeholder-white/25 focus:outline-none focus:border-teal-400/30 focus:ring-1 focus:ring-teal-400/10 transition-colors disabled:opacity-50 resize-none sim-scrollbar"
+                  className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white/80 placeholder-white/25 focus:outline-none focus:border-gold-400/30 focus:ring-1 focus:ring-gold-400/10 transition-colors disabled:opacity-50 resize-none sim-scrollbar"
                 />
                 <button
                   onClick={send}
                   disabled={!input.trim() || isThinking}
-                  className="w-10 h-10 rounded-xl bg-teal-400/10 border border-teal-400/20 flex items-center justify-center text-teal-400 hover:bg-teal-400/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-gold-400/10 border border-gold-400/20 flex items-center justify-center text-gold-400 hover:bg-gold-400/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   <Send size={16} />
                 </button>

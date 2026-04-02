@@ -45,7 +45,7 @@ export default function ClientPropertiesPage() {
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
           <div className="mb-12 animate-fade-up">
-            <p className="label-luxury text-teal-400/60 mb-3">Explore</p>
+            <p className="label-luxury text-gold-400/60 mb-3">Explore</p>
             <h1 className="heading-luxury text-4xl text-white mb-3">
               Available Properties
             </h1>
@@ -58,7 +58,7 @@ export default function ClientPropertiesPage() {
           {/* Loading */}
           {loading && (
             <div className="flex items-center justify-center py-28">
-              <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin" />
             </div>
           )}
 
@@ -74,7 +74,7 @@ export default function ClientPropertiesPage() {
           {!loading && properties.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {properties.map((property, idx) => (
-                <div key={property.id} className="bg-dark-800 border border-dark-700/50 rounded-lg overflow-hidden group hover:border-teal-400/25 transition-all duration-300" style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.1 + idx * 0.1}s both` }}>
+                <div key={property.id} className="bg-dark-800 border border-dark-700/50 rounded-lg overflow-hidden group hover:border-gold-400/25 transition-all duration-300" style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.1 + idx * 0.1}s both` }}>
                   <div className="relative h-56 bg-dark-700 overflow-hidden">
                     {property.images?.[0] && (
                       <img
@@ -85,7 +85,7 @@ export default function ClientPropertiesPage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent"></div>
                     <div className="absolute top-4 left-4">
-                      <span className="label-luxury text-teal-400 bg-dark-900/80 px-3 py-1 rounded text-[10px]">
+                      <span className="label-luxury text-gold-400 bg-dark-900/80 px-3 py-1 rounded text-[10px]">
                         Featured
                       </span>
                     </div>
@@ -98,7 +98,7 @@ export default function ClientPropertiesPage() {
                     <div className="space-y-0 mb-6">
                       <div className="property-row">
                         <span className="property-label">Price</span>
-                        <span className="property-value text-teal-400">
+                        <span className="property-value text-gold-400">
                           ${((property.price ?? 0) / 1000000).toFixed(2)}M
                         </span>
                       </div>

@@ -432,7 +432,7 @@ function Section({ title, icon, children, defaultOpen = false }: {
         className="w-full flex items-center justify-between py-4 px-5 text-left group hover:bg-white/[0.02] transition-colors"
       >
         <span className="flex items-center gap-3">
-          <span className="text-teal-400/50 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
+          <span className="text-gold-400/50 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
           <span className="text-base font-medium text-white/90 tracking-wide">{title}</span>
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -479,7 +479,7 @@ function ToggleGroup({ label, options, value, onChange }: {
           <button key={opt.value} onClick={() => onChange(opt.value)}
             className={`px-3.5 py-2 text-sm rounded-lg border transition-all duration-200 ${
               value === opt.value
-                ? 'bg-teal-400/10 border-teal-400/25 text-teal-400'
+                ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
                 : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15 hover:text-white/60'
             }`}
           >{opt.label}</button>
@@ -525,10 +525,10 @@ function ToggleSwitch({ label, value, onChange, tooltip }: {
         )}
       </span>
       <button onClick={() => onChange(!value)}
-        className={`w-11 h-6 rounded-full transition-all duration-300 relative ${value ? 'bg-teal-400/20' : 'bg-white/10'}`}
+        className={`w-11 h-6 rounded-full transition-all duration-300 relative ${value ? 'bg-gold-400/20' : 'bg-white/10'}`}
       >
         <span className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-300 ${
-          value ? 'left-[22px] bg-teal-400' : 'left-0.5 bg-white/40'
+          value ? 'left-[22px] bg-gold-400' : 'left-0.5 bg-white/40'
         }`} />
       </button>
     </div>
@@ -553,7 +553,7 @@ function KpiCard({ label, value, sub, color = 'white', icon }: {
     green: 'text-emerald-400',
     red: 'text-red-400',
     amber: 'text-amber-400',
-    gold: 'text-teal-400',
+    gold: 'text-gold-400',
     white: 'text-white/80',
   };
   return (
@@ -585,19 +585,19 @@ function OverviewDashboard({ state, fin }: { state: SimState; fin: ReturnType<ty
 
         {/* Chiffres avancés et scores synthétiques */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Initial Investment</div>
             <div className="font-display text-lg text-white">{fmt$(fin.totalCashInvested)}</div>
           </div>
-          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Annual Opex</div>
             <div className="font-display text-lg text-white">{fmt$(fin.totalCarryCost)}</div>
           </div>
-          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Liquidity Score</div>
             <div className="font-display text-lg text-emerald-400">{fin.liquidityScore ? fin.liquidityScore : '—'}</div>
           </div>
-          <div className="bg-dark-900/60 border border-teal-400/10 rounded-lg p-4 text-center">
+          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
             <div className="text-xs text-dark-400 mb-1">Risk Score</div>
             <div className="font-display text-lg text-red-400">{fin.riskScore ? fin.riskScore : '—'}</div>
           </div>
@@ -729,7 +729,7 @@ function FinancialProjectionsChart({ state, fin }: { state: SimState; fin: Retur
               <span className="text-sm text-white/30 ml-2">&middot;</span>
               <span className="text-sm text-white/40 ml-2">{state.ltvRatio}% LTV</span>
               {fin.scarcityBonus > 0 && (
-                <span className="text-sm text-teal-400/60 ml-2">+{fin.scarcityBonus.toFixed(1)}% scarcity</span>
+                <span className="text-sm text-gold-400/60 ml-2">+{fin.scarcityBonus.toFixed(1)}% scarcity</span>
               )}
             </span>
             <GraphExplainer
@@ -927,7 +927,7 @@ function CarryCostBreakdown({ state, fin }: { state: SimState; fin: ReturnType<t
         <div className="mt-3 flex gap-4 text-xs text-white/35">
           <span>Year-end costs: <span className="text-red-400 font-mono">{fmt$(fin.totalCarryCost)}</span></span>
           <span>Year-end income: <span className="text-emerald-400 font-mono">{fmt$(fin.effectiveRent)}</span></span>
-          <span>Year-end net: <span className={`font-mono ${fin.noi >= 0 ? 'text-teal-400' : 'text-red-400'}`}>{fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}</span></span>
+          <span>Year-end net: <span className={`font-mono ${fin.noi >= 0 ? 'text-gold-400' : 'text-red-400'}`}>{fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}</span></span>
         </div>
       </div>
     </div>
@@ -965,7 +965,7 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
           <div key={s.key}
             className={`relative rounded-xl border p-5 transition-all ${
               s.isActive
-                ? 'bg-teal-400/[0.06] border-teal-400/25'
+                ? 'bg-gold-400/[0.06] border-gold-400/25'
                 : 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1]'
             }`}
           >
@@ -975,8 +975,8 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
               </span>
             )}
             <div className="flex items-center gap-2 mb-3">
-              <Scale size={14} className={s.isActive ? 'text-teal-400' : 'text-white/30'} />
-              <span className={`text-sm font-semibold ${s.isActive ? 'text-teal-400' : 'text-white/70'}`}>{s.label}</span>
+              <Scale size={14} className={s.isActive ? 'text-gold-400' : 'text-white/30'} />
+              <span className={`text-sm font-semibold ${s.isActive ? 'text-gold-400' : 'text-white/70'}`}>{s.label}</span>
             </div>
             <p className="text-xs text-white/30 mb-4 leading-relaxed">{s.description}</p>
             <div className="space-y-2">
@@ -1010,11 +1010,11 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
       {/* Scarcity Value section */}
       <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Gem size={14} className="text-teal-400/60" />
+          <Gem size={14} className="text-gold-400/60" />
           <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">Scarcity Value Premium</span>
         </div>
         <div className="flex items-baseline gap-3 mb-4">
-          <span className="text-3xl font-mono font-bold text-teal-400">+{fin.scarcityBonus.toFixed(1)}%</span>
+          <span className="text-3xl font-mono font-bold text-gold-400">+{fin.scarcityBonus.toFixed(1)}%</span>
           <span className="text-sm text-white/35">added to {state.baseAppreciationRate}% base &rarr; {fin.effectiveAppreciation.toFixed(1)}% effective</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -1025,7 +1025,7 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
             { label: 'Unique Panoramic View', active: state.scarcityUniqueView, bonus: '+0.6%' },
           ].map((f) => (
             <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
-              f.active ? 'bg-teal-400/10 text-teal-400 border border-teal-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
+              f.active ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
             }`}>
               {f.active ? '\u2605' : '\u2606'} {f.label} <span className="ml-auto font-mono">{f.bonus}</span>
             </div>
@@ -1107,7 +1107,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
       {/* Liquidity Forecasting */}
       <div className="sim-visual-card">
         <div className="flex items-center gap-2 mb-5">
-          <Timer size={16} className="text-teal-400/60" />
+          <Timer size={16} className="text-gold-400/60" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Liquidity Forecasting</div>
             <div className="text-lg font-display text-white/80">
@@ -1154,15 +1154,15 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
                 const active = key === state.marketRegion;
                 return (
                   <div key={key} className="flex items-center gap-3">
-                    <span className={`text-xs w-40 flex-shrink-0 ${active ? 'text-teal-400 font-semibold' : 'text-white/40'}`}>
+                    <span className={`text-xs w-40 flex-shrink-0 ${active ? 'text-gold-400 font-semibold' : 'text-white/40'}`}>
                       {active ? '\u25B8 ' : ''}{mktDataItem.label}
                     </span>
                     <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-500 ${
-                        active ? 'bg-teal-400/70' : dom > 360 ? 'bg-red-400/40' : dom > 200 ? 'bg-amber-400/40' : 'bg-emerald-400/40'
+                        active ? 'bg-gold-400/70' : dom > 360 ? 'bg-red-400/40' : dom > 200 ? 'bg-amber-400/40' : 'bg-emerald-400/40'
                       }`} style={{ width: `${Math.min(100, (dom / 550) * 100)}%` }} />
                     </div>
-                    <span className={`text-xs font-mono w-16 text-right ${active ? 'text-teal-400' : 'text-white/40'}`}>{dom}d</span>
+                    <span className={`text-xs font-mono w-16 text-right ${active ? 'text-gold-400' : 'text-white/40'}`}>{dom}d</span>
                   </div>
                 );
               })}
@@ -1173,7 +1173,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
       {/* Target Exit Price */}
       <div className="sim-visual-card">
         <div className="flex items-center gap-2 mb-5">
-          <Crosshair size={16} className="text-teal-400/60" />
+          <Crosshair size={16} className="text-gold-400/60" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Target Exit Price Solver</div>
             <div className="text-lg font-display text-white/80">What appreciation do you need?</div>
@@ -1183,7 +1183,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
             <div className="text-[11px] uppercase tracking-wider text-white/30 mb-2">Your Target Profit</div>
-            <div className="text-3xl font-mono font-bold text-teal-400">{fmt$(state.targetExitProfit)}</div>
+            <div className="text-3xl font-mono font-bold text-gold-400">{fmt$(state.targetExitProfit)}</div>
             <div className="text-xs text-white/30 mt-1">Net of taxes & fees</div>
           </div>
           <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5 flex flex-col items-center justify-center">
@@ -1218,7 +1218,7 @@ function GraphExplainer({ title, explanation }: { title: string; explanation: st
     <span className="relative inline-flex ml-2">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs text-white/30 hover:text-teal-400/70 transition-colors cursor-pointer"
+        className="flex items-center gap-1.5 text-xs text-white/30 hover:text-gold-400/70 transition-colors cursor-pointer"
         title="What does this graph mean?"
       >
         <HelpCircle size={15} />
@@ -1285,14 +1285,14 @@ export default function Simulator({ address, price }: { address?: string; price?
       {/* LEFT PANEL: Parameters */}
       <div className="w-full lg:w-[340px] xl:w-[380px] flex-shrink-0 flex flex-col border-r border-white/[0.04] bg-[#0c0c0e]">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-white/[0.06] bg-gradient-to-b from-teal-400/[0.04] to-transparent">
+        <div className="px-5 py-4 border-b border-white/[0.06] bg-gradient-to-b from-gold-400/[0.04] to-transparent">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400/20 to-teal-400/5 border border-teal-400/25 flex items-center justify-center">
-              <Building2 size={18} className="text-teal-400" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 border border-gold-400/25 flex items-center justify-center">
+              <Building2 size={18} className="text-gold-400" />
             </div>
             <div>
               <div className="text-base font-semibold text-white/80 tracking-wide">Luxury Investment Simulator</div>
-              <div className="text-xs text-teal-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
+              <div className="text-xs text-gold-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
             </div>
           </div>
         </div>
@@ -1431,7 +1431,7 @@ export default function Simulator({ address, price }: { address?: string; price?
                 <button key={opt.value} onClick={() => update({ marketRegion: opt.value })}
                   className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
                     state.marketRegion === opt.value
-                      ? 'bg-teal-400/10 border-teal-400/25 text-teal-400'
+                      ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
                       : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15'
                   }`}
                 >{opt.label}</button>
@@ -1452,7 +1452,7 @@ export default function Simulator({ address, price }: { address?: string; price?
               <button key={t.key} onClick={() => setActiveTab(t.key)}
                 className={`flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === t.key
-                    ? 'bg-teal-400/10 text-teal-400 border border-teal-400/20'
+                    ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20'
                     : 'text-white/40 hover:text-white/60 hover:bg-white/[0.03] border border-transparent'
                 }`}
               >{t.icon}{t.label}</button>

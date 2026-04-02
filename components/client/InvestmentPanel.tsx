@@ -76,11 +76,11 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
             }}
             className={`p-5 rounded-lg border transition-all text-left ${
               selectedScenario === idx
-                ? "bg-dark-900 border-teal-400/30"
-                : "bg-dark-900 border-dark-600/20 hover:border-teal-400/15"
+                ? "bg-dark-900 border-gold-400/30"
+                : "bg-dark-900 border-dark-600/20 hover:border-gold-400/15"
             }`}
           >
-            <h4 className={`font-semibold text-sm mb-2 ${selectedScenario === idx ? 'text-teal-400' : 'text-white'}`}>
+            <h4 className={`font-semibold text-sm mb-2 ${selectedScenario === idx ? 'text-gold-400' : 'text-white'}`}>
               {scen.name} Plan
             </h4>
             <p className="text-white text-sm mb-1">
@@ -94,13 +94,13 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
       </div>
 
       {/* Interactive Controls */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6 mb-8">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6 mb-8">
         <h3 className="label-luxury text-dark-300 mb-6">Adjust Your Scenario</h3>
         <div className="space-y-6">
           <div>
             <div className="flex justify-between mb-3">
               <label className="text-dark-300 text-sm">Down Payment</label>
-              <span className="text-teal-400 font-semibold text-sm">
+              <span className="text-gold-400 font-semibold text-sm">
                 ${(downPayment / 1000000).toFixed(2)}M ({((downPayment / property.price) * 100).toFixed(1)}%)
               </span>
             </div>
@@ -148,7 +148,7 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
       </div>
 
       {/* Equity Growth Chart */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6 mb-8">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6 mb-8">
         <h3 className="label-luxury text-dark-300 mb-6">Equity Growth</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
@@ -173,9 +173,9 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
 
       {/* Investment Projections */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6">
+        <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6">
           <p className="label-luxury text-dark-500 text-[10px] mb-3">5-Year Projection</p>
-          <p className="font-display text-2xl font-bold text-teal-400 mb-1">
+          <p className="font-display text-2xl font-bold text-gold-400 mb-1">
             ${(property.investmentAnalysis.projectedValue5Year / 1000000).toFixed(2)}M
           </p>
           <p className="text-green-400 text-sm">
@@ -187,9 +187,9 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
           </p>
         </div>
 
-        <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6">
+        <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6">
           <p className="label-luxury text-dark-500 text-[10px] mb-3">10-Year Projection</p>
-          <p className="font-display text-2xl font-bold text-teal-400 mb-1">
+          <p className="font-display text-2xl font-bold text-gold-400 mb-1">
             ${(property.investmentAnalysis.projectedValue10Year / 1000000).toFixed(2)}M
           </p>
           <p className="text-green-400 text-sm">
@@ -197,7 +197,7 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
           </p>
         </div>
 
-        <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6">
+        <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6">
           <p className="label-luxury text-dark-500 text-[10px] mb-3">Cap Rate & ROI</p>
           <p className="font-display text-2xl font-bold text-white mb-1">
             {property.investmentAnalysis.capRate}%
@@ -211,7 +211,7 @@ export function InvestmentPanel({ property }: InvestmentPanelProps) {
       </div>
 
       {/* Economic Policy Impact */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6">
         <h3 className="label-luxury text-dark-300 mb-6">Economic Policy Impact</h3>
         <div className="space-y-5">
           <div>

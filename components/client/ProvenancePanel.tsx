@@ -10,8 +10,8 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
   return (
     <div className="space-y-10">
       {/* Coming Soon Banner */}
-      <div className="bg-teal-400/10 border border-teal-400/30 rounded-xl px-6 py-4 text-center">
-        <span className="text-teal-400 font-display text-lg tracking-widest uppercase">Coming Soon</span>
+      <div className="bg-gold-400/10 border border-gold-400/30 rounded-xl px-6 py-4 text-center">
+        <span className="text-gold-400 font-display text-lg tracking-widest uppercase">Coming Soon</span>
       </div>
 
       {/* Intro */}
@@ -30,7 +30,7 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
       </div>
 
       {/* The Truth Standard */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-6">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-6">
         <h3 className="font-display text-xl text-white mb-3">The Truth Standard</h3>
         <p className="text-white/80 text-base leading-relaxed">
           We are developing a secure vault for the property&apos;s DNA. This includes a
@@ -48,20 +48,20 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
           Our platform unifies the nouns of the building with the verbs of the deal. We index:
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5">
-            <h4 className="text-teal-400 text-base font-semibold mb-2">Structural Integrity</h4>
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5">
+            <h4 className="text-gold-400 text-base font-semibold mb-2">Structural Integrity</h4>
             <p className="text-white/70 text-sm leading-relaxed">
               Documented history of renovations and technical inspections.
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5">
-            <h4 className="text-teal-400 text-base font-semibold mb-2">Legal Standing</h4>
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5">
+            <h4 className="text-gold-400 text-base font-semibold mb-2">Legal Standing</h4>
             <p className="text-white/70 text-sm leading-relaxed">
               Clear verification of easements, dockage rights, and title status.
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5">
-            <h4 className="text-teal-400 text-base font-semibold mb-2">Environmental Data</h4>
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5">
+            <h4 className="text-gold-400 text-base font-semibold mb-2">Environmental Data</h4>
             <p className="text-white/70 text-sm leading-relaxed">
               Precise mapping of flood zones and elevation certificates.
             </p>
@@ -70,7 +70,7 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
       </div>
 
       {/* Zero-Knowledge Privacy */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-6">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-6">
         <h3 className="font-display text-xl text-white mb-3">Zero-Knowledge Privacy</h3>
         <p className="text-white/80 text-base leading-relaxed">
           Your proprietary market knowledge is your most valuable asset. Orthanc is built on the
@@ -82,7 +82,7 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
       </div>
 
       {/* Audit Trail */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-6">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-6">
         <h3 className="font-display text-xl text-white mb-3">Audit Trail</h3>
         <p className="text-white/80 text-base leading-relaxed">
           Every simulation and data entry creates a transparent record. When the wire is sent,
@@ -96,21 +96,21 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
       <div>
         <h3 className="font-display text-lg text-white mb-4">Property Snapshot</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">
             <span className="label-luxury text-dark-500 text-[10px] block mb-1">Bathrooms</span>
             <p className="font-display text-2xl text-white">{property.bathroom}</p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">
             <span className="label-luxury text-dark-500 text-[10px] block mb-1">Square Feet</span>
             <p className="font-display text-2xl text-white">
               {(property.squareFeet ?? 0).toLocaleString("en-US")} sqft
             </p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">
             <span className="label-luxury text-dark-500 text-[10px] block mb-1">Year Built</span>
             <p className="font-display text-2xl text-white">{property.yearBuilt}</p>
           </div>
-          <div className="bg-dark-900 border border-teal-400/10 rounded-xl p-5 text-center">
+          <div className="bg-dark-900 border border-gold-400/10 rounded-xl p-5 text-center">
             <span className="label-luxury text-dark-500 text-[10px] block mb-1">Lot (acres)</span>
             <p className="font-display text-2xl text-white">{property.lot}</p>
           </div>
@@ -124,7 +124,7 @@ export function ProvenancePanel({ property }: ProvenancePanelProps) {
           <h3 className="font-display text-lg text-white mb-4">Chain of Title</h3>
           <div className="space-y-5">
             {property.ownershipHistory.map((record) => (
-              <div key={record.id} className="border-l-2 border-teal-400/30 pl-5">
+              <div key={record.id} className="border-l-2 border-gold-400/30 pl-5">
                 <div className="flex justify-between mb-2">
                   <h4 className="font-semibold text-white">{record.owner}</h4>
                   <span className="text-dark-400 text-sm">

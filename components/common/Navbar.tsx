@@ -215,7 +215,7 @@ export function Navbar({ variant }: { variant?: "landing" | "default" }) {
               </>
             ) : (
               <>
-                <Link href="/login" className="text-dark-300 hover:text-teal-400 transition text-sm">
+                <Link href="/login" className="text-dark-300 hover:text-gold-400 transition text-sm">
                   Sign In
                 </Link>
                 <Link href="/signup" className="luxury-button-primary text-sm py-2 px-5">
@@ -237,13 +237,13 @@ export function Navbar({ variant }: { variant?: "landing" | "default" }) {
         >
           <div className="relative">
             {/* Outer glow ring */}
-            <div className="absolute -inset-2 rounded-full bg-teal-400/20 blur-lg group-hover:bg-teal-400/30 transition-all duration-500 animate-pulse" />
+            <div className="absolute -inset-2 rounded-full bg-gold-400/20 blur-lg group-hover:bg-gold-400/30 transition-all duration-500 animate-pulse" />
             {/* Button */}
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 shadow-2xl shadow-teal-400/30 group-hover:shadow-teal-400/50 group-hover:scale-110 transition-all duration-300">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold-400 to-gold-500 shadow-2xl shadow-gold-400/30 group-hover:shadow-gold-400/50 group-hover:scale-110 transition-all duration-300">
               <Sparkles className="w-6 h-6 text-dark-900" />
             </div>
             {/* Label tooltip */}
-            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-dark-800/95 backdrop-blur-sm border border-dark-600/30 text-teal-400 text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xl">
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-dark-800/95 backdrop-blur-sm border border-dark-600/30 text-gold-400 text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xl">
               AI Assistant
               <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-2 rotate-45 bg-dark-800/95 border-r border-t border-dark-600/30" />
             </div>

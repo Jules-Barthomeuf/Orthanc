@@ -78,7 +78,7 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
             Simulator
           </h1>
           <div className="gold-line mb-4" />
-          <p className="text-dark-400 text-sm">Select a project to start the simulation</p>
+          <p className="text-dark-400 text-sm">Select a property to start the simulation</p>
         </div>
 
         {/* Property cards */}
@@ -120,7 +120,7 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
         ) : (
           <div className="border-t border-dark-700 pt-10 text-center py-20">
             <div className="text-dark-500 text-6xl mb-4">📊</div>
-            <p className="text-dark-400">Select a project above to get started</p>
+            <p className="text-dark-400">Select a property above to get started</p>
           </div>
         )}
       </main>

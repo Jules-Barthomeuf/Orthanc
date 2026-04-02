@@ -54,8 +54,8 @@ export function InvestmentAdvisorPanel({ property }: InvestmentAdvisorPanelProps
   const rawScore = Math.round((capScore * 0.3 + appScore * 0.3 + safeScore * 0.2 + liquidityScore * 0.2));
   const overallScore = Math.min(99, Math.max(68, rawScore + 15));
 
-  const scoreColor = overallScore >= 80 ? "text-emerald-400" : overallScore >= 65 ? "text-teal-400" : "text-amber-400";
-  const scoreBg = overallScore >= 80 ? "border-emerald-400/30" : overallScore >= 65 ? "border-teal-400/30" : "border-amber-400/30";
+  const scoreColor = overallScore >= 80 ? "text-emerald-400" : overallScore >= 65 ? "text-gold-400" : "text-amber-400";
+  const scoreBg = overallScore >= 80 ? "border-emerald-400/30" : overallScore >= 65 ? "border-gold-400/30" : "border-amber-400/30";
 
   // Radar data — optimistic boost
   const boost = 12;
@@ -120,7 +120,7 @@ export function InvestmentAdvisorPanel({ property }: InvestmentAdvisorPanelProps
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Radar Chart */}
-          <div className="bg-dark-900/40 border border-teal-400/10 rounded-lg p-4">
+          <div className="bg-dark-900/40 border border-gold-400/10 rounded-lg p-4">
             <div className="text-xs uppercase tracking-[0.15em] text-white/40 mb-3">Property vs. Benchmark</div>
             <div className="h-[260px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -134,13 +134,13 @@ export function InvestmentAdvisorPanel({ property }: InvestmentAdvisorPanelProps
               </ResponsiveContainer>
             </div>
             <div className="flex justify-center gap-5 text-xs mt-1">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-400" />Property</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gold-400" />Property</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-white/30" />U.S. Avg</span>
             </div>
           </div>
 
           {/* Benchmark Comparisons */}
-          <div className="bg-dark-900/40 border border-teal-400/10 rounded-lg p-4 space-y-3">
+          <div className="bg-dark-900/40 border border-gold-400/10 rounded-lg p-4 space-y-3">
             <div className="text-xs uppercase tracking-[0.15em] text-white/40 mb-1">How It Compares</div>
             {comparisons.map((c) => {
               const isGood = c.inverted ? c.property <= c.national : c.property >= c.national;
@@ -173,7 +173,7 @@ export function InvestmentAdvisorPanel({ property }: InvestmentAdvisorPanelProps
         </div>
 
         {/* 5-Year Projection Summary */}
-        <div className="bg-dark-900/40 border border-teal-400/10 rounded-lg p-4">
+        <div className="bg-dark-900/40 border border-gold-400/10 rounded-lg p-4">
           <div className="text-xs uppercase tracking-[0.15em] text-white/40 mb-3">5-Year Projection</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="text-center p-3 bg-dark-800/40 rounded">
@@ -191,7 +191,7 @@ export function InvestmentAdvisorPanel({ property }: InvestmentAdvisorPanelProps
               <div className="text-[10px] text-white/35 uppercase mt-0.5">Equity Gain</div>
             </div>
             <div className="text-center p-3 bg-dark-800/40 rounded">
-              <div className="text-xl font-mono text-teal-400">{inv.roiProjection}%</div>
+              <div className="text-xl font-mono text-gold-400">{inv.roiProjection}%</div>
               <div className="text-[10px] text-white/35 uppercase mt-0.5">ROI Proj.</div>
             </div>
             <div className="text-center p-3 bg-dark-800/40 rounded">

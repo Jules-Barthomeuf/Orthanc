@@ -72,32 +72,32 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
         <div className="xl:col-span-2 space-y-8">
           {/* Top Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-dark-900/50 border border-teal-400/10 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-teal-400 mb-2">
+        <div className="bg-dark-900/50 border border-gold-400/10 p-4 rounded-lg">
+          <div className="flex items-center gap-2 text-gold-400 mb-2">
             <TrendingUp size={18} />
             <span className="text-sm font-medium tracking-wider uppercase">Appreciation</span>
           </div>
           <div className="text-2xl text-white font-light">+{data.marketTrends?.appreciationRate}%</div>
           <div className="text-xs text-dark-300">Year over Year</div>
         </div>
-        <div className="bg-dark-900/50 border border-teal-400/10 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-teal-400 mb-2">
+        <div className="bg-dark-900/50 border border-gold-400/10 p-4 rounded-lg">
+          <div className="flex items-center gap-2 text-gold-400 mb-2">
             <Activity size={18} />
             <span className="text-sm font-medium tracking-wider uppercase">Market Speed</span>
           </div>
           <div className="text-2xl text-white font-light">{data.marketTrends?.avgDaysOnMarket} Days</div>
           <div className="text-xs text-dark-300">Avg. on Market</div>
         </div>
-        <div className="bg-dark-900/50 border border-teal-400/10 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-teal-400 mb-2">
+        <div className="bg-dark-900/50 border border-gold-400/10 p-4 rounded-lg">
+          <div className="flex items-center gap-2 text-gold-400 mb-2">
             <Home size={18} />
             <span className="text-sm font-medium tracking-wider uppercase">Inventory</span>
           </div>
           <div className="text-2xl text-white font-light">{data.marketTrends?.inventoryLevel}</div>
           <div className="text-xs text-dark-300">Supply Level</div>
         </div>
-        <div className="bg-dark-900/50 border border-teal-400/10 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-teal-400 mb-2">
+        <div className="bg-dark-900/50 border border-gold-400/10 p-4 rounded-lg">
+          <div className="flex items-center gap-2 text-gold-400 mb-2">
             <Shield size={18} />
             <span className="text-sm font-medium tracking-wider uppercase">Safety Score</span>
           </div>
@@ -107,7 +107,7 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
       </div>
 
       {/* Price Evolution Chart */}
-      <div className="bg-dark-900 border border-teal-400/10 rounded-lg p-6">
+      <div className="bg-dark-900 border border-gold-400/10 rounded-lg p-6">
         <div className="flex justify-between items-end mb-6">
           <div>
             <h3 className="label-luxury text-dark-100 mb-1">Price Evolution</h3>
@@ -115,7 +115,7 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
           </div>
           <div className="flex gap-4 text-sm">
              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-teal-400"></div>
+                <div className="w-2 h-2 rounded-full bg-gold-400"></div>
                 <span className="text-dark-300">Property Values</span>
              </div>
           </div>
@@ -169,23 +169,23 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
         {/* Neighborhood Vibe & Transport */}
         <div className="space-y-8">
           <div>
-             <h3 className="label-luxury text-teal-400 mb-4 flex items-center gap-2">
+             <h3 className="label-luxury text-gold-400 mb-4 flex items-center gap-2">
                <MapPin size={16} /> Neighborhood Vibe
              </h3>
-             <div className="bg-dark-800/30 border border-teal-400/5 p-5 rounded-lg">
+             <div className="bg-dark-800/30 border border-gold-400/5 p-5 rounded-lg">
                 <p className="text-base text-white/70 leading-relaxed italic mb-4">
                   "{data.neighborhoodVibe}"
                 </p>
-                <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-teal-400/10">
+                <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-gold-400/10">
                    <div className="text-center">
                       <div className="text-xl text-white font-light">{data.transportation?.walkScore}</div>
                       <div className="text-xs text-dark-300 uppercase tracking-widest mt-1">Walk Score</div>
                    </div>
-                   <div className="text-center border-l border-teal-400/10">
+                   <div className="text-center border-l border-gold-400/10">
                       <div className="text-xl text-white font-light">{data.transportation?.transitScore}</div>
                       <div className="text-xs text-dark-300 uppercase tracking-widest mt-1">Transit</div>
                    </div>
-                   <div className="text-center border-l border-teal-400/10">
+                   <div className="text-center border-l border-gold-400/10">
                       <div className="text-xl text-white font-light">{data.transportation?.bikeScore}</div>
                       <div className="text-xs text-dark-300 uppercase tracking-widest mt-1">Bike</div>
                    </div>
@@ -194,7 +194,7 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
           </div>
 
           <div>
-             <h3 className="label-luxury text-teal-400 mb-4 flex items-center gap-2">
+             <h3 className="label-luxury text-gold-400 mb-4 flex items-center gap-2">
                <Building size={16} /> Demographics
              </h3>
              <div className="space-y-3">
@@ -221,17 +221,17 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
         {/* Schools & Policies */}
         <div className="space-y-8">
            <div>
-             <h3 className="label-luxury text-teal-400 mb-4 flex items-center gap-2">
+             <h3 className="label-luxury text-gold-400 mb-4 flex items-center gap-2">
                <School size={16} /> Nearby Schools
              </h3>
              <div className="space-y-3">
                 {data.schools?.map((school, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-dark-800/30 border border-white/5 rounded hover:border-teal-400/20 transition-colors">
+                  <div key={i} className="flex items-center justify-between p-3 bg-dark-800/30 border border-white/5 rounded hover:border-gold-400/20 transition-colors">
                      <div>
                         <div className="text-base text-white font-medium">{school.name}</div>
                         <div className="text-sm text-dark-300 mt-0.5">{school.type} • {school.distance}</div>
                      </div>
-                     <div className="h-8 w-8 rounded-full bg-teal-400/10 flex items-center justify-center border border-teal-400/20 text-teal-400 font-bold text-xs">
+                     <div className="h-8 w-8 rounded-full bg-gold-400/10 flex items-center justify-center border border-gold-400/20 text-gold-400 font-bold text-xs">
                         {school.rating}
                      </div>
                   </div>
@@ -240,16 +240,16 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
            </div>
 
            <div>
-              <h3 className="label-luxury text-teal-400 mb-4 flex items-center gap-2">
+              <h3 className="label-luxury text-gold-400 mb-4 flex items-center gap-2">
                 <Gavel size={16} /> Zoning & Policies
               </h3>
-              <div className="bg-dark-900/30 p-4 rounded text-sm text-white/70 space-y-3 border-l-2 border-teal-400/30">
+              <div className="bg-dark-900/30 p-4 rounded text-sm text-white/70 space-y-3 border-l-2 border-gold-400/30">
                  <div>
-                    <span className="text-teal-200 block mb-1 font-medium">Zoning Classification</span>
+                    <span className="text-gold-200 block mb-1 font-medium">Zoning Classification</span>
                     {data.zoningInfo}
                  </div>
                  <div>
-                    <span className="text-teal-200 block mb-1 font-medium">Local Guidelines</span>
+                    <span className="text-gold-200 block mb-1 font-medium">Local Guidelines</span>
                     <ul className="list-disc list-inside opacity-80 space-y-1">
                       {data.localPolicies?.map((policy, i) => (
                         <li key={i}>{policy}</li>
@@ -264,21 +264,21 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
 
     <div className="xl:col-span-1 border-l border-white/5 xl:pl-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="label-luxury text-teal-400 flex items-center gap-2">
+            <h3 className="label-luxury text-gold-400 flex items-center gap-2">
               <BrainCircuit size={18} /> Agent's Perspective
             </h3>
             <button 
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              className="text-xs text-dark-300 hover:text-teal-400 flex items-center gap-1 transition-colors"
+              className="text-xs text-dark-300 hover:text-gold-400 flex items-center gap-1 transition-colors"
             >
               {isEditing ? <Save size={14} /> : <Edit2 size={14} />}
               {isEditing ? "Save" : "Edit"}
             </button>
           </div>
 
-          <div className="bg-dark-800/20 rounded-lg p-5 border border-teal-400/10">
+          <div className="bg-dark-800/20 rounded-lg p-5 border border-gold-400/10">
             <div className="flex items-center gap-3 mb-4">
-               <div className="w-10 h-10 rounded-full bg-teal-400/20 flex items-center justify-center text-teal-400">
+               <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400">
                   <UserCheck size={20} />
                </div>
                <div>
@@ -294,12 +294,12 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
           <div className="space-y-4">
              {perspective.map((item, index) => (
                <div key={index} className="space-y-2">
-                  <div className="text-sm uppercase tracking-wider text-teal-400/70 font-semibold">{item.category}</div>
+                  <div className="text-sm uppercase tracking-wider text-gold-400/70 font-semibold">{item.category}</div>
                   {isEditing ? (
                     <textarea 
                       value={item.info}
                       onChange={(e) => handleUpdate(index, e.target.value)}
-                      className="w-full bg-dark-900 border border-teal-400/30 text-sm text-white p-2 rounded focus:outline-none focus:border-teal-400 min-h-[80px]"
+                      className="w-full bg-dark-900 border border-gold-400/30 text-sm text-white p-2 rounded focus:outline-none focus:border-gold-400 min-h-[80px]"
                     />
                   ) : (
                     <div className="text-base text-white/70 leading-relaxed border-l-2 border-white/10 pl-3 py-1">
@@ -312,7 +312,7 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
 
           {!isEditing && (
             <div className="mt-8 pt-6 border-t border-white/5 text-center">
-              <p className="text-xs text-teal-400/50 italic">
+              <p className="text-xs text-gold-400/50 italic">
                 Last updated 2 days ago by participating agents.
               </p>
             </div>

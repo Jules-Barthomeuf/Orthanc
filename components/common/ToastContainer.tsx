@@ -15,7 +15,7 @@ export function ToastContainer() {
               ? "bg-green-900/30 border-green-500/30 text-green-400"
               : toast.type === "error"
               ? "bg-red-900/30 border-red-500/30 text-red-400"
-              : "bg-dark-800/90 border-dark-600/30 text-teal-400"
+              : "bg-dark-800/90 border-dark-600/30 text-gold-400"
           }`}
         >
           <div className="flex justify-between items-center gap-4">

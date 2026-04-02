@@ -109,9 +109,9 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
           {/* Header */}
           <div className="mb-8 animate-fade-up">
             <p className="label-luxury text-gold-400 mb-2">PORTFOLIO</p>
-            <h1 className="text-3xl font-bold text-white mb-2">My Projects</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">My Properties</h1>
             <div className="gold-line mb-4" />
-            <p className="text-dark-500 text-sm">{properties.length} project{properties.length === 1 ? "" : "s"} in progress</p>
+            <p className="text-dark-500 text-sm">{properties.length} propert{properties.length === 1 ? "y" : "ies"} in progress</p>
           </div>
 
           {/* Search */}
@@ -120,7 +120,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
-              <input type="text" placeholder="Search a project..." value={search} onChange={(e) => setSearch(e.target.value)}
+              <input type="text" placeholder="Search a property..." value={search} onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 bg-dark-800 border border-dark-600/30 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-gold-400/40 transition-colors text-sm" />
             </div>
           </div>
@@ -128,8 +128,8 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
           {/* Empty */}
           {filteredProperties.length === 0 && (
             <div className="flex flex-col items-center justify-center py-28 animate-fade-up">
-              <h3 className="text-xl font-semibold text-white mb-2">{search ? "No project found" : "No projects"}</h3>
-              <p className="text-dark-400 text-sm">{search ? "Try a different term." : "Projects will appear here."}</p>
+              <h3 className="text-xl font-semibold text-white mb-2">{search ? "No property found" : "No properties"}</h3>
+              <p className="text-dark-400 text-sm">{search ? "Try a different term." : "Properties will appear here."}</p>
             </div>
           )}
 
