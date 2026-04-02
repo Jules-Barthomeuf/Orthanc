@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: orthanc
+    name: Orthanc-v1
     runtime: node
     buildCommand: npm install && npm run build
     startCommand: npm start

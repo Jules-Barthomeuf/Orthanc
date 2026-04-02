@@ -141,8 +141,6 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
           </div>
         </div>
       </nav>
-        </div>
-      </nav>
 
       <main className="pt-24 pb-16 bg-dark-900 min-h-screen">
         <div className="max-w-7xl mx-auto px-6">
