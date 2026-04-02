@@ -80,7 +80,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-dark-400 text-sm">Loading...</p>
         </div>
       </div>
@@ -104,11 +104,11 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
     <div className="min-h-screen bg-dark-900">
       <PortalSidebar slug={slug} portalName={portal.name} />
 
-      <main className="ml-[220px] min-h-screen">
+      <main className="pt-20 min-h-screen">
         <div className="px-8 py-8">
           {/* Header */}
           <div className="mb-8 animate-fade-up">
-            <p className="label-luxury text-teal-400 mb-2">PORTFOLIO</p>
+            <p className="label-luxury text-gold-400 mb-2">PORTFOLIO</p>
             <h1 className="text-3xl font-bold text-white mb-2">My Projects</h1>
             <div className="gold-line mb-4" />
             <p className="text-dark-500 text-sm">{properties.length} project{properties.length === 1 ? "" : "s"} in progress</p>
@@ -121,7 +121,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
               <input type="text" placeholder="Search a project..." value={search} onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-dark-800 border border-dark-600/30 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-teal-400/40 transition-colors text-sm" />
+                className="w-full pl-12 pr-4 py-3.5 bg-dark-800 border border-dark-600/30 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-gold-400/40 transition-colors text-sm" />
             </div>
           </div>
 
@@ -138,7 +138,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredProperties.map((property, idx) => (
                 <Link key={property.id} href={`/portal/${portal.slug}/${property.id}`}
-                  className="group relative rounded-2xl overflow-hidden hover:ring-1 hover:ring-teal-400/20 transition-all duration-300 bg-dark-800"
+                  className="group relative rounded-2xl overflow-hidden hover:ring-1 hover:ring-gold-400/20 transition-all duration-300 bg-dark-800"
                   style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.05 + idx * 0.07}s both` }}>
                   <div className="relative h-64 md:h-72 bg-dark-700 overflow-hidden">
                     {property.images?.[0] ? (
@@ -152,7 +152,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/30 to-transparent" />
                     <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-400/90 text-dark-900">PROSPECT</span>
+                      <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-400/90 text-dark-900">PROSPECT</span>
                     </div>
                     <div className="absolute bottom-4 left-5 right-5">
                       <h3 className="text-lg lg:text-xl font-bold text-white mb-1 leading-tight">{property.title}</h3>
@@ -163,7 +163,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                     <div className="flex gap-8">
                       <div>
                         <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-dark-500 mb-1">ASKING PRICE</p>
-                        <p className="text-base font-bold text-teal-400">{formatPrice(property.price ?? 0)}</p>
+                        <p className="text-base font-bold text-gold-400">{formatPrice(property.price ?? 0)}</p>
                       </div>
                       <div>
                         <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-dark-500 mb-1">YIELD</p>
@@ -174,7 +174,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                         <p className="text-base font-bold text-white">{property.squareFeet ? `${property.squareFeet.toLocaleString()} sqft` : "—"}</p>
                       </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full border border-dark-600/40 flex items-center justify-center text-dark-400 group-hover:border-teal-400/40 group-hover:text-teal-400 transition-colors">
+                    <div className="w-10 h-10 rounded-full border border-dark-600/40 flex items-center justify-center text-dark-400 group-hover:border-gold-400/40 group-hover:text-gold-400 transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                       </svg>

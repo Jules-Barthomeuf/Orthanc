@@ -45,7 +45,7 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-dark-400 text-sm">Loading...</p>
         </div>
       </div>
@@ -70,10 +70,10 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
     <div className="min-h-screen bg-dark-900 text-white">
       <PortalSidebar slug={slug} portalName={portal.name} />
 
-      <main className="ml-[220px] py-8 px-8">
+      <main className="pt-20 py-8 px-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="label-luxury text-teal-400 mb-2">TOOLS</p>
+          <p className="label-luxury text-gold-400 mb-2">TOOLS</p>
           <h1 className="text-3xl font-bold text-white mb-2">
             Simulator
           </h1>
@@ -91,21 +91,21 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
                 key={p.id}
                 onClick={() => setSelectedProperty(isSelected ? null : p)}
                 className={`text-left rounded-xl overflow-hidden border transition-all ${
-                  isSelected ? "border-teal-400 ring-1 ring-teal-400/30" : "border-dark-700 hover:border-dark-500"
+                  isSelected ? "border-gold-400 ring-1 ring-gold-400/30" : "border-dark-700 hover:border-dark-500"
                 }`}
               >
                 <div className="relative h-36">
                   <img src={img} alt={p.title} className="w-full h-full object-cover" />
                   {isSelected && (
-                    <div className="absolute inset-0 bg-teal-400/10 flex items-center justify-center">
-                      <span className="bg-teal-400 text-dark-900 text-xs font-bold px-3 py-1 rounded-full">Selected</span>
+                    <div className="absolute inset-0 bg-gold-400/10 flex items-center justify-center">
+                      <span className="bg-gold-400 text-dark-900 text-xs font-bold px-3 py-1 rounded-full">Selected</span>
                     </div>
                   )}
                 </div>
                 <div className="p-3 bg-dark-800">
                   <h3 className="text-sm font-medium text-white truncate">{p.title}</h3>
                   <p className="text-xs text-dark-400 truncate">{p.address}</p>
-                  <p className="text-sm text-teal-400 mt-1 font-semibold">{formatPrice(p.price)}</p>
+                  <p className="text-sm text-gold-400 mt-1 font-semibold">{formatPrice(p.price)}</p>
                 </div>
               </button>
             );

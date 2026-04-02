@@ -28,6 +28,7 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [activeThumb, setActiveThumb] = useState(0);
   const [showSimulator, setShowSimulator] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const images = property.images || [];
 
   return (
@@ -37,17 +38,28 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
         {/* ── Hero: Map + Thumbnails ── */}
         <div className="mb-8 grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-3">
           {/* Map */}
-          <div className="rounded-xl overflow-hidden border border-dark-600/20" style={{ height: 420 }}>
-            <iframe
-              title="Property Location"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || "")}&hl=en&z=16&ie=UTF8&iwloc=B&output=embed`}
-            />
+          <div className="rounded-xl overflow-hidden border border-dark-600/20 relative cursor-pointer group" style={{ height: 420 }}
+            onClick={() => images[activeThumb] && setLightboxImg(images[activeThumb])}
+          >
+            {images[activeThumb] ? (
+              <>
+                <img src={images[activeThumb]} alt={property.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">Click to enlarge</span>
+                </div>
+              </>
+            ) : (
+              <iframe
+                title="Property Location"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address || "")}&hl=en&z=16&ie=UTF8&iwloc=B&output=embed`}
+              />
+            )}
           </div>
           {/* Thumbnail column */}
           {images.length > 0 && (
@@ -56,11 +68,11 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
                 <button
                   key={i}
                   onClick={() => setActiveThumb(i)}
-                  className={`rounded-lg overflow-hidden border-2 transition-colors flex-1 min-h-0 ${
-                    activeThumb === i ? "border-teal-400" : "border-transparent hover:border-teal-400/30"
+                  className={`rounded-lg overflow-hidden border-2 transition-colors flex-1 min-h-0 cursor-pointer ${
+                    activeThumb === i ? "border-gold-400" : "border-transparent hover:border-gold-400/30"
                   }`}
                 >
-                  <img src={img} alt={`${property.title} ${i + 1}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`${property.title} ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                 </button>
               ))}
             </div>
@@ -119,7 +131,7 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
                 {tab.title}
               </span>
               <span
-                className={`absolute bottom-0 left-0 right-0 h-[2px] bg-teal-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+                className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gold-400 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
                   activeTab === tab.id ? "opacity-100" : "opacity-0"
                 }`}
               />
@@ -151,7 +163,7 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-dark-600/30 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                 </svg>
                 <h2 className="text-lg font-semibold text-white">Financial Simulator</h2>
@@ -170,6 +182,40 @@ export function PropertyVault({ property, portalSlug }: PropertyVaultProps) {
             <div className="flex-1 overflow-y-auto p-6">
               <Simulator address={property.address} price={property.price} />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Image Lightbox ── */}
+      {lightboxImg && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center" onClick={() => setLightboxImg(null)}>
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+          <div className="relative max-w-5xl max-h-[90vh] mx-4" onClick={(e) => e.stopPropagation()}>
+            <img src={lightboxImg} alt={property.title} className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+            <button
+              onClick={() => setLightboxImg(null)}
+              className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-dark-800 border border-dark-600/50 flex items-center justify-center text-white hover:bg-dark-700 transition-colors shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {/* Thumbnail strip */}
+            {images.length > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {images.map((img: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setLightboxImg(img)}
+                    className={`w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors ${
+                      lightboxImg === img ? "border-gold-400" : "border-transparent hover:border-gold-400/40"
+                    }`}
+                  >
+                    <img src={img} alt={`${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

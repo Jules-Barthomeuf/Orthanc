@@ -51,7 +51,7 @@ export default function PortalVaultPage({ params }: PortalVaultPageProps) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-dark-400 text-sm">Loading...</p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function PortalVaultPage({ params }: PortalVaultPageProps) {
   return (
     <div className="min-h-screen bg-dark-900">
       <PortalSidebar slug={slug} portalName={portal.name} />
-      <main className="ml-[220px]">
+      <main className="pt-20">
         <PropertyVault property={property} portalSlug={slug} />
       </main>
     </div>
