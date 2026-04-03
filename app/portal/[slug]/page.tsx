@@ -1,6 +1,7 @@
 "use client";
 
 import { PortalSidebar } from "@/components/common/PortalSidebar";
+import { FeedbackOverlay } from "@/components/client/FeedbackOverlay";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Property } from "@/types";
@@ -102,6 +103,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
 
   return (
     <div className="min-h-screen bg-dark-900">
+      <FeedbackOverlay itemId={slug} itemType="portal" />
       <PortalSidebar slug={slug} portalName={portal.name} />
 
       <main className="pt-20 min-h-screen">

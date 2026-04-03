@@ -1,6 +1,7 @@
 "use client";
 
 import { PortalSidebar } from "@/components/common/PortalSidebar";
+import { FeedbackOverlay } from "@/components/client/FeedbackOverlay";
 import { PropertyVault } from "@/components/client/PropertyVault";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -72,6 +73,7 @@ export default function PortalVaultPage({ params }: PortalVaultPageProps) {
 
   return (
     <div className="min-h-screen bg-dark-900">
+      <FeedbackOverlay itemId={propertyId} itemType="property" />
       <PortalSidebar slug={slug} portalName={portal.name} />
       <main className="pt-20">
         <PropertyVault property={property} portalSlug={slug} />
