@@ -39,9 +39,13 @@ function StarIcon({ filled, half }: { filled: boolean; half: boolean }) {
   );
 }
 
+const INITIAL_DELAY = 60_000; // 1 minute
+const SNOOZE_DELAY = 120_000; // 2 minutes
+
 export function FeedbackOverlay({ itemId, itemType }: FeedbackOverlayProps) {
   const storageKey = `feedback-submitted-${itemType}-${itemId}`;
   const [alreadySubmitted, setAlreadySubmitted] = useState(true); // hide by default
+  const [visible, setVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -51,10 +55,27 @@ export function FeedbackOverlay({ itemId, itemType }: FeedbackOverlayProps) {
 
   useEffect(() => {
     const done = localStorage.getItem(storageKey);
-    setAlreadySubmitted(done === "true");
+    if (done === "true") {
+      setAlreadySubmitted(true);
+      return;
+    }
+    setAlreadySubmitted(false);
+    // Show after initial delay
+    const timer = setTimeout(() => setVisible(true), INITIAL_DELAY);
+    return () => clearTimeout(timer);
   }, [storageKey]);
 
-  if (alreadySubmitted) return null;
+  const handleAskLater = () => {
+    setVisible(false);
+    // Reset form state so it's fresh when it reappears
+    setRating(0);
+    setHoverRating(0);
+    setComment("");
+    setStep("rate");
+    setTimeout(() => setVisible(true), SNOOZE_DELAY);
+  };
+
+  if (alreadySubmitted || !visible) return null;
 
   const handleStarInteraction = (starIndex: number, isHalf: boolean) => {
     const value = isHalf ? starIndex + 0.5 : starIndex + 1;
@@ -122,6 +143,17 @@ export function FeedbackOverlay({ itemId, itemType }: FeedbackOverlayProps) {
   return (
     <div className="fixed inset-0 z-[9999] bg-dark-900/90 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-dark-800 border border-gold-400/20 rounded-2xl p-8 md:p-10 max-w-md w-full animate-fade-up">
+        {/* Ask me later */}
+        <div className="flex justify-end mb-2">
+          <button
+            type="button"
+            onClick={handleAskLater}
+            className="text-dark-500 hover:text-dark-300 text-xs transition-colors"
+          >
+            Ask me later
+          </button>
+        </div>
+
         {/* Step 1: Rating */}
         <div className="text-center mb-8">
           <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-gold-400 mb-3">
