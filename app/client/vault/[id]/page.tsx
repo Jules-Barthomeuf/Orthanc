@@ -22,11 +22,10 @@ export default function VaultPage({ params }: VaultPageProps) {
     document.title = 'Orthanc - Vault';
     (async () => {
       try {
-        const res = await fetch("/api/properties");
+        const res = await fetch(`/api/properties?ids=${encodeURIComponent(id)}`);
         if (!res.ok) return;
-        const all: Property[] = await res.json();
-        const found = all.find((p) => p.id === id) || null;
-        setProperty(found);
+        const results: Property[] = await res.json();
+        setProperty(results[0] || null);
       } catch (err) {
         console.error(err);
       } finally {

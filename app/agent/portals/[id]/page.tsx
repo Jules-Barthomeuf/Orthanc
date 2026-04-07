@@ -53,7 +53,7 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
       try {
         const [portalRes, propsRes] = await Promise.all([
           fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`),
-          fetch("/api/properties"),
+          fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}`),
         ]);
         if (portalRes.ok) {
           const portals: Portal[] = await portalRes.json();

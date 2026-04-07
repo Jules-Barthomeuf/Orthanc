@@ -53,13 +53,12 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
           document.title = `${portalData.name} - Orthanc`;
         }
 
-        // Fetch all properties and filter by portal
+        // Fetch only portal properties by IDs
         if (portalData.propertyIds.length > 0) {
-          const propsRes = await fetch("/api/properties");
+          const idsParam = encodeURIComponent(portalData.propertyIds.join(","));
+          const propsRes = await fetch(`/api/properties?ids=${idsParam}`);
           if (propsRes.ok) {
-            const all: Property[] = await propsRes.json();
-            const portalProps = all.filter((p) => portalData.propertyIds.includes(p.id));
-            setProperties(portalProps);
+            setProperties(await propsRes.json());
           }
         }
       } catch (err) {

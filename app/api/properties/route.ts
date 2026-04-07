@@ -1,5 +1,6 @@
 import {
   readProperties,
+  readPropertiesByIds,
   writePropertiesBulk,
   saveProperty,
   deleteProperty,
@@ -10,8 +11,11 @@ import { generateMarketData } from "@/lib/marketDataGenerator";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const agentId = searchParams.get("agentId");
+  const ids = searchParams.get("ids");
 
-  const properties = await readProperties();
+  const properties = ids
+    ? await readPropertiesByIds(ids.split(",").filter(Boolean))
+    : await readProperties();
   // Auto-enrich properties missing complete market data
   const enrichedProperties: typeof properties = [];
   for (let i = 0; i < properties.length; i++) {

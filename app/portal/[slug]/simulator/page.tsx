@@ -30,10 +30,10 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
         setPortal(portalData);
         if (typeof document !== "undefined") document.title = `Simulator - ${portalData.name} - Orthanc`;
         if (portalData.propertyIds.length > 0) {
-          const propsRes = await fetch("/api/properties");
+          const idsParam = encodeURIComponent(portalData.propertyIds.join(","));
+          const propsRes = await fetch(`/api/properties?ids=${idsParam}`);
           if (propsRes.ok) {
-            const all: Property[] = await propsRes.json();
-            setProperties(all.filter((p) => portalData.propertyIds.includes(p.id)));
+            setProperties(await propsRes.json());
           }
         }
       } catch (err) { console.error(err); setNotFound(true); }

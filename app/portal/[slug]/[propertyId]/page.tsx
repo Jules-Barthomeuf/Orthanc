@@ -32,10 +32,10 @@ export default function PortalVaultPage({ params }: PortalVaultPageProps) {
         const portalData: Portal = await portalRes.json();
         setPortal(portalData);
         if (!portalData.propertyIds.includes(propertyId)) return;
-        const propsRes = await fetch("/api/properties");
+        const propsRes = await fetch(`/api/properties?ids=${encodeURIComponent(propertyId)}`);
         if (!propsRes.ok) return;
-        const all: Property[] = await propsRes.json();
-        const found = all.find((p) => p.id === propertyId) || null;
+        const results: Property[] = await propsRes.json();
+        const found = results[0] || null;
         setProperty(found);
         if (found && typeof document !== "undefined") {
           document.title = `${found.title} - ${portalData.name} - Orthanc`;

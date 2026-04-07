@@ -197,6 +197,15 @@ export async function readProperties(): Promise<Property[]> {
   return rows.map(mapRowToProperty);
 }
 
+export async function readPropertiesByIds(ids: string[]): Promise<Property[]> {
+  if (!ids.length) return [];
+  const res = await supabaseRequest("GET", {
+    query: { select: "*", id: `in.(${ids.join(",")})`, order: "created_at.desc" },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return rows.map(mapRowToProperty);
+}
+
 export async function writePropertiesBulk(properties: Property[]) {
   if (!properties || properties.length === 0) return;
   await supabaseRequest("POST", {
