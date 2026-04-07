@@ -1,15 +1,18 @@
 import {
   readProperties,
+  writePropertiesBulk,
   saveProperty,
   deleteProperty,
   updateProperty,
 } from "@/lib/propertyStorage";
 import { generateMarketData } from "@/lib/marketDataGenerator";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const agentId = searchParams.get("agentId");
+
   const properties = await readProperties();
   // Auto-enrich properties missing complete market data
-  // SAFE: save each enriched property individually to avoid overwriting concurrent uploads
   const enrichedProperties: typeof properties = [];
   for (let i = 0; i < properties.length; i++) {
     const p = properties[i];
@@ -26,13 +29,19 @@ export async function GET() {
       enrichedProperties.push(enriched);
     }
   }
-  // Persist ONLY the enriched properties individually (never bulk-overwrite the whole store)
+  // Persist enriched properties in a single bulk upsert
   if (enrichedProperties.length > 0) {
-    for (const ep of enrichedProperties) {
-      await saveProperty(ep);
-    }
+    await writePropertiesBulk(enrichedProperties);
   }
-  return new Response(JSON.stringify(properties), { status: 200 });
+
+  const result = agentId
+    ? properties.filter((p) => p.agentId === agentId)
+    : properties;
+
+  return new Response(JSON.stringify(result), {
+    status: 200,
+    headers: { "Cache-Control": "private, max-age=5" },
+  });
 }
 
 export async function POST(req: Request) {
