@@ -22,7 +22,7 @@ export default function ClientPropertiesPage() {
     }
     (async () => {
       try {
-        const res = await fetch("/api/properties");
+        const res = await fetch("/api/properties?summary=1");
         if (!res.ok) return;
         const all: Property[] = await res.json();
         setProperties(all);

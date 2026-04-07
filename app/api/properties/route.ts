@@ -1,6 +1,10 @@
 import {
   readProperties,
+  readPropertySummaries,
+  readPropertiesByAgent,
+  readPropertySummariesByAgent,
   readPropertiesByIds,
+  readPropertySummariesByIds,
   writePropertiesBulk,
   saveProperty,
   deleteProperty,
@@ -11,40 +15,48 @@ import { generateMarketData } from "@/lib/marketDataGenerator";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const agentId = searchParams.get("agentId");
-  const ids = searchParams.get("ids");
+  const ids = searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
+  const summary = searchParams.get("summary");
+  const isSummary = summary === "1" || summary === "true";
 
-  const properties = ids
-    ? await readPropertiesByIds(ids.split(",").filter(Boolean))
-    : await readProperties();
-  // Auto-enrich properties missing complete market data
-  const enrichedProperties: typeof properties = [];
-  for (let i = 0; i < properties.length; i++) {
-    const p = properties[i];
-    const md = p.marketData || {} as any;
-    const inv = p.investmentAnalysis || {} as any;
-    const hasMarket = md.neighborhood && md.city && md.demographics && md.marketTrends;
-    const hasInvestment = inv.currentValue && inv.projectedValue5Year && inv.capRate;
-    if ((!hasMarket || !hasInvestment) && p.address && p.price) {
-      const generated = generateMarketData(p.address, p.price);
-      let enriched = properties[i];
-      if (!hasMarket) enriched = { ...enriched, marketData: generated.marketData };
-      if (!hasInvestment) enriched = { ...enriched, investmentAnalysis: generated.investmentAnalysis };
-      properties[i] = enriched;
-      enrichedProperties.push(enriched);
+  const properties = ids.length > 0
+    ? isSummary
+      ? await readPropertySummariesByIds(ids)
+      : await readPropertiesByIds(ids)
+    : agentId
+      ? isSummary
+        ? await readPropertySummariesByAgent(agentId)
+        : await readPropertiesByAgent(agentId)
+      : isSummary
+        ? await readPropertySummaries()
+        : await readProperties();
+
+  if (!isSummary) {
+    const enrichedProperties: typeof properties = [];
+    for (let i = 0; i < properties.length; i++) {
+      const p = properties[i];
+      const md = p.marketData || {} as any;
+      const inv = p.investmentAnalysis || {} as any;
+      const hasMarket = md.neighborhood && md.city && md.demographics && md.marketTrends;
+      const hasInvestment = inv.currentValue && inv.projectedValue5Year && inv.capRate;
+      if ((!hasMarket || !hasInvestment) && p.address && p.price) {
+        const generated = generateMarketData(p.address, p.price);
+        let enriched = properties[i];
+        if (!hasMarket) enriched = { ...enriched, marketData: generated.marketData };
+        if (!hasInvestment) enriched = { ...enriched, investmentAnalysis: generated.investmentAnalysis };
+        properties[i] = enriched;
+        enrichedProperties.push(enriched);
+      }
+    }
+
+    if (enrichedProperties.length > 0) {
+      await writePropertiesBulk(enrichedProperties);
     }
   }
-  // Persist enriched properties in a single bulk upsert
-  if (enrichedProperties.length > 0) {
-    await writePropertiesBulk(enrichedProperties);
-  }
 
-  const result = agentId
-    ? properties.filter((p) => p.agentId === agentId)
-    : properties;
-
-  return new Response(JSON.stringify(result), {
+  return new Response(JSON.stringify(properties), {
     status: 200,
-    headers: { "Cache-Control": "private, max-age=5" },
+    headers: { "Cache-Control": isSummary ? "private, max-age=30, stale-while-revalidate=60" : "private, max-age=5" },
   });
 }
 

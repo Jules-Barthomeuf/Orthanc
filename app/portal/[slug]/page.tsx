@@ -56,7 +56,7 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
         // Fetch only portal properties by IDs
         if (portalData.propertyIds.length > 0) {
           const idsParam = encodeURIComponent(portalData.propertyIds.join(","));
-          const propsRes = await fetch(`/api/properties?ids=${idsParam}`);
+          const propsRes = await fetch(`/api/properties?ids=${idsParam}&summary=1`);
           if (propsRes.ok) {
             setProperties(await propsRes.json());
           }

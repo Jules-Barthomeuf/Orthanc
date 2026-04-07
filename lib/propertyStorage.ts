@@ -53,6 +53,36 @@ const COLUMN_ALIASES: Record<string, string> = {
 
 const ARRAY_FIELDS = new Set(["images", "documents", "maintenanceHistory", "ownershipHistory"]);
 const JSON_FIELDS = new Set(["marketData", "investmentAnalysis"]);
+const SUMMARY_SELECT = [
+  "id",
+  "title",
+  "address",
+  "price",
+  "images",
+  "agent_id",
+  "created_at",
+  "bedroom",
+  "bathroom",
+  "square_feet",
+  "year_built",
+  "lot",
+  "investment_analysis",
+  "cap_rate",
+  "locked",
+].join(",");
+
+function buildIdsFilter(ids: string[]) {
+  const quoted = ids
+    .filter(Boolean)
+    .map((id) => `"${String(id).replace(/"/g, '\\"')}"`)
+    .join(",");
+  return `in.(${quoted})`;
+}
+
+function sortByRequestedIds(properties: Property[], ids: string[]) {
+  const order = new Map(ids.map((id, index) => [id, index]));
+  return [...properties].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+}
 
 function ensureSupabaseConfig() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
@@ -197,13 +227,46 @@ export async function readProperties(): Promise<Property[]> {
   return rows.map(mapRowToProperty);
 }
 
-export async function readPropertiesByIds(ids: string[]): Promise<Property[]> {
-  if (!ids.length) return [];
+export async function readPropertySummaries(): Promise<Property[]> {
   const res = await supabaseRequest("GET", {
-    query: { select: "*", id: `in.(${ids.join(",")})`, order: "created_at.desc" },
+    query: { select: SUMMARY_SELECT, order: "created_at.desc" },
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);
+}
+
+export async function readPropertiesByAgent(agentId: string): Promise<Property[]> {
+  const res = await supabaseRequest("GET", {
+    query: { select: "*", agent_id: `eq.${agentId}`, order: "created_at.desc" },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return rows.map(mapRowToProperty);
+}
+
+export async function readPropertySummariesByAgent(agentId: string): Promise<Property[]> {
+  const res = await supabaseRequest("GET", {
+    query: { select: SUMMARY_SELECT, agent_id: `eq.${agentId}`, order: "created_at.desc" },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return rows.map(mapRowToProperty);
+}
+
+export async function readPropertiesByIds(ids: string[]): Promise<Property[]> {
+  if (!ids.length) return [];
+  const res = await supabaseRequest("GET", {
+    query: { select: "*", id: buildIdsFilter(ids) },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return sortByRequestedIds(rows.map(mapRowToProperty), ids);
+}
+
+export async function readPropertySummariesByIds(ids: string[]): Promise<Property[]> {
+  if (!ids.length) return [];
+  const res = await supabaseRequest("GET", {
+    query: { select: SUMMARY_SELECT, id: buildIdsFilter(ids) },
+  });
+  const rows = (await res.json()) as PropertyRow[];
+  return sortByRequestedIds(rows.map(mapRowToProperty), ids);
 }
 
 export async function writePropertiesBulk(properties: Property[]) {

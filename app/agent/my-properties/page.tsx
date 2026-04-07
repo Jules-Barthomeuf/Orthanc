@@ -270,7 +270,7 @@ export default function MyPropertiesPage() {
       try {
         setLoading(true);
         const [propsRes, portalsRes] = await Promise.all([
-          fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}`),
+          fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1`),
           fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`),
         ]);
         if (propsRes.ok) {
