@@ -297,11 +297,7 @@ export default function MyPropertiesPage() {
     let result = [...properties];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.title?.toLowerCase().includes(q) ||
-          p.address?.toLowerCase().includes(q)
-      );
+      result = result.filter((p) => p.title?.toLowerCase().includes(q));
     }
     switch (sortBy) {
       case "price-high":
@@ -479,7 +475,7 @@ export default function MyPropertiesPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name or address..."
+                  placeholder="Search by property name..."
                   className="w-full bg-dark-800 border border-dark-600/20 text-white rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
                 />
               </div>
@@ -688,6 +684,8 @@ export default function MyPropertiesPage() {
                       <img
                         src={property.images[0]}
                         alt={property.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
                       />
                     ) : (
@@ -710,18 +708,14 @@ export default function MyPropertiesPage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/70 via-dark-900/10 to-transparent" />
 
-                    {/* Price badge */}
-                    <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                      <span className="font-display text-xl font-bold text-white drop-shadow-lg">
-                        ${property.price?.toLocaleString()}
-                      </span>
-                      {property.locked && (
+                    {property.locked && (
+                      <div className="absolute bottom-3 left-4">
                         <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold-400/30">
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                           LOCKED
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -757,92 +751,7 @@ export default function MyPropertiesPage() {
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1m2 0v9a1 1 0 01-1 1H5a1 1 0 01-1-1V4h10zM7 7v4M9 7v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
                     </div>
-                    <p className="text-dark-400 text-xs mb-4 flex items-center gap-1.5 line-clamp-1">
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        className="shrink-0 text-dark-500"
-                      >
-                        <path
-                          d="M6 1C4.067 1 2.5 2.567 2.5 4.5 2.5 7.5 6 11 6 11s3.5-3.5 3.5-6.5C9.5 2.567 7.933 1 6 1z"
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="6"
-                          cy="4.5"
-                          r="1"
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        />
-                      </svg>
-                      {property.address}
-                    </p>
 
-                    {/* Quick stats */}
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1.5 text-dark-300 bg-dark-700/50 px-2.5 py-1.5 rounded-md">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
-                          fill="none"
-                          className="text-gold-400/60"
-                        >
-                          <path
-                            d="M1 11V7a1 1 0 011-1h3a1 1 0 011 1v4M8 11V4a1 1 0 011-1h3a1 1 0 011 1v7"
-                            stroke="currentColor"
-                            strokeWidth="1"
-                          />
-                          <path d="M0 11h14" stroke="currentColor" strokeWidth="1" />
-                        </svg>
-                        {property.bedroom} bd
-                      </span>
-                      <span className="flex items-center gap-1.5 text-dark-300 bg-dark-700/50 px-2.5 py-1.5 rounded-md">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
-                          fill="none"
-                          className="text-gold-400/60"
-                        >
-                          <path
-                            d="M1 7h12v2a2 2 0 01-2 2H3a2 2 0 01-2-2V7zM2 7V4"
-                            stroke="currentColor"
-                            strokeWidth="1"
-                          />
-                        </svg>
-                        {property.bathroom} ba
-                      </span>
-                      <span className="flex items-center gap-1.5 text-dark-300 bg-dark-700/50 px-2.5 py-1.5 rounded-md">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
-                          fill="none"
-                          className="text-gold-400/60"
-                        >
-                          <rect
-                            x="2"
-                            y="2"
-                            width="10"
-                            height="10"
-                            rx="1"
-                            stroke="currentColor"
-                            strokeWidth="1"
-                          />
-                          <path
-                            d="M2 7h10M7 2v10"
-                            stroke="currentColor"
-                            strokeWidth="0.8"
-                            strokeDasharray="1.5 1.5"
-                          />
-                        </svg>
-                        {property.squareFeet?.toLocaleString()} ft&sup2;
-                      </span>
-                    </div>
 
                     {/* Add to Portal */}
                     {portals.length > 0 && (
@@ -897,6 +806,8 @@ export default function MyPropertiesPage() {
                       <img
                         src={property.images[0]}
                         alt={property.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -932,22 +843,6 @@ export default function MyPropertiesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-dark-400 text-xs truncate">
-                      {property.address}
-                    </p>
-                  </div>
-
-                  {/* Metrics */}
-                  <div className="hidden md:flex items-center gap-6 text-xs text-dark-300 shrink-0">
-                    <span>{property.bedroom} bd / {property.bathroom} ba</span>
-                    <span>{property.squareFeet?.toLocaleString()} ft&sup2;</span>
-                  </div>
-
-                  {/* Price */}
-                  <div className="shrink-0 text-right">
-                    <span className="font-display text-lg font-bold text-gold-400">
-                      ${property.price?.toLocaleString()}
-                    </span>
                   </div>
 
                   {/* Delete + Lock + Arrow */}

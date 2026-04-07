@@ -56,18 +56,11 @@ const JSON_FIELDS = new Set(["marketData", "investmentAnalysis"]);
 const SUMMARY_SELECT = [
   "id",
   "title",
-  "address",
-  "price",
   "images",
   "agent_id",
   "created_at",
-  "bedroom",
-  "bathroom",
+  "price",
   "square_feet",
-  "year_built",
-  "lot",
-  "investment_analysis",
-  "cap_rate",
   "locked",
 ].join(",");
 

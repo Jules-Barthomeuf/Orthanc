@@ -76,43 +76,32 @@ export default function ClientPropertiesPage() {
               {properties.map((property, idx) => (
                 <div key={property.id} className="bg-dark-800 border border-dark-700/50 rounded-lg overflow-hidden group hover:border-gold-400/25 transition-all duration-300" style={{ animation: `fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${0.1 + idx * 0.1}s both` }}>
                   <div className="relative h-56 bg-dark-700 overflow-hidden">
-                    {property.images?.[0] && (
+                    {property.images?.[0] ? (
                       <img
                         src={property.images[0]}
                         alt={property.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-dark-600">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21" />
+                        </svg>
+                      </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent"></div>
-                    <div className="absolute top-4 left-4">
-                      <span className="label-luxury text-gold-400 bg-dark-900/80 px-3 py-1 rounded text-[10px]">
-                        Featured
-                      </span>
-                    </div>
                   </div>
 
                   <div className="p-6">
-                    <h3 className="font-sans text-xl font-bold text-white mb-1">{property.title}</h3>
-                    <p className="text-dark-400 text-sm mb-5">{property.address}</p>
-
-                    <div className="space-y-0 mb-6">
-                      <div className="property-row">
-                        <span className="property-label">Price</span>
-                        <span className="property-value text-gold-400">
-                          ${((property.price ?? 0) / 1000000).toFixed(2)}M
-                        </span>
-                      </div>
-                      <div className="property-row">
-                        <span className="property-label">Bedrooms</span>
-                        <span className="property-value">{property.bedroom}bd • {property.bathroom}ba</span>
-                      </div>
-                    </div>
+                    <h3 className="font-sans text-xl font-bold text-white mb-4">{property.title}</h3>
 
                     <Link
                       href={`/client/vault/${property.id}`}
                       className="luxury-button-primary block text-center w-full text-sm"
                     >
-                      View Vault
+                      Open Property
                     </Link>
                   </div>
                 </div>
