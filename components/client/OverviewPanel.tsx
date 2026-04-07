@@ -13,7 +13,7 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
     <div className="space-y-8">
       {/* Description */}
       <div className="bg-dark-800 border border-dark-700/50 rounded-lg p-8">
-        <h2 className="heading-luxury text-3xl text-white mb-2">About this Property</h2>
+        <h2 className="font-sans text-xl text-white mb-2">About this Property</h2>
         <div className="gold-line-left w-20 mb-6"></div>
         <p className="text-white/80 leading-relaxed text-base">
           {property.description}

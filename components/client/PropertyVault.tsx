@@ -17,7 +17,7 @@ const TABS = [
   { id: "technical", title: "Property" },
   { id: "lease", title: "Lease Analysis" },
   { id: "provenance", title: "Provenance" },
-  { id: "advisor", title: "Documents" },
+  { id: "advisor", title: "Investment Advisor" },
 ];
 
 /* ─── Inline editable field ─── */
