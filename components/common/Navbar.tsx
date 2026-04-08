@@ -33,9 +33,15 @@ const agentMenuItems = (navigate: (path: string) => void): MegaMenuItem[] => [
         title: "Manage",
         items: [
           {
-            label: "My Properties",
-            description: "View & edit your listings",
+            label: "Properties",
+            description: "Fast gallery of your listings",
             icon: Building2,
+            href: "/agent/properties",
+          },
+          {
+            label: "Property Manager",
+            description: "Edit listings and portals",
+            icon: LayoutDashboard,
             href: "/agent/my-properties",
           },
           {

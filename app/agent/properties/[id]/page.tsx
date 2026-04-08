@@ -10,6 +10,8 @@ import { useToastStore } from "@/lib/toast";
 import Link from "next/link";
 import { Property } from "@/types";
 
+const getPropertyDetailCacheKey = (propertyId: string) => `agentPropertyDetail:${propertyId}`;
+
 /* Page title */
 if (typeof document !== 'undefined') document.title = 'Orthanc - Property';
 
@@ -39,22 +41,49 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
   useEffect(() => {
     if (!user || user.role !== "agent") {
       router.push("/login");
+      return;
     }
+
+    let cancelled = false;
+    const cacheKey = getPropertyDetailCacheKey(id);
+
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && !cancelled) {
+          setProperty(parsed);
+          setShareLink(`${window.location.origin}/client/vault/${id}`);
+          setLoading(false);
+        }
+      }
+    } catch {
+      // ignore cache read failures
+    }
+
     (async () => {
-      if (!user || user.role !== "agent") return;
       try {
-        const res = await fetch('/api/properties');
-        if (!res.ok) return;
-        const all = await res.json();
-        const found = all.find((p: any) => p.id === id);
-        setProperty(found || null);
-        if (found) setShareLink(`${window.location.origin}/client/vault/${found.id}`);
+        const res = await fetch(`/api/properties?ids=${encodeURIComponent(id)}`);
+        if (!res.ok || cancelled) return;
+        const results = await res.json();
+        const found = results[0] || null;
+        setProperty(found);
+        if (found) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(found));
+          setShareLink(`${window.location.origin}/client/vault/${found.id}`);
+        }
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, router, id]);
 
   /* ─── Editing handlers ─── */
@@ -181,7 +210,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
         <div className="min-h-screen bg-dark-900 flex items-center justify-center pt-20">
           <div className="text-center">
             <h1 className="font-display text-2xl font-bold mb-4">Property not found</h1>
-            <Link href="/agent/my-properties" className="luxury-button-primary">
+            <Link href="/agent/properties" className="luxury-button-primary">
               Back to Properties
             </Link>
           </div>
@@ -196,7 +225,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
       <Navbar />
       <main className="pt-20 pb-16 bg-dark-900 min-h-screen">
         <div className="max-w-7xl mx-auto px-6 pt-4 mb-4">
-          <Link href="/agent/my-properties" className="text-dark-400 hover:text-gold-400 transition text-sm flex items-center gap-2">
+          <Link href="/agent/properties" className="text-dark-400 hover:text-gold-400 transition text-sm flex items-center gap-2">
             <span>←</span> Back to Properties
           </Link>
         </div>
@@ -245,7 +274,7 @@ export default function PropertyEditPage({ params }: PropertyPageProps) {
                     const res = await fetch(`/api/properties?id=${encodeURIComponent(id)}`, { method: "DELETE" });
                     if (res.ok) {
                       addToast({ type: "success", message: "Property deleted" });
-                      router.push("/agent/my-properties");
+                      router.push("/agent/properties");
                     } else {
                       addToast({ type: "error", message: "Failed to delete property" });
                     }
