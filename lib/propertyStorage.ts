@@ -59,8 +59,6 @@ const SUMMARY_SELECT = [
   "images",
   "agent_id",
   "created_at",
-  "price",
-  "square_feet",
   "locked",
 ].join(",");
 

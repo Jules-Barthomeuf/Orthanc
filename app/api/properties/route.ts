@@ -12,12 +12,54 @@ import {
 } from "@/lib/propertyStorage";
 import { generateMarketData } from "@/lib/marketDataGenerator";
 
+const SUMMARY_CACHE_TTL_MS = 30_000;
+const summaryCache = new Map<string, { expiresAt: number; payload: string }>();
+
+function getSummaryCacheKey(agentId: string | null, ids: string[]) {
+  return JSON.stringify({ agentId: agentId ?? "", ids });
+}
+
+function getCachedSummary(cacheKey: string) {
+  const cached = summaryCache.get(cacheKey);
+  if (!cached) return null;
+  if (cached.expiresAt < Date.now()) {
+    summaryCache.delete(cacheKey);
+    return null;
+  }
+  return cached.payload;
+}
+
+function setCachedSummary(cacheKey: string, data: unknown) {
+  summaryCache.set(cacheKey, {
+    expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS,
+    payload: JSON.stringify(data),
+  });
+}
+
+function clearSummaryCache() {
+  summaryCache.clear();
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const agentId = searchParams.get("agentId");
   const ids = searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
   const summary = searchParams.get("summary");
   const isSummary = summary === "1" || summary === "true";
+  const responseHeaders = {
+    "Cache-Control": isSummary ? "private, max-age=30, stale-while-revalidate=60" : "private, max-age=5",
+  };
+
+  if (isSummary) {
+    const cacheKey = getSummaryCacheKey(agentId, ids);
+    const cachedPayload = getCachedSummary(cacheKey);
+    if (cachedPayload) {
+      return new Response(cachedPayload, {
+        status: 200,
+        headers: responseHeaders,
+      });
+    }
+  }
 
   const properties = ids.length > 0
     ? isSummary
@@ -54,9 +96,13 @@ export async function GET(req: Request) {
     }
   }
 
+  if (isSummary) {
+    setCachedSummary(getSummaryCacheKey(agentId, ids), properties);
+  }
+
   return new Response(JSON.stringify(properties), {
     status: 200,
-    headers: { "Cache-Control": isSummary ? "private, max-age=30, stale-while-revalidate=60" : "private, max-age=5" },
+    headers: responseHeaders,
   });
 }
 
@@ -100,6 +146,7 @@ export async function POST(req: Request) {
     locked: body.locked !== undefined ? body.locked : true, // Auto-lock new properties
   });
 
+  clearSummaryCache();
   return new Response(JSON.stringify(newProp), { status: 201 });
 }
 
@@ -110,6 +157,7 @@ export async function PATCH(req: Request) {
   if (body.lockAll !== undefined) {
     const { lockAllProperties } = await import("@/lib/propertyStorage");
     const count = await lockAllProperties(!!body.lockAll);
+    clearSummaryCache();
     return new Response(JSON.stringify({ success: true, count }), { status: 200 });
   }
 
@@ -130,6 +178,7 @@ export async function PATCH(req: Request) {
     );
   }
 
+  clearSummaryCache();
   return new Response(JSON.stringify(updated), { status: 200 });
 }
 
@@ -158,5 +207,6 @@ export async function DELETE(req: Request) {
     );
   }
 
+  clearSummaryCache();
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 }

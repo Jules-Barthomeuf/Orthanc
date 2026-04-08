@@ -15,7 +15,7 @@ import { useToastStore } from "@/lib/toast";
 /* Page title */
 if (typeof document !== 'undefined') document.title = 'Orthanc - My Properties';
 
-type SortKey = "newest" | "price-high" | "price-low" | "name";
+type SortKey = "newest" | "name";
 type ViewMode = "grid" | "list";
 
 export default function MyPropertiesPage() {
@@ -39,8 +39,28 @@ export default function MyPropertiesPage() {
 
   // Portal state
   const [portals, setPortals] = useState<any[]>([]);
+  const [portalsLoaded, setPortalsLoaded] = useState(false);
+  const [portalsLoading, setPortalsLoading] = useState(false);
   const [addToPortalId, setAddToPortalId] = useState<string | null>(null);
   const [addingToPortal, setAddingToPortal] = useState(false);
+
+  const loadPortals = async () => {
+    if (!user || user.role !== "agent" || portalsLoaded || portalsLoading) return;
+    setPortalsLoading(true);
+    try {
+      const portalsRes = await fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`);
+      if (portalsRes.ok) {
+        setPortals(await portalsRes.json());
+        setPortalsLoaded(true);
+      } else {
+        addToast({ type: "error", message: "Failed to load portals" });
+      }
+    } catch {
+      addToast({ type: "error", message: "Failed to load portals" });
+    } finally {
+      setPortalsLoading(false);
+    }
+  };
 
   const handleAddToPortal = async (propertyId: string, portalId: string) => {
     setAddingToPortal(true);
@@ -303,17 +323,6 @@ export default function MyPropertiesPage() {
       }
     })();
 
-    (async () => {
-      try {
-        const portalsRes = await fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`);
-        if (portalsRes.ok && !cancelled) {
-          setPortals(await portalsRes.json());
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    })();
-
     return () => {
       cancelled = true;
     };
@@ -341,12 +350,6 @@ export default function MyPropertiesPage() {
       result = result.filter((p) => p.title?.toLowerCase().includes(q));
     }
     switch (sortBy) {
-      case "price-high":
-        result.sort((a, b) => (b.price || 0) - (a.price || 0));
-        break;
-      case "price-low":
-        result.sort((a, b) => (a.price || 0) - (b.price || 0));
-        break;
       case "name":
         result.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
         break;
@@ -358,11 +361,6 @@ export default function MyPropertiesPage() {
     }
     return result;
   }, [properties, searchQuery, sortBy]);
-
-  const totalValue = useMemo(
-    () => properties.reduce((sum, p) => sum + (p.price || 0), 0),
-    [properties]
-  );
 
   if (!user || user.role !== "agent") {
     return null;
@@ -447,39 +445,9 @@ export default function MyPropertiesPage() {
               </div>
             </div>
 
-            {/* Stats row */}
             {!loading && properties.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-up-d1">
-                {[
-                  {
-                    label: "Total Listings",
-                    value: properties.length.toString(),
-                  },
-                  {
-                    label: "Portfolio Value",
-                    value: `$${totalValue >= 1_000_000 ? (totalValue / 1_000_000).toFixed(1) + "M" : totalValue.toLocaleString()}`,
-                  },
-                  {
-                    label: "Avg. Price",
-                    value: `$${properties.length > 0 ? Math.round(totalValue / properties.length).toLocaleString() : "0"}`,
-                  },
-                  {
-                    label: "Avg. Size",
-                    value: `${properties.length > 0 ? Math.round(properties.reduce((s: number, p: any) => s + (p.squareFeet || 0), 0) / properties.length).toLocaleString() : "0"} sqft`,
-                  },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="bg-dark-800/60 border border-gold-400/[0.07] rounded-xl px-5 py-4 backdrop-blur-sm"
-                  >
-                    <p className="text-dark-400 text-[11px] font-sans uppercase tracking-widest mb-1">
-                      {stat.label}
-                    </p>
-                    <p className="text-white font-display text-2xl font-bold">
-                      {stat.value}
-                    </p>
-                  </div>
-                ))}
+              <div className="animate-fade-up-d1">
+                <p className="text-dark-400 text-sm">{properties.length} properties ready to open</p>
               </div>
             )}
           </div>
@@ -534,8 +502,6 @@ export default function MyPropertiesPage() {
                   }}
                 >
                   <option value="newest">Newest First</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="price-low">Price: Low to High</option>
                   <option value="name">Alphabetical</option>
                 </select>
 
@@ -795,18 +761,30 @@ export default function MyPropertiesPage() {
 
 
                     {/* Add to Portal */}
-                    {portals.length > 0 && (
-                      <div className="relative mt-3">
-                        <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAddToPortalId(addToPortalId === property.id ? null : property.id); }}
-                          className="w-full flex items-center justify-center gap-1.5 text-xs text-dark-400 hover:text-gold-400 border border-dark-600/20 hover:border-gold-400/20 rounded-lg py-2 transition-colors"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3"/><circle cx="4.5" cy="4.75" r="0.75" fill="currentColor"/><circle cx="7" cy="4.75" r="0.75" fill="currentColor"/></svg>
-                          Add to Portal
-                        </button>
-                        {addToPortalId === property.id && (
-                          <div className="absolute bottom-full left-0 right-0 mb-1 bg-dark-800 border border-gold-400/10 rounded-lg shadow-xl z-20 overflow-hidden">
-                            {portals.map((portal: any) => {
+                    <div className="relative mt-3">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const isOpen = addToPortalId === property.id;
+                          setAddToPortalId(isOpen ? null : property.id);
+                          if (!isOpen) {
+                            void loadPortals();
+                          }
+                        }}
+                        className="w-full flex items-center justify-center gap-1.5 text-xs text-dark-400 hover:text-gold-400 border border-dark-600/20 hover:border-gold-400/20 rounded-lg py-2 transition-colors"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3"/><circle cx="4.5" cy="4.75" r="0.75" fill="currentColor"/><circle cx="7" cy="4.75" r="0.75" fill="currentColor"/></svg>
+                        {portalsLoading && addToPortalId === property.id ? 'Loading Portals...' : 'Add to Portal'}
+                      </button>
+                      {addToPortalId === property.id && (
+                        <div className="absolute bottom-full left-0 right-0 mb-1 bg-dark-800 border border-gold-400/10 rounded-lg shadow-xl z-20 overflow-hidden">
+                          {portalsLoading ? (
+                            <div className="px-3 py-2 text-xs text-dark-400">Loading portals...</div>
+                          ) : portals.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-dark-400">No portals yet</div>
+                          ) : (
+                            portals.map((portal: any) => {
                               const alreadyIn = (portal.propertyIds || []).includes(property.id);
                               return (
                                 <button
@@ -818,11 +796,11 @@ export default function MyPropertiesPage() {
                                   {portal.name} {alreadyIn && <span className="text-dark-500 ml-1">(added)</span>}
                                 </button>
                               );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                            })
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Link>
               ))}
