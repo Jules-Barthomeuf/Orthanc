@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 // Local storage key for pending property uploads
 const LOCAL_STORAGE_KEY = "pendingProperties";
+const getPropertiesCacheKey = (userId: string) => `agentPropertiesSummary:${userId}`;
 
 import { useToastStore } from "@/lib/toast";
 
@@ -266,25 +267,56 @@ export default function MyPropertiesPage() {
 
   useEffect(() => {
     if (!user || user.role !== "agent") return;
+
+    let cancelled = false;
+    const cacheKey = getPropertiesCacheKey(user.id);
+
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && !cancelled) {
+          setProperties(parsed);
+          setLoading(false);
+        }
+      } else {
+        setLoading(true);
+      }
+    } catch {
+      setLoading(true);
+    }
+
     (async () => {
       try {
-        setLoading(true);
-        const [propsRes, portalsRes] = await Promise.all([
-          fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1`),
-          fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`),
-        ]);
-        if (propsRes.ok) {
-          setProperties(await propsRes.json());
-        }
-        if (portalsRes.ok) {
-          setPortals(await portalsRes.json());
+        const propsRes = await fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1`);
+        if (propsRes.ok && !cancelled) {
+          const nextProperties = await propsRes.json();
+          setProperties(nextProperties);
+          sessionStorage.setItem(cacheKey, JSON.stringify(nextProperties));
         }
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     })();
+
+    (async () => {
+      try {
+        const portalsRes = await fetch(`/api/portals?agentId=${encodeURIComponent(user.id)}`);
+        if (portalsRes.ok && !cancelled) {
+          setPortals(await portalsRes.json());
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   useEffect(() => {
@@ -292,6 +324,15 @@ export default function MyPropertiesPage() {
       router.push("/login");
     }
   }, [user, router]);
+
+  useEffect(() => {
+    if (!user || user.role !== "agent") return;
+    try {
+      sessionStorage.setItem(getPropertiesCacheKey(user.id), JSON.stringify(properties));
+    } catch {
+      // ignore cache write failures
+    }
+  }, [properties, user]);
 
   const filtered = useMemo(() => {
     let result = [...properties];
