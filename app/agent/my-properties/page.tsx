@@ -37,12 +37,27 @@ export default function MyPropertiesPage() {
   const [importPreview, setImportPreview] = useState<any>(null);
   const [importSaving, setImportSaving] = useState(false);
 
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   // Portal state
   const [portals, setPortals] = useState<any[]>([]);
   const [portalsLoaded, setPortalsLoaded] = useState(false);
   const [portalsLoading, setPortalsLoading] = useState(false);
   const [addToPortalId, setAddToPortalId] = useState<string | null>(null);
   const [addingToPortal, setAddingToPortal] = useState(false);
+
+  const handleCopyLink = (e: React.MouseEvent, propertyId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/agent/properties/${propertyId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(propertyId);
+      addToast({ type: 'success', message: 'Link copied to clipboard' });
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(() => {
+      addToast({ type: 'error', message: 'Failed to copy link' });
+    });
+  };
 
   const loadPortals = async () => {
     if (!user || user.role !== "agent" || portalsLoaded || portalsLoading) return;
@@ -734,6 +749,21 @@ export default function MyPropertiesPage() {
                         </h3>
                       </div>
                       <button
+                        onClick={(e) => handleCopyLink(e, property.id)}
+                        className={`shrink-0 p-1.5 rounded-md transition-colors ${
+                          copiedId === property.id
+                            ? 'text-green-400 bg-green-400/10'
+                            : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                        }`}
+                        title="Copy property link"
+                      >
+                        {copiedId === property.id ? (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10.5 1H12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2h1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><rect x="5" y="0.5" width="6" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
+                        )}
+                      </button>
+                      <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleLock(property.id, !!property.locked); }}
                         disabled={lockingId === property.id}
                         className={`shrink-0 p-1.5 rounded-md transition-colors ${
@@ -864,7 +894,22 @@ export default function MyPropertiesPage() {
                     </div>
                   </div>
 
-                  {/* Delete + Lock + Arrow */}
+                  {/* Copy Link + Lock + Delete + Arrow */}
+                  <button
+                    onClick={(e) => handleCopyLink(e, property.id)}
+                    className={`shrink-0 p-1.5 rounded-md transition-colors ${
+                      copiedId === property.id
+                        ? 'text-green-400 bg-green-400/10'
+                        : 'text-dark-500 hover:text-gold-400 hover:bg-gold-400/10'
+                    }`}
+                    title="Copy property link"
+                  >
+                    {copiedId === property.id ? (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10.5 1H12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2h1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><rect x="5" y="0.5" width="6" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
+                    )}
+                  </button>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleLock(property.id, !!property.locked); }}
                     disabled={lockingId === property.id}

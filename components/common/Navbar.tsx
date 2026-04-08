@@ -28,16 +28,16 @@ const agentMenuItems = (navigate: (path: string) => void): MegaMenuItem[] => [
   {
     id: 2,
     label: "Properties",
+    link: "/agent/properties",
+    onClick: () => navigate("/agent/properties"),
+  },
+  {
+    id: 3,
+    label: "Manager",
     subMenus: [
       {
-        title: "Manage",
+        title: "Tools",
         items: [
-          {
-            label: "Properties",
-            description: "Fast gallery of your listings",
-            icon: Building2,
-            href: "/agent/properties",
-          },
           {
             label: "Property Manager",
             description: "Edit listings and portals",
@@ -72,13 +72,13 @@ const agentMenuItems = (navigate: (path: string) => void): MegaMenuItem[] => [
     ],
   },
   {
-    id: 3,
+    id: 4,
     label: "Portals",
     link: "/agent/portals",
     onClick: () => navigate("/agent/portals"),
   },
   {
-    id: 4,
+    id: 5,
     label: "Profile",
     link: "/agent/profile",
     onClick: () => navigate("/agent/profile"),
