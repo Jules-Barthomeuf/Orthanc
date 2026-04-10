@@ -37,6 +37,12 @@ interface SupabaseRequestOptions {
   query?: Record<string, string>;
   body?: unknown;
   prefer?: string;
+  extraHeaders?: Record<string, string>;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
 }
 
 const COLUMN_ALIASES: Record<string, string> = {
@@ -114,6 +120,10 @@ async function supabaseRequest(method: string, options: SupabaseRequestOptions =
 
   if (options.prefer) {
     headers.Prefer = options.prefer;
+  }
+
+  if (options.extraHeaders) {
+    Object.assign(headers, options.extraHeaders);
   }
 
   const res = await fetch(url.toString(), {
@@ -240,6 +250,43 @@ export async function readPropertySummariesByAgent(agentId: string): Promise<Pro
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);
+}
+
+export async function readPropertySummariesByAgentPaginated(
+  agentId: string,
+  page: number,
+  limit: number,
+): Promise<PaginatedResult<Property>> {
+  const offset = (page - 1) * limit;
+  const rangeStart = offset;
+  const rangeEnd = offset + limit - 1;
+  const res = await supabaseRequest("GET", {
+    query: { select: SUMMARY_SELECT, agent_id: `eq.${agentId}`, order: "created_at.desc" },
+    prefer: "count=exact",
+    extraHeaders: { Range: `${rangeStart}-${rangeEnd}` },
+  });
+  const contentRange = res.headers.get("content-range") || "";
+  const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
+  const rows = (await res.json()) as PropertyRow[];
+  return { data: rows.map(mapRowToProperty), total };
+}
+
+export async function readPropertySummariesPaginated(
+  page: number,
+  limit: number,
+): Promise<PaginatedResult<Property>> {
+  const offset = (page - 1) * limit;
+  const rangeStart = offset;
+  const rangeEnd = offset + limit - 1;
+  const res = await supabaseRequest("GET", {
+    query: { select: SUMMARY_SELECT, order: "created_at.desc" },
+    prefer: "count=exact",
+    extraHeaders: { Range: `${rangeStart}-${rangeEnd}` },
+  });
+  const contentRange = res.headers.get("content-range") || "";
+  const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
+  const rows = (await res.json()) as PropertyRow[];
+  return { data: rows.map(mapRowToProperty), total };
 }
 
 export async function readPropertiesByIds(ids: string[]): Promise<Property[]> {

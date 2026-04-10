@@ -3,6 +3,8 @@ import {
   readPropertySummaries,
   readPropertiesByAgent,
   readPropertySummariesByAgent,
+  readPropertySummariesByAgentPaginated,
+  readPropertySummariesPaginated,
   readPropertiesByIds,
   readPropertySummariesByIds,
   writePropertiesBulk,
@@ -46,11 +48,16 @@ export async function GET(req: Request) {
   const ids = searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
   const summary = searchParams.get("summary");
   const isSummary = summary === "1" || summary === "true";
-  const responseHeaders = {
+  const pageParam = searchParams.get("page");
+  const limitParam = searchParams.get("limit");
+  const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : null;
+  const limit = limitParam ? Math.min(100, Math.max(1, parseInt(limitParam, 10) || 12)) : 12;
+  const isPaginated = isSummary && page !== null && ids.length === 0;
+  const responseHeaders: Record<string, string> = {
     "Cache-Control": isSummary ? "private, max-age=30, stale-while-revalidate=60" : "private, max-age=5",
   };
 
-  if (isSummary) {
+  if (isSummary && !isPaginated) {
     const cacheKey = getSummaryCacheKey(agentId, ids);
     const cachedPayload = getCachedSummary(cacheKey);
     if (cachedPayload) {
@@ -59,6 +66,17 @@ export async function GET(req: Request) {
         headers: responseHeaders,
       });
     }
+  }
+
+  // Paginated summary path – returns { data, total, page, limit }
+  if (isPaginated) {
+    const result = agentId
+      ? await readPropertySummariesByAgentPaginated(agentId, page, limit)
+      : await readPropertySummariesPaginated(page, limit);
+    return new Response(
+      JSON.stringify({ data: result.data, total: result.total, page, limit }),
+      { status: 200, headers: responseHeaders },
+    );
   }
 
   const properties = ids.length > 0
@@ -116,18 +134,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Auto-generate market data if missing or incomplete
-  let marketData = body.marketData || {};
-  let investmentAnalysis = body.investmentAnalysis || {};
-  const hasMarketData = marketData.neighborhood && marketData.city && marketData.demographics && marketData.marketTrends;
-  const hasInvestmentData = investmentAnalysis.currentValue && investmentAnalysis.projectedValue5Year;
-
-  if ((!hasMarketData || !hasInvestmentData) && body.address && body.price) {
-    const generated = generateMarketData(body.address, body.price);
-    if (!hasMarketData) marketData = generated.marketData;
-    if (!hasInvestmentData) investmentAnalysis = generated.investmentAnalysis;
-  }
-
+  // Market data is generated lazily on GET — skip during creation for speed
   const newProp = await saveProperty({
     ...body,
     id: body.id || `prop-${Date.now()}`,
@@ -136,8 +143,8 @@ export async function POST(req: Request) {
     documents: body.documents || [],
     maintenanceHistory: body.maintenanceHistory || [],
     ownershipHistory: body.ownershipHistory || [],
-    marketData,
-    investmentAnalysis,
+    marketData: body.marketData || {},
+    investmentAnalysis: body.investmentAnalysis || {},
     bedroom: body.bedroom || 0,
     bathroom: body.bathroom || 0,
     squareFeet: body.squareFeet || 0,

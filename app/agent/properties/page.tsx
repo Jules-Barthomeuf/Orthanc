@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/common/Footer";
 import { Navbar } from "@/components/common/Navbar";
 import { useAuthStore } from "@/lib/store";
 import { Property } from "@/types";
 
-const getGalleryCacheKey = (userId: string) => `agentPropertyGallery:${userId}`;
+const PAGE_SIZE = 12;
 
 export default function AgentPropertiesPage() {
   const { user } = useAuthStore();
@@ -16,6 +16,8 @@ export default function AgentPropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -23,54 +25,45 @@ export default function AgentPropertiesPage() {
     }
   }, []);
 
+  const fetchPage = useCallback(async (pageNum: number) => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1&page=${pageNum}&limit=${PAGE_SIZE}`
+      );
+      if (!res.ok) return;
+      const json = await res.json();
+      setProperties(json.data ?? []);
+      setTotal(json.total ?? 0);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!user || user.role !== "agent") {
       router.push("/login");
       return;
     }
+    fetchPage(page);
+  }, [user, router, page, fetchPage]);
 
-    let cancelled = false;
-    const cacheKey = getGalleryCacheKey(user.id);
-
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && !cancelled) {
-          setProperties(parsed);
-          setLoading(false);
-        }
-      }
-    } catch {
-      // ignore cache read failures
-    }
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1`);
-        if (!res.ok || cancelled) return;
-        const nextProperties: Property[] = await res.json();
-        setProperties(nextProperties);
-        sessionStorage.setItem(cacheKey, JSON.stringify(nextProperties));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user, router]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const filteredProperties = useMemo(() => {
     if (!searchQuery.trim()) return properties;
     const q = searchQuery.toLowerCase();
     return properties.filter((property) => property.title?.toLowerCase().includes(q));
   }, [properties, searchQuery]);
+
+  const goToPage = (p: number) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (!user || user.role !== "agent") {
     return null;
@@ -87,7 +80,7 @@ export default function AgentPropertiesPage() {
               <h1 className="heading-luxury text-4xl text-white mb-3">Properties</h1>
               <div className="gold-line-left w-24 animate-reveal-line"></div>
               <p className="text-dark-400 text-sm mt-4">
-                Fast gallery view — only titles and pictures.
+                {total > 0 ? `${total} properties — page ${page} of ${totalPages}` : "Fast gallery view — only titles and pictures."}
               </p>
             </div>
 
@@ -190,6 +183,52 @@ export default function AgentPropertiesPage() {
                   </div>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && !searchQuery && (
+            <div className="flex items-center justify-center gap-2 mt-12">
+              <button
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="px-4 py-2 rounded-lg border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+              >
+                Previous
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+                .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                  if (i > 0 && p - (arr[i - 1] ?? 0) > 1) acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, i) =>
+                  item === "..." ? (
+                    <span key={`dots-${i}`} className="px-2 text-dark-500 text-sm">...</span>
+                  ) : (
+                    <button
+                      key={item}
+                      onClick={() => goToPage(item as number)}
+                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                        page === item
+                          ? "bg-gold-400/15 border border-gold-400/40 text-gold-400"
+                          : "border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+
+              <button
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages}
+                className="px-4 py-2 rounded-lg border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>
