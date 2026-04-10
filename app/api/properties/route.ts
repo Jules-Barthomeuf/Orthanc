@@ -175,11 +175,10 @@ export async function POST(req: Request) {
 
     clearSummaryCache();
     return new Response(JSON.stringify(newProp), { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("[properties POST]", err);
-    const message = err?.message || "Failed to create property";
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "Failed to create property" }),
       { status: 500 },
     );
   }

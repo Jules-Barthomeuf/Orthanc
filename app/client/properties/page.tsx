@@ -5,37 +5,14 @@ import { Footer } from "@/components/common/Footer";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Property } from "@/types";
-
-const PAGE_SIZE = 9;
 
 export default function ClientPropertiesPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const fetchPage = useCallback(async (pageNum: number) => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/properties?summary=1&page=${pageNum}&limit=${PAGE_SIZE}`
-      );
-      if (!res.ok) return;
-      const json = await res.json();
-      setProperties(json.data ?? []);
-      setTotal(json.total ?? 0);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     document.title = 'Orthanc - Properties';
@@ -43,14 +20,19 @@ export default function ClientPropertiesPage() {
       router.push("/login");
       return;
     }
-    fetchPage(page);
-  }, [user, router, page, fetchPage]);
-
-  const goToPage = (p: number) => {
-    if (p < 1 || p > totalPages) return;
-    setPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+    (async () => {
+      try {
+        const res = await fetch("/api/properties?summary=1");
+        if (!res.ok) return;
+        const all: Property[] = await res.json();
+        setProperties(all);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user, router]);
 
   if (!user || user.role !== "client") {
     return null;
@@ -69,7 +51,7 @@ export default function ClientPropertiesPage() {
             </h1>
             <div className="gold-line-left w-24 animate-reveal-line"></div>
             <p className="text-dark-400 text-sm mt-4">
-              {total > 0 ? `${total} properties — page ${page} of ${totalPages}` : "Luxury properties curated by top agents"}
+              Luxury properties curated by top agents
             </p>
           </div>
 
@@ -124,52 +106,6 @@ export default function ClientPropertiesPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-12">
-              <button
-                onClick={() => goToPage(page - 1)}
-                disabled={page <= 1}
-                className="px-4 py-2 rounded-lg border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
-              >
-                Previous
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
-                .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                  if (i > 0 && p - (arr[i - 1] ?? 0) > 1) acc.push("...");
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((item, i) =>
-                  item === "..." ? (
-                    <span key={`dots-${i}`} className="px-2 text-dark-500 text-sm">...</span>
-                  ) : (
-                    <button
-                      key={item}
-                      onClick={() => goToPage(item as number)}
-                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
-                        page === item
-                          ? "bg-gold-400/15 border border-gold-400/40 text-gold-400"
-                          : "border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400"
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  )
-                )}
-
-              <button
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= totalPages}
-                className="px-4 py-2 rounded-lg border border-dark-600/40 text-dark-300 hover:border-gold-400/40 hover:text-gold-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
-              >
-                Next
-              </button>
             </div>
           )}
         </div>
