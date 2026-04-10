@@ -540,7 +540,7 @@ export function AgentDashboard() {
       price,
       description: draftData.description || generatePremiumDescription(draftData),
       images: uploadedImages.length > 0 ? uploadedImages : ["https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200"],
-      agentId,
+      agentId: user?.id || agentId,
       bedroom: draftData.bedrooms || 4,
       bathroom: draftData.bathrooms || 3,
       squareFeet: draftData.squareFeet || 4000,
@@ -571,12 +571,15 @@ export function AgentDashboard() {
         addToast({ type: "success", message: `Property "${address}" created!` });
         setTimeout(() => router.push("/agent/properties"), 1200);
       } else {
-        throw new Error("Failed");
+        const errBody = await res.json().catch(() => ({}));
+        const errMsg = errBody.error || `HTTP ${res.status}`;
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setIsTyping(false);
-      addToast({ type: "error", message: "Failed to create property" });
-      setMessages((prev) => [...prev, { role: "ai", content: "Sorry, something went wrong while creating the property. Please try again." }]);
+      const msg = err?.message || "Failed to create property";
+      addToast({ type: "error", message: msg });
+      setMessages((prev) => [...prev, { role: "ai", content: `Sorry, something went wrong while creating the property: **${msg}**. Please try again.` }]);
     } finally {
       setCreating(false);
     }
