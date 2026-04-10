@@ -132,7 +132,7 @@ async function supabaseRequest(method: string, options: SupabaseRequestOptions =
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
-  if (!res.ok) {
+  if (!res.ok && res.status !== 206 && res.status !== 416) {
     const errorBody = await res.text();
     throw new Error(
       `[propertyStorage] Supabase ${method} ${url.pathname}${url.search} failed: ${res.status} ${errorBody}`
@@ -265,6 +265,11 @@ export async function readPropertySummariesByAgentPaginated(
     prefer: "count=exact",
     extraHeaders: { Range: `${rangeStart}-${rangeEnd}` },
   });
+  if (res.status === 416) {
+    const contentRange = res.headers.get("content-range") || "";
+    const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
+    return { data: [], total };
+  }
   const contentRange = res.headers.get("content-range") || "";
   const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
   const rows = (await res.json()) as PropertyRow[];
@@ -283,6 +288,11 @@ export async function readPropertySummariesPaginated(
     prefer: "count=exact",
     extraHeaders: { Range: `${rangeStart}-${rangeEnd}` },
   });
+  if (res.status === 416) {
+    const contentRange = res.headers.get("content-range") || "";
+    const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
+    return { data: [], total };
+  }
   const contentRange = res.headers.get("content-range") || "";
   const total = parseInt(contentRange.split("/").pop() || "0", 10) || 0;
   const rows = (await res.json()) as PropertyRow[];

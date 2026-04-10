@@ -329,7 +329,7 @@ export function AgentDashboard() {
         setLinkUrl('');
         setMessages((prev) => [
           ...prev,
-          { role: 'ai', content: `✅ **Property imported from link!**\n\n**${scraped.title || 'Untitled'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}${scraped.bedroom ? `🛏️ ${scraped.bedroom} bed${scraped.bedroom > 1 ? 's' : ''}` : ''}${scraped.bathroom ? ` · 🛁 ${scraped.bathroom} bath${scraped.bathroom > 1 ? 's' : ''}` : ''}${scraped.squareFeet ? ` · 📐 ${scraped.squareFeet.toLocaleString()} sqft` : ''}\n\nThe property has been saved and locked. [View Property](/agent/properties/${saved.id}).` },
+          { role: 'ai', content: `✅ **Property imported from link!**\n\n**${scraped.title || 'Untitled'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}${scraped.bedroom ? `🛏️ ${scraped.bedroom} bed${scraped.bedroom > 1 ? 's' : ''}` : ''}${scraped.bathroom ? ` · 🛁 ${scraped.bathroom} bath${scraped.bathroom > 1 ? 's' : ''}` : ''}${scraped.squareFeet ? ` · 📐 ${scraped.squareFeet.toLocaleString()} sqft` : ''}\n\nThe property has been saved and locked. [View in Properties](/agent/properties).` },
         ]);
       } else {
         const err = await saveRes.json().catch(() => ({}));
@@ -566,11 +566,10 @@ export function AgentDashboard() {
         body: JSON.stringify(propertyPayload),
       });
       if (res.ok) {
-        const created = await res.json();
         setIsTyping(false);
-        setMessages((prev) => [...prev, { role: "ai", content: `Property "${address}" has been created successfully! Redirecting to property page...` }]);
+        setMessages((prev) => [...prev, { role: "ai", content: `Property "${address}" has been created successfully! Redirecting to your properties...` }]);
         addToast({ type: "success", message: `Property "${address}" created!` });
-        setTimeout(() => router.push(`/agent/properties/${created.id}`), 1200);
+        setTimeout(() => router.push("/agent/properties"), 1200);
       } else {
         throw new Error("Failed");
       }

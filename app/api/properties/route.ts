@@ -70,13 +70,21 @@ export async function GET(req: Request) {
 
   // Paginated summary path – returns { data, total, page, limit }
   if (isPaginated) {
-    const result = agentId
-      ? await readPropertySummariesByAgentPaginated(agentId, page, limit)
-      : await readPropertySummariesPaginated(page, limit);
-    return new Response(
-      JSON.stringify({ data: result.data, total: result.total, page, limit }),
-      { status: 200, headers: responseHeaders },
-    );
+    try {
+      const result = agentId
+        ? await readPropertySummariesByAgentPaginated(agentId, page, limit)
+        : await readPropertySummariesPaginated(page, limit);
+      return new Response(
+        JSON.stringify({ data: result.data, total: result.total, page, limit }),
+        { status: 200, headers: responseHeaders },
+      );
+    } catch (err) {
+      console.error("[properties GET paginated]", err);
+      return new Response(
+        JSON.stringify({ data: [], total: 0, page, limit }),
+        { status: 200, headers: responseHeaders },
+      );
+    }
   }
 
   const properties = ids.length > 0
@@ -125,36 +133,55 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  if (!body || !body.title) {
+    if (!body || !body.title) {
+      return new Response(
+        JSON.stringify({ error: "Invalid property data" }),
+        { status: 400 },
+      );
+    }
+
+    // Generate market data synchronously (needed for Supabase schema constraints)
+    let marketData = body.marketData || {};
+    let investmentAnalysis = body.investmentAnalysis || {};
+    const hasMarketData = marketData.neighborhood && marketData.city;
+    const hasInvestmentData = investmentAnalysis.currentValue && investmentAnalysis.projectedValue5Year;
+
+    if ((!hasMarketData || !hasInvestmentData) && body.address && body.price) {
+      const generated = generateMarketData(body.address, body.price);
+      if (!hasMarketData) marketData = generated.marketData;
+      if (!hasInvestmentData) investmentAnalysis = generated.investmentAnalysis;
+    }
+
+    const newProp = await saveProperty({
+      ...body,
+      id: body.id || `prop-${Date.now()}`,
+      createdAt: body.createdAt || new Date(),
+      images: body.images || [],
+      documents: body.documents || [],
+      maintenanceHistory: body.maintenanceHistory || [],
+      ownershipHistory: body.ownershipHistory || [],
+      marketData,
+      investmentAnalysis,
+      bedroom: body.bedroom || 0,
+      bathroom: body.bathroom || 0,
+      squareFeet: body.squareFeet || 0,
+      yearBuilt: body.yearBuilt || 0,
+      lot: body.lot || 0,
+      locked: body.locked !== undefined ? body.locked : true,
+    });
+
+    clearSummaryCache();
+    return new Response(JSON.stringify(newProp), { status: 201 });
+  } catch (err) {
+    console.error("[properties POST]", err);
     return new Response(
-      JSON.stringify({ error: "Invalid property data" }),
-      { status: 400 },
+      JSON.stringify({ error: "Failed to create property" }),
+      { status: 500 },
     );
   }
-
-  // Market data is generated lazily on GET — skip during creation for speed
-  const newProp = await saveProperty({
-    ...body,
-    id: body.id || `prop-${Date.now()}`,
-    createdAt: body.createdAt || new Date(),
-    images: body.images || [],
-    documents: body.documents || [],
-    maintenanceHistory: body.maintenanceHistory || [],
-    ownershipHistory: body.ownershipHistory || [],
-    marketData: body.marketData || {},
-    investmentAnalysis: body.investmentAnalysis || {},
-    bedroom: body.bedroom || 0,
-    bathroom: body.bathroom || 0,
-    squareFeet: body.squareFeet || 0,
-    yearBuilt: body.yearBuilt || 0,
-    lot: body.lot || 0,
-    locked: body.locked !== undefined ? body.locked : true, // Auto-lock new properties
-  });
-
-  clearSummaryCache();
-  return new Response(JSON.stringify(newProp), { status: 201 });
 }
 
 export async function PATCH(req: Request) {

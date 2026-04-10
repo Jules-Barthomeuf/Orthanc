@@ -10,6 +10,8 @@ import { Property } from "@/types";
 
 const PAGE_SIZE = 12;
 
+const getCacheKey = (userId: string, page: number) => `agentPropPage:${userId}:${page}`;
+
 export default function AgentPropertiesPage() {
   const { user } = useAuthStore();
   const router = useRouter();
@@ -27,7 +29,18 @@ export default function AgentPropertiesPage() {
 
   const fetchPage = useCallback(async (pageNum: number) => {
     if (!user) return;
-    setLoading(true);
+
+    // Show cached data instantly while fetching
+    try {
+      const cached = sessionStorage.getItem(getCacheKey(user.id, pageNum));
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setProperties(parsed.data ?? []);
+        setTotal(parsed.total ?? 0);
+        setLoading(false);
+      }
+    } catch { /* ignore */ }
+
     try {
       const res = await fetch(
         `/api/properties?agentId=${encodeURIComponent(user.id)}&summary=1&page=${pageNum}&limit=${PAGE_SIZE}`
@@ -36,6 +49,7 @@ export default function AgentPropertiesPage() {
       const json = await res.json();
       setProperties(json.data ?? []);
       setTotal(json.total ?? 0);
+      sessionStorage.setItem(getCacheKey(user.id, pageNum), JSON.stringify(json));
     } catch (err) {
       console.error(err);
     } finally {
