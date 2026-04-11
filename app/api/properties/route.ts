@@ -7,7 +7,6 @@ import {
   readPropertySummariesPaginated,
   readPropertiesByIds,
   readPropertySummariesByIds,
-  writePropertiesBulk,
   saveProperty,
   deleteProperty,
   updateProperty,
@@ -100,7 +99,6 @@ export async function GET(req: Request) {
         : await readProperties();
 
   if (!isSummary) {
-    const enrichedProperties: typeof properties = [];
     for (let i = 0; i < properties.length; i++) {
       const p = properties[i];
       const md = p.marketData || {} as any;
@@ -109,16 +107,9 @@ export async function GET(req: Request) {
       const hasInvestment = inv.currentValue && inv.projectedValue5Year && inv.capRate;
       if ((!hasMarket || !hasInvestment) && p.address && p.price) {
         const generated = generateMarketData(p.address, p.price);
-        let enriched = properties[i];
-        if (!hasMarket) enriched = { ...enriched, marketData: generated.marketData };
-        if (!hasInvestment) enriched = { ...enriched, investmentAnalysis: generated.investmentAnalysis };
-        properties[i] = enriched;
-        enrichedProperties.push(enriched);
+        if (!hasMarket) properties[i] = { ...properties[i], marketData: generated.marketData };
+        if (!hasInvestment) properties[i] = { ...properties[i], investmentAnalysis: generated.investmentAnalysis };
       }
-    }
-
-    if (enrichedProperties.length > 0) {
-      await writePropertiesBulk(enrichedProperties);
     }
   }
 

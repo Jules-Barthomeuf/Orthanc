@@ -222,7 +222,7 @@ function serializePartial(updates: Partial<Property>): PartialRow {
 
 export async function readProperties(): Promise<Property[]> {
   const res = await supabaseRequest("GET", {
-    query: { select: "*", order: "created_at.desc" },
+    query: { select: "*", order: "created_at.desc", limit: "100" },
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);
@@ -230,7 +230,7 @@ export async function readProperties(): Promise<Property[]> {
 
 export async function readPropertySummaries(): Promise<Property[]> {
   const res = await supabaseRequest("GET", {
-    query: { select: SUMMARY_SELECT, order: "created_at.desc" },
+    query: { select: SUMMARY_SELECT, order: "created_at.desc", limit: "100" },
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);
@@ -238,7 +238,7 @@ export async function readPropertySummaries(): Promise<Property[]> {
 
 export async function readPropertiesByAgent(agentId: string): Promise<Property[]> {
   const res = await supabaseRequest("GET", {
-    query: { select: "*", agent_id: `eq.${agentId}`, order: "created_at.desc" },
+    query: { select: "*", agent_id: `eq.${agentId}`, order: "created_at.desc", limit: "100" },
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);
@@ -246,7 +246,7 @@ export async function readPropertiesByAgent(agentId: string): Promise<Property[]
 
 export async function readPropertySummariesByAgent(agentId: string): Promise<Property[]> {
   const res = await supabaseRequest("GET", {
-    query: { select: SUMMARY_SELECT, agent_id: `eq.${agentId}`, order: "created_at.desc" },
+    query: { select: SUMMARY_SELECT, agent_id: `eq.${agentId}`, order: "created_at.desc", limit: "100" },
   });
   const rows = (await res.json()) as PropertyRow[];
   return rows.map(mapRowToProperty);

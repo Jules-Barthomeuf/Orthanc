@@ -540,7 +540,7 @@ export function AgentDashboard() {
       price,
       description: draftData.description || generatePremiumDescription(draftData),
       images: uploadedImages.length > 0 ? uploadedImages : ["https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200"],
-      agentId,
+      agentId: user?.id || agentId,
       bedroom: draftData.bedrooms || 4,
       bathroom: draftData.bathrooms || 3,
       squareFeet: draftData.squareFeet || 4000,
