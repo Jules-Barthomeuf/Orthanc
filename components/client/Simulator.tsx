@@ -54,14 +54,10 @@ interface SimState {
   propertyManagers: number;
   avgStaffSalary: number;
 
-  // Specialized maintenance
-  infinityPool: boolean;
-  wineClimateControl: boolean;
-  smartHomeUpdates: boolean;
-
   // Acquisition costs
   closingCosts: number;
   renovationCosts: number;
+  agentCommission: number; // percentage
 
   // Financing
   ltvRatio: number;
@@ -109,12 +105,9 @@ const DEFAULT_STATE: SimState = {
   propertyManagers: 1,
   avgStaffSalary: 85_000,
 
-  infinityPool: true,
-  wineClimateControl: false,
-  smartHomeUpdates: true,
-
   closingCosts: 150_000,
   renovationCosts: 0,
+  agentCommission: 5,
 
   ltvRatio: 50,
   interestRate: 5.5,
@@ -178,11 +171,6 @@ function generateScaledDefaults(price: number): Partial<SimState> {
   const propertyManagers = isPremium ? 1 : 0;
   const avgStaffSalary = 85_000;
 
-  // Specialized maintenance
-  const infinityPool = isPremium;
-  const wineClimateControl = false;
-  const smartHomeUpdates = isPremium;
-
   // Price bracket for market DOM data
   const priceBracket: SimState['priceBracket'] = isUltra ? 'ultra' : isPremium ? 'premium' : 'entry';
 
@@ -207,9 +195,7 @@ function generateScaledDefaults(price: number): Partial<SimState> {
     securityTeam,
     propertyManagers,
     avgStaffSalary,
-    infinityPool,
-    wineClimateControl,
-    smartHomeUpdates,
+    agentCommission: 5,
     priceBracket,
     propertyTaxRate,
     annualInsurance,
@@ -285,13 +271,16 @@ function useFinancials(s: SimState) {
     const totalStaff = s.liveInStaff + s.securityTeam + s.propertyManagers;
     const staffingCost = totalStaff * s.avgStaffSalary;
 
-    const specializedMaint =
-      (s.infinityPool ? 48_000 : 0) +
-      (s.wineClimateControl ? 18_000 : 0) +
-      (s.smartHomeUpdates ? 22_000 : 0);
+    const specializedMaint = 0;
 
     const totalCarryCost = luxuryOpex + staffingCost + specializedMaint +
       (s.propertyValue * s.propertyTaxRate / 100) + s.annualInsurance;
+
+    // ── Closing / Acquisition Cost Breakdown ──
+    const agentCommissionAmount = s.propertyValue * (s.agentCommission / 100);
+    const propertyTaxAtClose = s.propertyValue * s.propertyTaxRate / 100;
+    const titleInsurance = Math.round(s.propertyValue * 0.005);
+    const totalClosingCost = s.closingCosts + agentCommissionAmount + s.renovationCosts + titleInsurance;
 
     // ── 1. NOI = (Gross Rental Income − Vacancy Loss) − Operating Expenses ──
     const vacancyLoss = s.grossAnnualRent * (s.vacancyRate / 100);
@@ -412,6 +401,7 @@ function useFinancials(s: SimState) {
       exitValue, capitalGain,
       requiredAppreciation, targetExitValue,
       totalStaff,
+      agentCommissionAmount, titleInsurance, totalClosingCost,
       liquidityScore: undefined,
       riskScore: undefined,
     };
@@ -564,6 +554,86 @@ function KpiCard({ label, value, sub, color = 'white', icon }: {
       </div>
       <div className={`text-2xl font-mono font-bold ${colorMap[color] || colorMap.white}`}>{value}</div>
       {sub && <div className="text-xs text-white/30 mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CLOSING COST BREAKDOWN CHART
+   ═══════════════════════════════════════════════════════════════ */
+
+function ClosingCostChart({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
+  const items = [
+    { label: 'Closing Costs (Fees & Title)', value: state.closingCosts, color: 'rgba(201,169,110,0.7)' },
+    { label: 'Agent Commission', value: fin.agentCommissionAmount, color: 'rgba(168,85,247,0.6)' },
+    { label: 'Title Insurance', value: fin.titleInsurance, color: 'rgba(56,189,248,0.6)' },
+    { label: 'Immediate Renovations', value: state.renovationCosts, color: 'rgba(74,222,128,0.6)' },
+  ].filter(i => i.value > 0);
+
+  const barData = {
+    labels: items.map(i => i.label),
+    datasets: [{
+      data: items.map(i => i.value),
+      backgroundColor: items.map(i => i.color),
+      borderColor: 'rgba(20,20,20,1)',
+      borderWidth: 1,
+      borderRadius: 6,
+      barThickness: 28,
+    }],
+  };
+  const barOptions = {
+    indexAxis: 'y' as const,
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { ticks: { color: 'rgba(255,255,255,0.35)', callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 12 } }, grid: { display: false } },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 12,
+        callbacks: { label: (ctx: any) => `${ctx.label}: ${fmt$(ctx.parsed.x)}` },
+      },
+    },
+  };
+
+  return (
+    <div className="sim-visual-card space-y-5">
+      <div>
+        <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Total Acquisition Cost</div>
+        <div className="flex items-baseline gap-3">
+          <span className="text-3xl font-display text-white/85">{fmt$(fin.totalClosingCost)}</span>
+          <span className="text-sm text-white/30">to close on {fmt$(state.propertyValue)}</span>
+        </div>
+        <div className="text-sm text-white/35 mt-1">
+          {((fin.totalClosingCost / state.propertyValue) * 100).toFixed(1)}% of property value &middot; Agent commission {state.agentCommission}%
+        </div>
+      </div>
+
+      {/* Items grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {items.map(i => (
+          <div key={i.label} className="bg-dark-900/60 border border-white/[0.06] rounded-lg p-3">
+            <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1 truncate">{i.label}</div>
+            <div className="text-lg font-mono text-white/80">{fmt$(i.value)}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Horizontal bar */}
+      <div className="h-[180px]">
+        <Bar data={barData} options={barOptions} />
+      </div>
+
+      {/* Total line */}
+      <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+        <span className="text-sm text-white/50 font-medium">Total Out-of-Pocket at Close</span>
+        <span className="text-xl font-mono font-bold text-gold-400">{fmt$(fin.totalClosingCost + fin.equityInvested)}</span>
+      </div>
+      <div className="text-xs text-white/30">
+        Down payment ({100 - state.ltvRatio}%): {fmt$(fin.equityInvested)} + Acquisition costs: {fmt$(fin.totalClosingCost)}
+      </div>
     </div>
   );
 }
@@ -758,18 +828,18 @@ function CarryCostBreakdown({ state, fin }: { state: SimState; fin: ReturnType<t
   const taxCost = state.propertyValue * state.propertyTaxRate / 100;
   const labels = [
     'Concierge & Services', 'Specialized Security', 'Landscaping', 'Pool & Water',
-    'Wine Climate', 'Smart Home', 'Property Mgmt', 'Staffing', 'Spec. Maintenance',
+    'Smart Home', 'Property Mgmt', 'Staffing',
     'Property Tax', 'Insurance',
   ];
   const values = [
     state.concierge, state.specializedSecurity, state.highEndLandscaping, state.poolMaintenance,
-    state.wineClimate, state.smartHomeSystems, state.propertyManagement, fin.staffingCost, fin.specializedMaint,
+    state.smartHomeSystems, state.propertyManagement, fin.staffingCost,
     taxCost, state.annualInsurance,
   ];
   const colors = [
     'rgba(201,169,110,0.6)', 'rgba(248,113,113,0.6)', 'rgba(74,222,128,0.5)', 'rgba(56,189,248,0.5)',
-    'rgba(168,85,247,0.5)', 'rgba(251,191,36,0.5)', 'rgba(160,160,180,0.5)', 'rgba(236,72,153,0.5)',
-    'rgba(52,211,153,0.5)', 'rgba(239,68,68,0.4)', 'rgba(100,116,139,0.5)',
+    'rgba(251,191,36,0.5)', 'rgba(160,160,180,0.5)', 'rgba(236,72,153,0.5)',
+    'rgba(239,68,68,0.4)', 'rgba(100,116,139,0.5)',
   ];
 
   // ── Doughnut chart data ──
@@ -1314,6 +1384,8 @@ export default function Simulator({ address, price }: { address?: string; price?
               min={0} max={1_000_000} step={10_000} formatFn={(v) => fmt$(v)} />
             <SliderInput label="Immediate Renovations" value={state.renovationCosts} onChange={(v) => update({ renovationCosts: v })}
               min={0} max={5_000_000} step={50_000} formatFn={(v) => fmt$(v)} />
+            <SliderInput label="Agent Commission" value={state.agentCommission} onChange={(v) => update({ agentCommission: v })}
+              min={0} max={10} step={0.5} formatFn={(v) => `${v}% (${fmt$(state.propertyValue * v / 100)})`} />
 
             <div className="h-px bg-white/[0.04] my-3" />
             <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Debt Structure</div>
@@ -1341,8 +1413,6 @@ export default function Simulator({ address, price }: { address?: string; price?
               min={0} max={300_000} step={5_000} formatFn={(v) => fmt$(v)} />
             <SliderInput label="Pool & Water Features" value={state.poolMaintenance} onChange={(v) => update({ poolMaintenance: v })}
               min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Wine Cellar Climate" value={state.wineClimate} onChange={(v) => update({ wineClimate: v })}
-              min={0} max={100_000} step={5_000} formatFn={(v) => fmt$(v)} />
             <SliderInput label="Smart Home Systems" value={state.smartHomeSystems} onChange={(v) => update({ smartHomeSystems: v })}
               min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
             <SliderInput label="Property Management" value={state.propertyManagement} onChange={(v) => update({ propertyManagement: v })}
@@ -1355,15 +1425,6 @@ export default function Simulator({ address, price }: { address?: string; price?
             <NumberStepper label="Property Managers" value={state.propertyManagers} onChange={(v) => update({ propertyManagers: v })} />
             <SliderInput label="Avg Staff Salary" value={state.avgStaffSalary} onChange={(v) => update({ avgStaffSalary: v })}
               min={40_000} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Specialized Maintenance</div>
-            <ToggleSwitch label="Infinity Pool Servicing" value={state.infinityPool} onChange={(v) => update({ infinityPool: v })}
-              tooltip="$48K/yr for heated infinity pool maintenance" />
-            <ToggleSwitch label="Climate-Controlled Wine Cellar" value={state.wineClimateControl} onChange={(v) => update({ wineClimateControl: v })}
-              tooltip="$18K/yr for precision humidity & temp" />
-            <ToggleSwitch label="Smart Home System Updates" value={state.smartHomeUpdates} onChange={(v) => update({ smartHomeUpdates: v })}
-              tooltip="$22K/yr for Crestron/Savant system updates" />
           </Section>
 
           {/* 3. Tax & Structure */}
@@ -1467,6 +1528,7 @@ export default function Simulator({ address, price }: { address?: string; price?
               {activeTab === 'overview' && (
                 <div className="space-y-4">
                   <OverviewDashboard state={state} fin={fin} />
+                  <ClosingCostChart state={state} fin={fin} />
                   <FinancialProjectionsChart state={state} fin={fin} />
                 </div>
               )}

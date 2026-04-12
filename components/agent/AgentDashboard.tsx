@@ -245,6 +245,58 @@ function parseListingText(text: string): PropertyDraft {
   return draft;
 }
 
+/* ── Generate Agent's Perspective from raw pasted listing text ── */
+function generateAgentPerspective(rawText: string, draft: PropertyDraft) {
+  const lines = rawText.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const full = rawText;
+
+  // Extract meaningful prose (skip short metadata lines)
+  const proseLines = lines.filter(l => l.length > 40 && !/^\$|^MLS|^NMLS|^Source|^Listing|^HOA/i.test(l));
+  const descriptionText = proseLines.join(' ').slice(0, 3000);
+
+  // Build insider tips from features and neighborhood context
+  const features = draft.features || [];
+  const insiderParts: string[] = [];
+  if (features.length > 0) insiderParts.push(`Notable features include ${features.join(', ')}.`);
+  if (draft.neighborhood) insiderParts.push(`Located in the ${draft.neighborhood} area.`);
+  if (draft.hoa) insiderParts.push(`HOA is $${draft.hoa}/month — factor this into carrying costs.`);
+  if (draft.propertyTax) insiderParts.push(`Annual property tax: $${draft.propertyTax.toLocaleString()}.`);
+  const insiderTips = insiderParts.length > 0 ? insiderParts.join(' ') : 'Contact the agent for insider knowledge about this property.';
+
+  // Investment outlook from price data
+  const investmentParts: string[] = [];
+  if (draft.price && draft.squareFeet) investmentParts.push(`Price per sqft: $${Math.round(draft.price / draft.squareFeet).toLocaleString()}.`);
+  if (draft.rentEstimate) investmentParts.push(`Estimated monthly rent: $${draft.rentEstimate.toLocaleString()} — potential cap rate worth evaluating.`);
+  if (draft.zestimate && draft.price) {
+    const diff = draft.zestimate - draft.price;
+    investmentParts.push(diff > 0 ? `Listed $${Math.abs(diff).toLocaleString()} below Zestimate — possible value play.` : `Listed $${Math.abs(diff).toLocaleString()} above Zestimate — premium positioning.`);
+  }
+  const investmentOutlook = investmentParts.length > 0 ? investmentParts.join(' ') : 'Evaluate comparable sales and rental yields in the area for investment potential.';
+
+  // Local lifestyle from description/features
+  const lifestyleParts: string[] = [];
+  if (/ocean|beach|waterfront|bay|marina/i.test(full)) lifestyleParts.push('Waterfront living with coastal amenities nearby.');
+  if (/golf|country\s*club/i.test(full)) lifestyleParts.push('Close to golf and country club lifestyle.');
+  if (/downtown|walk|urban/i.test(full)) lifestyleParts.push('Urban walkable location near dining and entertainment.');
+  if (/private|gated|secluded/i.test(full)) lifestyleParts.push('Private, secure setting for high-profile residents.');
+  if (lifestyleParts.length === 0 && descriptionText) lifestyleParts.push(descriptionText.slice(0, 300));
+  const localLifestyle = lifestyleParts.length > 0 ? lifestyleParts.join(' ') : 'Contact the listing agent for details about the local lifestyle.';
+
+  // Future development — extract any renovation/development mentions
+  const devParts: string[] = [];
+  if (/renovat|remodel|upgrad|new construction|recently built/i.test(full)) devParts.push('Property has been recently renovated or updated.');
+  if (/develop|planned|coming soon|new build/i.test(full)) devParts.push('Area development activity detected — potential value appreciation.');
+  if (draft.yearBuilt && draft.yearBuilt >= 2020) devParts.push(`Recently built (${draft.yearBuilt}) — minimal near-term maintenance expected.`);
+  const futureDev = devParts.length > 0 ? devParts.join(' ') : 'Research upcoming zoning changes and development plans in the area.';
+
+  return [
+    { category: "Insider Tips", info: insiderTips },
+    { category: "Future Development", info: futureDev },
+    { category: "Local Lifestyle", info: localLifestyle },
+    { category: "Investment Outlook", info: investmentOutlook },
+  ];
+}
+
 export function AgentDashboard() {
   const agentId = "agent-1";
   const { addToast } = useToastStore();
@@ -270,6 +322,7 @@ export function AgentDashboard() {
   /* ── Create mode state ── */
   const [draft, setDraft] = useState<PropertyDraft>({});
   const [showPreview, setShowPreview] = useState(false);
+  const [rawListingText, setRawListingText] = useState("");
 
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({ minHeight: 56, maxHeight: 200 });
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -463,6 +516,7 @@ export function AgentDashboard() {
 
     const parsed = parseListingText(answer);
     const fieldCount = Object.keys(parsed).filter(k => parsed[k as keyof PropertyDraft] !== undefined).length;
+    setRawListingText(answer);
 
     if (fieldCount === 0) {
       setMessages((prev) => [
@@ -557,6 +611,9 @@ export function AgentDashboard() {
       ownershipHistory: [
         { id: `own-${now}-1`, owner: "Previous Owner", purchaseDate: new Date("2016-05-01"), saleDate: new Date(), purchasePrice: Math.floor(price * 0.78), salePrice: price, reason: "Estate sale" },
       ],
+      marketData: rawListingText ? {
+        agentPerspective: generateAgentPerspective(rawListingText, draftData),
+      } : undefined,
     };
 
     try {

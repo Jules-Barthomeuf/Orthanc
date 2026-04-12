@@ -40,7 +40,6 @@ export interface SimStatePartial {
   specializedSecurity?: number;
   highEndLandscaping?: number;
   poolMaintenance?: number;
-  wineClimate?: number;
   smartHomeSystems?: number;
   propertyManagement?: number;
   liveInStaff?: number;
@@ -48,9 +47,6 @@ export interface SimStatePartial {
   propertyManagers?: number;
   avgStaffSalary?: number;
   priceBracket?: 'ultra' | 'premium' | 'entry';
-  infinityPool?: boolean;
-  wineClimateControl?: boolean;
-  smartHomeUpdates?: boolean;
   scarcityPrivateBeach?: boolean;
   scarcityHistoricHeritage?: boolean;
   scarcityStarchitect?: boolean;
@@ -166,19 +162,16 @@ function detectStructure(text: string): string | null {
 
 /* ── Service keywords → field mapping (longest-first so "pool maintenance" beats "pool") ── */
 const SERVICE_MAP: [string, { costField: string; boolField?: string; ratio: number }][] = [
-  ['pool maintenance',      { costField: 'poolMaintenance', boolField: 'infinityPool', ratio: 0.0025 }],
-  ['infinity pool',         { costField: 'poolMaintenance', boolField: 'infinityPool', ratio: 0.003 }],
+  ['pool maintenance',      { costField: 'poolMaintenance', ratio: 0.0025 }],
+  ['infinity pool',         { costField: 'poolMaintenance', ratio: 0.003 }],
   ['property management',   { costField: 'propertyManagement', ratio: 0.004 }],
-  ['smart home',            { costField: 'smartHomeSystems', boolField: 'smartHomeUpdates', ratio: 0.0023 }],
-  ['wine cellar',           { costField: 'wineClimate', boolField: 'wineClimateControl', ratio: 0.0017 }],
-  ['wine climate',          { costField: 'wineClimate', boolField: 'wineClimateControl', ratio: 0.0017 }],
+  ['smart home',            { costField: 'smartHomeSystems', ratio: 0.0023 }],
   ['high end landscaping',  { costField: 'highEndLandscaping', ratio: 0.005 }],
   ['high-end landscaping',  { costField: 'highEndLandscaping', ratio: 0.005 }],
   ['landscaping',           { costField: 'highEndLandscaping', ratio: 0.005 }],
   ['security',              { costField: 'specializedSecurity', ratio: 0.012 }],
   ['concierge',             { costField: 'concierge', ratio: 0.008 }],
-  ['pool',                  { costField: 'poolMaintenance', boolField: 'infinityPool', ratio: 0.0025 }],
-  ['wine',                  { costField: 'wineClimate', boolField: 'wineClimateControl', ratio: 0.0017 }],
+  ['pool',                  { costField: 'poolMaintenance', ratio: 0.0025 }],
   ['management',            { costField: 'propertyManagement', ratio: 0.004 }],
 ];
 
@@ -812,7 +805,6 @@ function generateAdvice(goal: string, state: any, fin: FinSummary): { text: stri
     { name: 'Security', field: 'specializedSecurity', value: state.specializedSecurity || 0 },
     { name: 'Landscaping', field: 'highEndLandscaping', value: state.highEndLandscaping || 0 },
     { name: 'Pool maintenance', field: 'poolMaintenance', value: state.poolMaintenance || 0 },
-    { name: 'Wine climate', field: 'wineClimate', value: state.wineClimate || 0 },
     { name: 'Smart home', field: 'smartHomeSystems', value: state.smartHomeSystems || 0 },
     { name: 'Management', field: 'propertyManagement', value: state.propertyManagement || 0 },
   ].filter(c => c.value > 0).sort((a, b) => b.value - a.value);
