@@ -2,7 +2,7 @@
 
 # ORTHANC Quick Start Script
 
-echo "🏛️  ORTHANC - Luxury Real Estate Digital Vault"
+echo "🏛️  ORTHANC - Commercial Real Estate Digital Vault"
 echo "================================================"
 echo ""
 

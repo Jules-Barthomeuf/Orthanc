@@ -460,7 +460,7 @@ export function parseUserMessage(text: string, currentPropertyValue: number): { 
   }
 
   // ── Renovation ──
-  const renoPat = /(?:renovation|reno|furnish|remodel|luxury\s*lift|updates?|upgrades?)\s*(?:of|at|=|:|cost|needed|required|budget)?\s*(\$?\s*[\d,.]+\s*[MmKk]?)/i;
+  const renoPat = /(?:renovation|reno|furnish|remodel|tenant\s*improvement|ti\s*allowance|updates?|upgrades?)\s*(?:of|at|=|:|cost|needed|required|budget)?\s*(\$?\s*[\d,.]+\s*[MmKk]?)/i;
   const rm = text.match(renoPat);
   if (rm) {
     const v = parseMoney(rm[1]);
@@ -671,9 +671,9 @@ function generateIntakeSummary(state: any, fin: FinSummary, changes: SimStatePar
   lines.push('');
 
   // Quick assessment
-  if (fin.capRate >= 4) lines.push(`_Strong cap rate for luxury — this is a genuine income-producing asset._`);
-  else if (fin.capRate >= 2) lines.push(`_Solid cap rate for prime luxury — a safe-haven asset with reliable income._`);
-  else lines.push(`_This is a prestige asset — the investment thesis rests on appreciation and lifestyle value._`);
+  if (fin.capRate >= 4) lines.push(`_Strong cap rate for commercial — this is a genuine income-producing asset._`);
+  else if (fin.capRate >= 2) lines.push(`_Solid cap rate for core commercial — stable income profile with manageable risk._`);
+  else lines.push(`_Low-yield profile — this deal relies more on appreciation, lease-up, or repositioning upside._`);
 
   lines.push('');
   lines.push(`_The simulator is now live with all your data. Feel free to tweak anything — just tell me what to change, or ask me to **"minimize my cost"** or **"maximize my return"**._`);
@@ -708,11 +708,11 @@ function generateAnalysis(state: any, fin: FinSummary, changes: SimStatePartial,
   lines.push(`**NOI: ${fmt$(fin.noi)}/yr** · Cap Rate: **${fin.capRate.toFixed(2)}%**`);
 
   if (fin.capRate < 2) {
-    lines.push(`_At ${fin.capRate.toFixed(1)}%, this is a lifestyle asset — low yield but high prestige and appreciation potential._`);
+    lines.push(`_At ${fin.capRate.toFixed(1)}%, this is a low-yield profile — value creation likely needs lease-up or repositioning._`);
   } else if (fin.capRate < 4) {
-    lines.push(`_A ${fin.capRate.toFixed(1)}% cap rate is typical for stable prime luxury — it beats inflation and provides a safe haven._`);
+    lines.push(`_A ${fin.capRate.toFixed(1)}% cap rate is typical for stabilized core commercial assets._`);
   } else {
-    lines.push(`_${fin.capRate.toFixed(1)}% is strong for luxury — potential value-add opportunity._`);
+    lines.push(`_${fin.capRate.toFixed(1)}% is strong for commercial — potential value-add opportunity._`);
   }
   lines.push('');
 
@@ -731,7 +731,7 @@ function generateAnalysis(state: any, fin: FinSummary, changes: SimStatePartial,
     if (fin.cashOnCash < 3) {
       lines.push(`_A ${fin.cashOnCash.toFixed(1)}% CoC is below risk-free Treasury yields — the investment thesis relies on appreciation and lifestyle value._`);
     } else if (fin.cashOnCash < 6) {
-      lines.push(`_Decent cash yield for luxury real estate. The property carries itself._`);
+      lines.push(`_Decent cash yield for commercial real estate. The asset carries itself._`);
     } else {
       lines.push(`_Strong cash returns — this property is a genuine income producer._`);
     }
@@ -748,7 +748,7 @@ function generateAnalysis(state: any, fin: FinSummary, changes: SimStatePartial,
     if (fin.irrPercent >= 10) {
       lines.push(`_Excellent — outperforms most asset classes._`);
     } else if (fin.irrPercent >= 7) {
-      lines.push(`_Solid return. Competitive with S&P 500 averages, and you get a tangible luxury asset — a physical hedge against currency devaluation and a legacy asset._`);
+      lines.push(`_Solid return. Competitive with public equities, while keeping exposure to tangible commercial real estate cash flows._`);
     } else if (fin.irrPercent >= 4) {
       lines.push(`_Moderate return. The investment works if you value lifestyle utility and portfolio diversification._`);
     } else {
@@ -952,7 +952,7 @@ export default function SimulatorChat({ currentState, financials, onUpdateParams
     {
       id: 'welcome',
       role: 'assistant',
-      text: `Welcome! I'm your investment advisor.\n\n**Tell me everything you know about this property** — price, location, rent potential, financing terms, square footage, amenities, condition… anything. Drop it all in one message and I'll configure the entire simulator instantly.\n\nFor example:\n*"It's a $6.5M villa in Miami Beach, 6 bed 8 bath, 8,000 sqft, oceanfront with a private pool. Currently rented at $35K/month. Taxes are $78K/year, insurance $42K. We'd put 30% down at 6.5% over 30 years. Needs about $200K in renovation. Has a wine cellar, smart home system, and concierge service. We plan to hold for 7 years."*\n\nI'll parse everything and give you an instant investment analysis — or just ask me to **"minimize cost"** or **"maximize return"** anytime.`,
+      text: `Welcome! I'm your investment advisor.\n\n**Tell me everything you know about this commercial property** — price, location, rent roll, vacancy, lease terms, square footage, operating expenses, financing terms, and capex plans. Drop it all in one message and I'll configure the simulator instantly.\n\nFor example:\n*"It's a $12M mixed-use building in Manhattan with 42,000 sqft. Current gross rent is $1.05M/yr at 12% vacancy. CAM and security total $220K/yr, taxes are $145K, insurance $60K, management $95K. We're financing 65% at 6.2% over 25 years with $750K in tenant improvements. Hold period is 8 years."*\n\nI'll parse everything and give you an instant investment analysis — or just ask me to **"minimize cost"** or **"maximize return"** anytime.`,
       timestamp: Date.now(),
     },
   ]);

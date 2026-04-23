@@ -262,7 +262,7 @@ export default function MyPortalsPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                  placeholder="e.g. Miami Luxury Collection"
+                  placeholder="e.g. Downtown Office Portfolio"
                   className="w-full bg-dark-900 border border-dark-600/30 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold-400/40 focus:ring-1 focus:ring-gold-400/20 transition-colors placeholder:text-dark-500"
                   autoFocus
                 />

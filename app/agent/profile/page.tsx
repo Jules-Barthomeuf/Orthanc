@@ -221,17 +221,17 @@ export default function AgentProfilePage() {
   const [name, setName] = useState(agent?.name || "");
   const [phone, setPhone] = useState(agent?.phone || "");
   const [email, setEmail] = useState("");
-  const [specialization, setSpecialization] = useState("Luxury Real Estate");
+  const [specialization, setSpecialization] = useState("Commercial Real Estate");
   const [yearsExp, setYearsExp] = useState("15");
   const [expertiseAreas, setExpertiseAreas] = useState(
-    "Luxury properties, Waterfront developments, Investment properties"
+    "Office assets, Retail & mixed-use, Investment properties"
   );
   const [bio, setBio] = useState(agent?.bio || "");
   const [marketKnowledge, setMarketKnowledge] = useState(agent?.marketKnowledge || "");
   const [credentials, setCredentials] = useState([
     { title: "Florida Real Estate License", detail: "Active — Expires Dec 31, 2026" },
     { title: "National Association of REALTORS®", detail: "Member since 2015" },
-    { title: "Certified Luxury Home Marketing Specialist", detail: "REBAC Training Certified" },
+    { title: "Certified Commercial Investment Member", detail: "CCIM coursework completed" },
   ]);
 
   const [saved, setSaved] = useState(false);

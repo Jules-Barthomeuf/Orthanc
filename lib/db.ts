@@ -38,9 +38,9 @@ export const mockAgents: Agent[] = [
     email: "michael.johnson@orthanc.com",
     phone: "+1 (555) 123-4567",
     profileImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-    bio: "Specializing in luxury waterfront properties in Miami Beach. 15+ years of experience in high-end real estate.",
+    bio: "Specializing in commercial assets in Miami's core submarkets. 15+ years of experience across office, retail, and mixed-use.",
     marketKnowledge:
-      "Miami's luxury market is experiencing unprecedented growth. The influx of international buyers and remote work trends have created strong demand for premium properties. Waterfront properties are particularly sought after with prices appreciating 12-15% annually.",
+      "Miami's commercial market is evolving quickly. Tenant migration and office repositioning trends are driving selective demand in core corridors. Mixed-use assets with strong leasing fundamentals are outperforming.",
     properties: ["prop-1", "prop-2"],
     createdAt: new Date("2024-01-15"),
   },
@@ -52,7 +52,7 @@ export const mockAgents: Agent[] = [
     profileImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
     bio: "Top-performing agent in Beverly Hills, specializing in contemporary estates. Decade of experience.",
     marketKnowledge:
-      "Beverly Hills continues to attract ultra-high-net-worth individuals. New zoning changes are expected to impact development potential in the area. The local economy is robust with strong institutional support for luxury properties.",
+      "Prime Los Angeles submarkets continue to attract institutional capital. New zoning updates are expected to impact redevelopment potential, while demand remains resilient for well-located commercial product.",
     properties: ["prop-3"],
     createdAt: new Date("2024-02-01"),
   },
@@ -79,7 +79,7 @@ export const mockProperties: Property[] = [
     marketData: {
       neighborhood: "South of Fifth",
       city: "Miami Beach",
-      neighborhoodVibe: "Luxury living with vibrant nightlife and pristine beaches. Highly walkable and exclusive.",
+      neighborhoodVibe: "Dense mixed-use district with strong foot traffic, transit access, and active retail corridors.",
       demographics: {
         population: "92,300",
         medianAge: 40,
@@ -148,7 +148,7 @@ export const mockProperties: Property[] = [
     marketData: {
       neighborhood: "The Flats",
       city: "Beverly Hills",
-      neighborhoodVibe: "World-famous luxury destination with high-end shopping and dining. Quiet, tree-lined streets.",
+      neighborhoodVibe: "Established high-income submarket with strong retail demand and stable office occupancy.",
       demographics: {
         population: "34,000",
         medianAge: 46,
@@ -178,8 +178,8 @@ export const mockProperties: Property[] = [
       },
       attractions: ["Rodeo Drive", "Beverly Gardens Park", "Greystone Mansion"],
       localPolicies: ["Strict noise ordinances", "Height restrictions for new construction"],
-      zoningInfo: "R-1 Single Family Residential",
-      economicOutlook: "Stable luxury market with consistent international demand.",
+      zoningInfo: "Commercial Mixed-Use (C-MU)",
+      economicOutlook: "Stable commercial market with consistent institutional demand.",
       agentPerspective: [
         { category: "Insider Tips", info: "The north side of the street gets significantly less traffic noise. The neighbors are known for their annual summer block party." },
         { category: "Future Development", info: "Rumors of a new upscale organic grocer opening two blocks away next year. City planning just approved a new park renovation nearby." },

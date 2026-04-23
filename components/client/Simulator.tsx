@@ -39,7 +39,7 @@ interface SimState {
   grossAnnualRent: number;
   vacancyRate: number; // percentage of gross rent lost to vacancy
 
-  // Luxury operating expenses
+  // Commercial operating expenses
   concierge: number;
   specializedSecurity: number;
   highEndLandscaping: number;
@@ -137,7 +137,7 @@ function generateScaledDefaults(price: number): Partial<SimState> {
   const isUltra = price >= 10_000_000;
   const isPremium = price >= 5_000_000;
 
-  // Gross rent: ~6% of value for luxury short-term / executive rental
+  // Gross rent: ~6% of value as a blended commercial rent assumption
   const grossAnnualRent = round(price * 0.06, 25_000);
 
   // Closing costs: ~3% of purchase price
@@ -146,7 +146,7 @@ function generateScaledDefaults(price: number): Partial<SimState> {
   // Renovation: scaled by tier
   const renovationCosts = isUltra ? round(price * 0.05, 50_000)
     : isPremium ? round(price * 0.04, 25_000)
-    : round(price * 0.06, 25_000); // entry-luxury needs more "lift"
+    : round(price * 0.06, 25_000); // smaller assets often need more capex
 
   // Property management: 10% of gross rent
   const propertyManagement = round(grossAnnualRent * 0.10, 5_000);
@@ -157,7 +157,7 @@ function generateScaledDefaults(price: number): Partial<SimState> {
   // Property Tax: higher default for entry/premium, adjustable
   const propertyTaxRate = price >= 10_000_000 ? 1.1 : 1.2;
 
-  // Luxury operating expenses — scale with price tier
+  // Operating expenses — scaled for commercial assets
   const concierge = isPremium ? round(price * 0.008, 10_000) : 0;
   const specializedSecurity = isPremium ? round(price * 0.012, 10_000) : 0;
   const highEndLandscaping = round(price * (isUltra ? 0.006 : isPremium ? 0.004 : 0.0012), 1_000);
@@ -165,7 +165,7 @@ function generateScaledDefaults(price: number): Partial<SimState> {
   const wineClimate = isUltra ? round(price * 0.0017, 5_000) : 0;
   const smartHomeSystems = isPremium ? round(price * 0.0023, 5_000) : round(price * 0.0012, 1_000);
 
-  // Staffing — only for high-end
+  // Staffing — more common in larger commercial assets
   const liveInStaff = isUltra ? 2 : 0;
   const securityTeam = isUltra ? 1 : 0;
   const propertyManagers = isPremium ? 1 : 0;
@@ -230,23 +230,23 @@ function detectRegion(address: string): string {
   for (const [key, keywords] of Object.entries(ADDRESS_KEYWORDS)) {
     if (keywords.some((kw) => lower.includes(kw))) return key;
   }
-  return 'beverly-hills';
+  return 'manhattan';
 }
 
 /* ── Market data for liquidity forecasting ── */
 const MARKET_LIQUIDITY: Record<string, { label: string; avgDOM: Record<string, number>; brokerFee: number }> = {
-  'miami-beach':   { label: 'Miami Beach, FL',      avgDOM: { ultra: 280, premium: 180, entry: 90 },  brokerFee: 5 },
-  'palm-beach':    { label: 'Palm Beach, FL',        avgDOM: { ultra: 320, premium: 200, entry: 110 }, brokerFee: 5 },
-  'bel-air':       { label: 'Bel Air, CA',           avgDOM: { ultra: 350, premium: 220, entry: 120 }, brokerFee: 5 },
-  'beverly-hills': { label: 'Beverly Hills, CA',     avgDOM: { ultra: 300, premium: 190, entry: 100 }, brokerFee: 5 },
-  'malibu':        { label: 'Malibu, CA',            avgDOM: { ultra: 360, premium: 240, entry: 130 }, brokerFee: 5 },
-  'hamptons':      { label: 'The Hamptons, NY',      avgDOM: { ultra: 400, premium: 260, entry: 150 }, brokerFee: 5 },
-  'aspen':         { label: 'Aspen, CO',             avgDOM: { ultra: 310, premium: 200, entry: 100 }, brokerFee: 6 },
-  'monaco':        { label: 'Monte Carlo, Monaco',   avgDOM: { ultra: 450, premium: 300, entry: 160 }, brokerFee: 4 },
-  'manhattan':     { label: 'Manhattan, NY',         avgDOM: { ultra: 270, premium: 160, entry: 80 },  brokerFee: 6 },
-  'mayfair':       { label: 'Mayfair, London',       avgDOM: { ultra: 380, premium: 250, entry: 140 }, brokerFee: 3 },
-  'saint-tropez':  { label: 'Saint-Tropez, France',  avgDOM: { ultra: 500, premium: 340, entry: 200 }, brokerFee: 5 },
-  'paris-16':      { label: 'Paris 16e, France',     avgDOM: { ultra: 340, premium: 210, entry: 120 }, brokerFee: 5 },
+  'miami-beach':   { label: 'Brickell / Miami CBD, FL', avgDOM: { ultra: 280, premium: 180, entry: 90 },  brokerFee: 2.5 },
+  'palm-beach':    { label: 'West Palm Office Corridor, FL', avgDOM: { ultra: 320, premium: 200, entry: 110 }, brokerFee: 2.5 },
+  'bel-air':       { label: 'Century City, CA',      avgDOM: { ultra: 350, premium: 220, entry: 120 }, brokerFee: 2.5 },
+  'beverly-hills': { label: 'Downtown Los Angeles, CA', avgDOM: { ultra: 300, premium: 190, entry: 100 }, brokerFee: 2.5 },
+  'malibu':        { label: 'Santa Monica Office Belt, CA', avgDOM: { ultra: 360, premium: 240, entry: 130 }, brokerFee: 2.5 },
+  'hamptons':      { label: 'Boston Core, MA',       avgDOM: { ultra: 400, premium: 260, entry: 150 }, brokerFee: 2.5 },
+  'aspen':         { label: 'Denver CBD, CO',        avgDOM: { ultra: 310, premium: 200, entry: 100 }, brokerFee: 2.5 },
+  'monaco':        { label: 'Singapore CBD',         avgDOM: { ultra: 450, premium: 300, entry: 160 }, brokerFee: 2.0 },
+  'manhattan':     { label: 'Manhattan Office Core, NY', avgDOM: { ultra: 270, premium: 160, entry: 80 },  brokerFee: 3.0 },
+  'mayfair':       { label: 'City of London',        avgDOM: { ultra: 380, premium: 250, entry: 140 }, brokerFee: 2.0 },
+  'saint-tropez':  { label: 'Paris La Defense',      avgDOM: { ultra: 500, premium: 340, entry: 200 }, brokerFee: 2.0 },
+  'paris-16':      { label: 'Frankfurt Bankenviertel', avgDOM: { ultra: 340, premium: 210, entry: 120 }, brokerFee: 2.0 },
 };
 
 /* ── Tax impact by holding structure ── */
@@ -264,7 +264,7 @@ const TAX_PROFILES: Record<string, { label: string; effectiveCapGainRate: number
 function useFinancials(s: SimState) {
   return useMemo(() => {
     // ── Operating Expenses ──
-    const luxuryOpex =
+    const operatingOpex =
       s.concierge + s.specializedSecurity + s.highEndLandscaping +
       s.poolMaintenance + s.wineClimate + s.smartHomeSystems + s.propertyManagement;
 
@@ -273,7 +273,7 @@ function useFinancials(s: SimState) {
 
     const specializedMaint = 0;
 
-    const totalCarryCost = luxuryOpex + staffingCost + specializedMaint +
+    const totalCarryCost = operatingOpex + staffingCost + specializedMaint +
       (s.propertyValue * s.propertyTaxRate / 100) + s.annualInsurance;
 
     // ── Closing / Acquisition Cost Breakdown ──
@@ -387,7 +387,7 @@ function useFinancials(s: SimState) {
       : 0;
 
     return {
-      luxuryOpex, staffingCost, specializedMaint, totalCarryCost,
+      operatingOpex, staffingCost, specializedMaint, totalCarryCost,
       vacancyLoss, effectiveRent,
       noi, capRate,
       loanAmount, equityInvested, totalCashInvested, monthlyPayment, annualDebtService, dscr,
@@ -827,8 +827,8 @@ function FinancialProjectionsChart({ state, fin }: { state: SimState; fin: Retur
 function CarryCostBreakdown({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
   const taxCost = state.propertyValue * state.propertyTaxRate / 100;
   const labels = [
-    'Concierge & Services', 'Specialized Security', 'Landscaping', 'Pool & Water',
-    'Smart Home', 'Property Mgmt', 'Staffing',
+    'CAM & Common Area Ops', 'Building Security', 'Facilities & Grounds', 'Utilities & Systems',
+    'Tech Infrastructure', 'Property Management', 'Staffing',
     'Property Tax', 'Insurance',
   ];
   const values = [
@@ -1081,7 +1081,7 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
       <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Gem size={14} className="text-gold-400/60" />
-          <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">Scarcity Value Premium</span>
+          <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">Commercial Demand Premium</span>
         </div>
         <div className="flex items-baseline gap-3 mb-4">
           <span className="text-3xl font-mono font-bold text-gold-400">+{fin.scarcityBonus.toFixed(1)}%</span>
@@ -1089,10 +1089,10 @@ function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: 'Private Beach Access', active: state.scarcityPrivateBeach, bonus: '+1.2%' },
-            { label: 'Historic Heritage', active: state.scarcityHistoricHeritage, bonus: '+0.8%' },
-            { label: '"Starchitect" Design', active: state.scarcityStarchitect, bonus: '+1.0%' },
-            { label: 'Unique Panoramic View', active: state.scarcityUniqueView, bonus: '+0.6%' },
+            { label: 'Transit Hub Proximity', active: state.scarcityPrivateBeach, bonus: '+1.2%' },
+            { label: 'Institutional Tenant Mix', active: state.scarcityHistoricHeritage, bonus: '+0.8%' },
+            { label: 'Class A Building Spec', active: state.scarcityStarchitect, bonus: '+1.0%' },
+            { label: 'Redevelopment Corridor', active: state.scarcityUniqueView, bonus: '+0.6%' },
           ].map((f) => (
             <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
               f.active ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
@@ -1181,7 +1181,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Liquidity Forecasting</div>
             <div className="text-lg font-display text-white/80">
-              {fin.mktData.label} &middot; {state.priceBracket === 'ultra' ? '$10M+' : state.priceBracket === 'premium' ? '$5\u201310M' : '$2\u20135M'}
+              {fin.mktData.label} &middot; {state.priceBracket === 'ultra' ? 'Trophy ($10M+)' : state.priceBracket === 'premium' ? 'Core+ ($5\u201310M)' : 'Core ($2\u20135M)'}
             </div>
           </div>
         </div>
@@ -1215,7 +1215,7 @@ function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<ty
 
         {/* Illiquidity bar by region */}
         <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-          <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Average DOM by Market ({state.priceBracket === 'ultra' ? '$10M+' : state.priceBracket === 'premium' ? '$5\u201310M' : '$2\u20135M'})</div>
+          <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Average DOM by Market ({state.priceBracket === 'ultra' ? 'Trophy' : state.priceBracket === 'premium' ? 'Core+' : 'Core'})</div>
           <div className="space-y-2">
             {Object.entries(MARKET_LIQUIDITY)
               .sort(([, a], [, b]) => a.avgDOM[state.priceBracket] - b.avgDOM[state.priceBracket])
@@ -1323,7 +1323,7 @@ function GraphExplainer({ title, explanation }: { title: string; explanation: st
 
 export default function Simulator({ address, price }: { address?: string; price?: number }) {
   const [state, setState] = useState<SimState>(() => {
-    const detectedRegion = address ? detectRegion(address) : 'beverly-hills';
+    const detectedRegion = address ? detectRegion(address) : 'manhattan';
     const base: SimState = {
       ...DEFAULT_STATE,
       marketRegion: detectedRegion,
@@ -1361,7 +1361,7 @@ export default function Simulator({ address, price }: { address?: string; price?
               <Building2 size={18} className="text-gold-400" />
             </div>
             <div>
-              <div className="text-base font-semibold text-white/80 tracking-wide">Luxury Investment Simulator</div>
+              <div className="text-base font-semibold text-white/80 tracking-wide">Commercial Real Estate Simulator</div>
               <div className="text-xs text-gold-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
             </div>
           </div>
@@ -1391,7 +1391,7 @@ export default function Simulator({ address, price }: { address?: string; price?
             <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Debt Structure</div>
             <SliderInput label="LTV Ratio" value={state.ltvRatio} onChange={(v) => update({ ltvRatio: v })}
               min={0} max={80} step={5} formatFn={(v) => v === 0 ? 'All-Cash' : `${v}%`} />
-            <SliderInput label="Interest Rate (Jumbo)" value={state.interestRate} onChange={(v) => update({ interestRate: v })}
+            <SliderInput label="Interest Rate (Debt)" value={state.interestRate} onChange={(v) => update({ interestRate: v })}
               min={2} max={10} step={0.25} unit="%" />
             <SliderInput label="Loan Term" value={state.loanTermYears} onChange={(v) => update({ loanTermYears: v })}
               min={5} max={30} step={5} unit=" years" />
@@ -1402,28 +1402,28 @@ export default function Simulator({ address, price }: { address?: string; price?
               min={0} max={12} step={0.5} unit="%/yr" />
           </Section>
 
-          {/* 2. Luxury Carry Costs */}
-          <Section title="Luxury Carry Costs" icon={<ReceiptText size={15} />}>
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Luxury Operating Expenses</div>
-            <SliderInput label="Concierge & Services" value={state.concierge} onChange={(v) => update({ concierge: v })}
+          {/* 2. Commercial Carry Costs */}
+          <Section title="Commercial Carry Costs" icon={<ReceiptText size={15} />}>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Building Operating Expenses</div>
+            <SliderInput label="CAM & Common Area Ops" value={state.concierge} onChange={(v) => update({ concierge: v })}
               min={0} max={500_000} step={10_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Specialized Security" value={state.specializedSecurity} onChange={(v) => update({ specializedSecurity: v })}
+            <SliderInput label="Building Security" value={state.specializedSecurity} onChange={(v) => update({ specializedSecurity: v })}
               min={0} max={1_000_000} step={10_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="High-End Landscaping" value={state.highEndLandscaping} onChange={(v) => update({ highEndLandscaping: v })}
+            <SliderInput label="Facilities & Grounds" value={state.highEndLandscaping} onChange={(v) => update({ highEndLandscaping: v })}
               min={0} max={300_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Pool & Water Features" value={state.poolMaintenance} onChange={(v) => update({ poolMaintenance: v })}
+            <SliderInput label="Utilities & Building Systems" value={state.poolMaintenance} onChange={(v) => update({ poolMaintenance: v })}
               min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Smart Home Systems" value={state.smartHomeSystems} onChange={(v) => update({ smartHomeSystems: v })}
+            <SliderInput label="Tech Infrastructure" value={state.smartHomeSystems} onChange={(v) => update({ smartHomeSystems: v })}
               min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
             <SliderInput label="Property Management" value={state.propertyManagement} onChange={(v) => update({ propertyManagement: v })}
               min={0} max={300_000} step={5_000} formatFn={(v) => fmt$(v)} />
 
             <div className="h-px bg-white/[0.04] my-3" />
             <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Staffing</div>
-            <NumberStepper label="Live-In Staff" value={state.liveInStaff} onChange={(v) => update({ liveInStaff: v })} />
-            <NumberStepper label="Security Team" value={state.securityTeam} onChange={(v) => update({ securityTeam: v })} />
-            <NumberStepper label="Property Managers" value={state.propertyManagers} onChange={(v) => update({ propertyManagers: v })} />
-            <SliderInput label="Avg Staff Salary" value={state.avgStaffSalary} onChange={(v) => update({ avgStaffSalary: v })}
+            <NumberStepper label="Operations Staff" value={state.liveInStaff} onChange={(v) => update({ liveInStaff: v })} />
+            <NumberStepper label="Security Shifts" value={state.securityTeam} onChange={(v) => update({ securityTeam: v })} />
+            <NumberStepper label="Facility Managers" value={state.propertyManagers} onChange={(v) => update({ propertyManagers: v })} />
+            <SliderInput label="Avg Staff Cost" value={state.avgStaffSalary} onChange={(v) => update({ avgStaffSalary: v })}
               min={40_000} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
           </Section>
 
@@ -1443,14 +1443,14 @@ export default function Simulator({ address, price }: { address?: string; price?
               min={10_000} max={500_000} step={5_000} formatFn={(v) => fmt$(v)} />
 
             <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Scarcity Multiplier</div>
-            <ToggleSwitch label="Private Beach Access" value={state.scarcityPrivateBeach}
+            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Demand Drivers</div>
+            <ToggleSwitch label="Transit Hub Proximity" value={state.scarcityPrivateBeach}
               onChange={(v) => update({ scarcityPrivateBeach: v })} tooltip="+1.2% annual appreciation uplift" />
-            <ToggleSwitch label="Historic Heritage" value={state.scarcityHistoricHeritage}
+            <ToggleSwitch label="Institutional Tenant Mix" value={state.scarcityHistoricHeritage}
               onChange={(v) => update({ scarcityHistoricHeritage: v })} tooltip="+0.8% annual appreciation uplift" />
-            <ToggleSwitch label="&quot;Starchitect&quot; Design" value={state.scarcityStarchitect}
+            <ToggleSwitch label="Class A Building Spec" value={state.scarcityStarchitect}
               onChange={(v) => update({ scarcityStarchitect: v })} tooltip="+1.0% annual appreciation uplift" />
-            <ToggleSwitch label="Unique Panoramic View" value={state.scarcityUniqueView}
+            <ToggleSwitch label="Redevelopment Corridor" value={state.scarcityUniqueView}
               onChange={(v) => update({ scarcityUniqueView: v })} tooltip="+0.6% annual appreciation uplift" />
           </Section>
 
@@ -1463,31 +1463,31 @@ export default function Simulator({ address, price }: { address?: string; price?
 
             <div className="h-px bg-white/[0.04] my-3" />
             <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Market Context</div>
-            <ToggleGroup label="Price Bracket" value={state.priceBracket}
+            <ToggleGroup label="Asset Tier" value={state.priceBracket}
               onChange={(v) => update({ priceBracket: v as SimState['priceBracket'] })}
               options={[
-                { value: 'entry', label: '$2\u20135M' },
-                { value: 'premium', label: '$5\u201310M' },
-                { value: 'ultra', label: '$10M+' },
+                { value: 'entry', label: 'Core ($2\u20135M)' },
+                { value: 'premium', label: 'Core+ ($5\u201310M)' },
+                { value: 'ultra', label: 'Trophy ($10M+)' },
               ]} />
             <ToggleGroup label="Market Region" value={state.marketRegion}
               onChange={(v) => update({ marketRegion: v })}
               options={[
-                { value: 'beverly-hills', label: 'Beverly Hills' },
-                { value: 'miami-beach', label: 'Miami Beach' },
-                { value: 'manhattan', label: 'Manhattan' },
-                { value: 'hamptons', label: 'Hamptons' },
-                { value: 'monaco', label: 'Monaco' },
-                { value: 'mayfair', label: 'London' },
+                { value: 'beverly-hills', label: 'Downtown Los Angeles' },
+                { value: 'miami-beach', label: 'Miami CBD' },
+                { value: 'manhattan', label: 'Manhattan Office Core' },
+                { value: 'hamptons', label: 'Boston Core' },
+                { value: 'monaco', label: 'Singapore CBD' },
+                { value: 'mayfair', label: 'City of London' },
               ]} />
             <div className="flex flex-wrap gap-2 mt-2">
               {[
-                { value: 'bel-air', label: 'Bel Air' },
-                { value: 'malibu', label: 'Malibu' },
-                { value: 'palm-beach', label: 'Palm Beach' },
-                { value: 'aspen', label: 'Aspen' },
-                { value: 'saint-tropez', label: 'St-Tropez' },
-                { value: 'paris-16', label: 'Paris 16e' },
+                { value: 'bel-air', label: 'Century City' },
+                { value: 'malibu', label: 'Santa Monica Offices' },
+                { value: 'palm-beach', label: 'West Palm Offices' },
+                { value: 'aspen', label: 'Denver CBD' },
+                { value: 'saint-tropez', label: 'Paris La Defense' },
+                { value: 'paris-16', label: 'Frankfurt Core' },
               ].map((opt) => (
                 <button key={opt.value} onClick={() => update({ marketRegion: opt.value })}
                   className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${

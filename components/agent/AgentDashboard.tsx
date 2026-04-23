@@ -419,7 +419,7 @@ export function AgentDashboard() {
     setPortalStep("name");
     setPortalDraft({ name: "", description: "" });
     setMessages([
-      { role: "ai", content: "Let's create a new portal for your clients. **What name would you like for this portal?**\n\nFor example: *Miami Luxury Collection*, *Park Avenue Residences*, or *Beachfront Portfolio*" },
+      { role: "ai", content: "Let's create a new portal for your clients. **What name would you like for this portal?**\n\nFor example: *Downtown Office Portfolio*, *Retail & Mixed-Use Pipeline*, or *Industrial Assets Q3*" },
     ]);
   };
 
@@ -561,8 +561,8 @@ export function AgentDashboard() {
     const price = draftData.price || 5000000;
     const address = draftData.address || `Auto-generated Address ${now}`;
 
-    // Génération description premium
-    function generatePremiumDescription(d: PropertyDraft) {
+    // Generate a commercial-oriented default description
+    function generateCommercialDescription(d: PropertyDraft) {
       const beds = d.bedrooms || 4;
       const baths = d.bathrooms || 3;
       const sqft = d.squareFeet || 4000;
@@ -584,7 +584,7 @@ export function AgentDashboard() {
       if (features.includes('Waterfront')) extras.push('waterfront access');
       if (features.includes('Concierge')) extras.push('concierge services');
       const extrasText = extras.length ? 'Features ' + extras.join(', ') + '.' : '';
-      return `Refined, fully remodeled ${beds}-bed, ${baths}-bath residence${lot ? ` on a ${lot}` : ''} ${addressText}. Boasts ${sqft.toLocaleString()} sqft, built in ${year}. ${extrasText} Luxurious sanctuary for grand entertaining and serene family living.`;
+      return `Commercial asset${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} office/flex areas and ${baths} restrooms. ${extrasText} Suitable for income generation, tenant optimization, and long-term value creation.`;
     }
 
     const propertyPayload = {
@@ -592,7 +592,7 @@ export function AgentDashboard() {
       title: address,
       address,
       price,
-      description: draftData.description || generatePremiumDescription(draftData),
+      description: draftData.description || generateCommercialDescription(draftData),
       images: uploadedImages.length > 0 ? uploadedImages : ["https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200"],
       agentId: user?.id || agentId,
       bedroom: draftData.bedrooms || 4,
@@ -646,8 +646,8 @@ export function AgentDashboard() {
     await new Promise((r) => setTimeout(r, 800 + Math.random() * 800));
 
     const responses = [
-      `That's a great question about "${q.slice(0, 40)}...". In the current luxury market, valuations depend heavily on location, condition, and comparable sales in the area. Would you like me to dig deeper into any specific aspect?`,
-      `Regarding "${q.slice(0, 40)}..." — market trends suggest strong demand in premium segments. Interest rates and local inventory levels are the key factors to watch right now.`,
+      `That's a great question about "${q.slice(0, 40)}...". In the current commercial market, valuations depend heavily on location, tenant quality, lease terms, and comparable cap rates. Would you like me to dig deeper into any specific aspect?`,
+      `Regarding "${q.slice(0, 40)}..." — market trends suggest demand resilience in well-located commercial corridors. Interest rates, vacancy, and tenant retention are key factors to watch right now.`,
       `I can help with that! For "${q.slice(0, 40)}...", I'd recommend looking at recent comparable sales and considering factors like neighborhood growth trajectory and planned infrastructure investments.`,
       `Good question. Based on my analysis of "${q.slice(0, 40)}...", here are the key considerations: market liquidity, cap rate benchmarks for the area, and buyer demographics. Want more detail on any of these?`,
     ];
