@@ -14,48 +14,54 @@ import {
 import { 
   MapPin, 
   TrendingUp, 
-  Users, 
-  GraduationCap, 
   Shield, 
-  Train, 
   Home, 
   Gavel, 
   Activity,
   School,
   Building,
-  UserCheck,
   Edit2,
   Save,
-  BrainCircuit
+  BrainCircuit,
+  Plus,
+  Trash2,
+  User,
+  Camera
 } from "lucide-react";
 
 interface MarketInsightPanelProps {
   property: Property;
 }
 
-const DEFAULT_PERSPECTIVE: AgentPerspective[] = [
-  { category: "Insider Tips", info: "Add insider knowledge about this area..." },
-  { category: "Future Development", info: "What's coming to this neighborhood?" },
-  { category: "Local Lifestyle", info: "Describe the day-to-day vibes..." },
-  { category: "Investment Outlook", info: "Agent's prediction on value..." }
-];
+const DEFAULT_PERSPECTIVE: AgentPerspective[] = [];
 
 export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
   const data = property.marketData;
   const [perspective, setPerspective] = useState<AgentPerspective[]>(data?.agentPerspective || DEFAULT_PERSPECTIVE);
   const [isEditing, setIsEditing] = useState(false);
+  const [agentPhoto, setAgentPhoto] = useState<string>(data?.agentPhoto || "");
+  const [agentName, setAgentName] = useState<string>(data?.agentName || "");
+  const [photoInput, setPhotoInput] = useState<string>(data?.agentPhoto || "");
 
   if (!data) return <div className="text-dark-300">Market data not available.</div>;
 
   const handleSave = () => {
+    setAgentPhoto(photoInput);
     setIsEditing(false);
-    console.log("Saving perspective:", perspective);
   };
 
-  const handleUpdate = (index: number, newText: string) => {
-    const newPerspective = [...perspective];
-    newPerspective[index].info = newText;
-    setPerspective(newPerspective);
+  const handleUpdate = (index: number, field: "category" | "info", value: string) => {
+    const updated = [...perspective];
+    updated[index][field] = value;
+    setPerspective(updated);
+  };
+
+  const handleAddCategory = () => {
+    setPerspective((prev) => [...prev, { category: "New Category", info: "" }]);
+  };
+
+  const handleDeleteCategory = (index: number) => {
+    setPerspective((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -263,11 +269,12 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
     </div>
 
     <div className="xl:col-span-1 border-l border-white/5 xl:pl-8 space-y-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
             <h3 className="label-luxury text-gold-400 flex items-center gap-2">
               <BrainCircuit size={18} /> Agent's Perspective
             </h3>
-            <button 
+            <button
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               className="text-xs text-dark-300 hover:text-gold-400 flex items-center gap-1 transition-colors"
             >
@@ -276,46 +283,108 @@ export function MarketInsightPanel({ property }: MarketInsightPanelProps) {
             </button>
           </div>
 
+          {/* Agent profile card */}
           <div className="bg-dark-800/20 rounded-lg p-5 border border-gold-400/10">
-            <div className="flex items-center gap-3 mb-4">
-               <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400">
-                  <UserCheck size={20} />
-               </div>
-               <div>
-                  <div className="text-white text-base font-medium">Combined Knowledge</div>
-                  <div className="text-sm text-dark-300">Insights from 32 agents</div>
-               </div>
+            <div className="flex items-center gap-4">
+              {/* Photo */}
+              <div className="relative flex-shrink-0">
+                {agentPhoto ? (
+                  <img
+                    src={agentPhoto}
+                    alt={agentName || "Agent"}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gold-400/30"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-gold-400/10 border-2 border-gold-400/20 flex items-center justify-center text-gold-400">
+                    <User size={24} />
+                  </div>
+                )}
+              </div>
+              {/* Name */}
+              <div className="flex-1 min-w-0">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={agentName}
+                    onChange={(e) => setAgentName(e.target.value)}
+                    placeholder="Agent name"
+                    className="w-full bg-dark-900 border border-gold-400/30 text-sm text-white px-2 py-1 rounded focus:outline-none focus:border-gold-400"
+                  />
+                ) : (
+                  <div className="text-white font-medium truncate">{agentName || "Agent"}</div>
+                )}
+                <div className="text-xs text-dark-400 mt-0.5">Market Analysis</div>
+              </div>
             </div>
-            <p className="text-sm text-white/60 leading-relaxed">
-               Aggregated intelligence from top-performing agents in the area. This data represents collective on-the-ground experience not found in standard reports.
-            </p>
+            {/* Photo URL input in edit mode */}
+            {isEditing && (
+              <div className="mt-4 flex items-center gap-2">
+                <Camera size={13} className="text-dark-400 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={photoInput}
+                  onChange={(e) => setPhotoInput(e.target.value)}
+                  placeholder="Photo URL (https://...)"
+                  className="flex-1 bg-dark-900 border border-gold-400/20 text-xs text-white px-2 py-1 rounded focus:outline-none focus:border-gold-400"
+                />
+              </div>
+            )}
           </div>
 
-          <div className="space-y-4">
-             {perspective.map((item, index) => (
-               <div key={index} className="space-y-2">
-                  <div className="text-sm uppercase tracking-wider text-gold-400/70 font-semibold">{item.category}</div>
-                  {isEditing ? (
-                    <textarea 
-                      value={item.info}
-                      onChange={(e) => handleUpdate(index, e.target.value)}
-                      className="w-full bg-dark-900 border border-gold-400/30 text-sm text-white p-2 rounded focus:outline-none focus:border-gold-400 min-h-[80px]"
-                    />
-                  ) : (
-                    <div className="text-base text-white/70 leading-relaxed border-l-2 border-white/10 pl-3 py-1">
-                       {item.info}
-                    </div>
-                  )}
-               </div>
-             ))}
-          </div>
-
-          {!isEditing && (
-            <div className="mt-8 pt-6 border-t border-white/5 text-center">
-              <p className="text-xs text-gold-400/50 italic">
-                Last updated 2 days ago by participating agents.
+          {/* Custom categories */}
+          <div className="space-y-5">
+            {perspective.length === 0 && !isEditing && (
+              <p className="text-sm text-dark-500 italic text-center py-4">
+                No analysis added yet. Click Edit to get started.
               </p>
-            </div>
+            )}
+            {perspective.map((item, index) => (
+              <div key={index} className="space-y-1.5">
+                {isEditing ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={item.category}
+                        onChange={(e) => handleUpdate(index, "category", e.target.value)}
+                        className="flex-1 bg-dark-900 border border-gold-400/30 text-xs uppercase tracking-wider text-gold-400 px-2 py-1 rounded focus:outline-none focus:border-gold-400 font-semibold"
+                      />
+                      <button
+                        onClick={() => handleDeleteCategory(index)}
+                        className="text-dark-500 hover:text-red-400 transition-colors p-1"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                    <textarea
+                      value={item.info}
+                      onChange={(e) => handleUpdate(index, "info", e.target.value)}
+                      placeholder="Write your analysis here..."
+                      className="w-full bg-dark-900 border border-gold-400/20 text-sm text-white p-2 rounded focus:outline-none focus:border-gold-400 min-h-[80px] resize-none"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-xs uppercase tracking-wider text-gold-400/70 font-semibold">
+                      {item.category}
+                    </div>
+                    <div className="text-sm text-white/70 leading-relaxed border-l-2 border-gold-400/20 pl-3 py-1">
+                      {item.info || <span className="text-dark-500 italic">No content</span>}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add category button */}
+          {isEditing && (
+            <button
+              onClick={handleAddCategory}
+              className="w-full flex items-center justify-center gap-2 text-xs text-dark-400 hover:text-gold-400 border border-dashed border-dark-600 hover:border-gold-400/40 rounded-lg py-3 transition-colors"
+            >
+              <Plus size={13} /> Add Category
+            </button>
           )}
         </div>
       </div>

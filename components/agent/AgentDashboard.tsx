@@ -411,7 +411,7 @@ export function AgentDashboard() {
     setPortalStep("name");
     setPortalDraft({ name: "", description: "" });
     setMessages([
-      { role: "ai", content: "Let's create a new portal for your clients. **What name would you like for this portal?**\n\nFor example: *Downtown Office Portfolio*, *Retail & Mixed-Use Pipeline*, or *Industrial Assets Q3*" },
+      { role: "ai", content: "Let's create a new portal for your clients. **What name would you like for this portal?**\n\nFor example: *Spring Listings 2026*, *Investment Properties*, or *Family Homes Under $800K*" },
     ]);
   };
 
@@ -638,10 +638,10 @@ export function AgentDashboard() {
     await new Promise((r) => setTimeout(r, 800 + Math.random() * 800));
 
     const responses = [
-      `That's a great question about "${q.slice(0, 40)}...". In the current commercial market, valuations depend heavily on location, tenant quality, lease terms, and comparable cap rates. Would you like me to dig deeper into any specific aspect?`,
-      `Regarding "${q.slice(0, 40)}..." — market trends suggest demand resilience in well-located commercial corridors. Interest rates, vacancy, and tenant retention are key factors to watch right now.`,
+      `That's a great question about "${q.slice(0, 40)}...". In the current market, pricing depends heavily on location, property condition, recent comparable sales, and local demand. Would you like me to dig deeper into any specific aspect?`,
+      `Regarding "${q.slice(0, 40)}..." — market trends suggest strong demand in well-located neighborhoods. Interest rates, inventory levels, and buyer activity are key factors to watch right now.`,
       `I can help with that! For "${q.slice(0, 40)}...", I'd recommend looking at recent comparable sales and considering factors like neighborhood growth trajectory and planned infrastructure investments.`,
-      `Good question. Based on my analysis of "${q.slice(0, 40)}...", here are the key considerations: market liquidity, cap rate benchmarks for the area, and buyer demographics. Want more detail on any of these?`,
+      `Good question. Based on my analysis of "${q.slice(0, 40)}...", here are the key considerations: market liquidity, price per sqft benchmarks for the area, and buyer demographics. Want more detail on any of these?`,
     ];
     const reply = responses[Math.floor(Math.random() * responses.length)];
     setIsTyping(false);

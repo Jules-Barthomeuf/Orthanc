@@ -46,7 +46,7 @@ ChartJS.register(
    TYPES
    ═══════════════════════════════════════════════════════════════ */
 
-export interface CREState {
+export interface SimState {
   // Acquisition
   purchasePrice: number;
   closingCostsPct: number;
@@ -83,45 +83,45 @@ export interface CREState {
 }
 
 const PROPERTY_TYPES = [
-  "Office",
-  "Retail",
-  "Industrial",
-  "Multifamily",
+  "Single Family",
+  "Condo",
+  "Townhouse",
+  "Duplex",
+  "Triplex",
+  "Small Multifamily (2–4 units)",
+  "Multifamily (5+ units)",
   "Mixed-Use",
-  "Hospitality",
-  "Self-Storage",
-  "Medical Office",
 ];
 
-function defaultState(price?: number): CREState {
-  const p = price ?? 5_000_000;
-  const sf = Math.round(p / 250);
+function defaultState(price?: number): SimState {
+  const p = price ?? 500_000;
+  const sf = Math.round(p / 300);
   return {
     purchasePrice: p,
     closingCostsPct: 2.5,
     holdingPeriod: 5,
     capexBudget: p * 0.02,
-    propertyType: "Office",
+    propertyType: "Single Family",
     rentableSF: sf,
-    exitCapRate: 6.5,
+    exitCapRate: 5.5,
     sellingCostsPct: 2.0,
-    baseRentPerSF: 28,
+    baseRentPerSF: 18,
     rentGrowthPct: 3.0,
-    vacancyRatePct: 7.0,
-    concessionMonths: 1,
-    ancillaryIncomePct: 3.0,
+    vacancyRatePct: 5.0,
+    concessionMonths: 0.5,
+    ancillaryIncomePct: 1.0,
     expenseGrowthPct: 2.5,
-    mgmtFeePct: 3.5,
+    mgmtFeePct: 8.0,
     propertyTaxes: p * 0.012,
-    insurance: p * 0.003,
-    utilitiesMaintenance: sf * 4,
-    otherOpex: sf * 1.5,
+    insurance: p * 0.004,
+    utilitiesMaintenance: sf * 2,
+    otherOpex: sf * 0.5,
     recurringCapexPct: 1.0,
-    tiPerSF: 35,
-    leasingCommissionsPct: 3.0,
-    ltvPct: 65,
-    interestRatePct: 6.5,
-    loanTermYears: 10,
+    tiPerSF: 8,
+    leasingCommissionsPct: 6.0,
+    ltvPct: 75,
+    interestRatePct: 7.0,
+    loanTermYears: 30,
     amortizationYears: 30,
     scenario: "base",
   };
@@ -207,7 +207,7 @@ function calcNPV(cashflows: number[], hurdle: number): number {
   return cashflows.reduce((acc, cf, t) => acc + cf / Math.pow(1 + hurdle, t), 0);
 }
 
-function applyScenario(s: CREState): CREState {
+function applyScenario(s: SimState): SimState {
   if (s.scenario === "upside")
     return {
       ...s,
@@ -227,7 +227,7 @@ function applyScenario(s: CREState): CREState {
   return s;
 }
 
-function computeFinancials(raw: CREState): FinancialSummary {
+function computeFinancials(raw: SimState): FinancialSummary {
   const s = applyScenario(raw);
   const {
     purchasePrice: pp, closingCostsPct, holdingPeriod: N, capexBudget,
@@ -497,7 +497,7 @@ function ExpensePieChart({ rows }: { rows: YearRow[] }) {
   return <div style={{ height: 280 }} className="flex justify-center"><Doughnut data={data} options={{ ...CHART_OPTS, scales: {} } as any} /></div>;
 }
 
-function SensitivityHeatmap({ baseState }: { baseState: CREState }) {
+function SensitivityHeatmap({ baseState }: { baseState: SimState }) {
   const rentGrowthVals = [-1, 0, 1, 2, 3, 4];
   const exitCapVals = [4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5];
   const cells = rentGrowthVals.map((rg) =>
@@ -588,17 +588,17 @@ const CHART_TABS = [
 type ChartTab = typeof CHART_TABS[number]["id"];
 
 export default function Simulator({ address, price }: { address?: string; price?: number }) {
-  const [state, setState] = useState<CREState>(() => defaultState(price));
+  const [state, setState] = useState<SimState>(() => defaultState(price));
   const [activeTab, setActiveTab] = useState<ChartTab>("waterfall");
 
   const fin = useMemo(() => computeFinancials(state), [state]);
 
-  const update = useCallback((partial: Partial<CREState>) => {
+  const update = useCallback((partial: Partial<SimState>) => {
     setState((prev) => ({ ...prev, ...partial }));
   }, []);
 
   const chatUpdate = useCallback((partial: Partial<SimStatePartial>) => {
-    const mapped: Partial<CREState> = {};
+    const mapped: Partial<SimState> = {};
     if (partial.vacancyRate !== undefined) mapped.vacancyRatePct = partial.vacancyRate;
     if (partial.interestRate !== undefined) mapped.interestRatePct = partial.interestRate;
     if (partial.holdPeriodYears !== undefined) mapped.holdingPeriod = partial.holdPeriodYears;
@@ -656,7 +656,7 @@ export default function Simulator({ address, price }: { address?: string; price?
             <Slider label="Closing Costs %" value={state.closingCostsPct} min={0.5} max={6} step={0.1} onChange={(v) => update({ closingCostsPct: v })} unit="%" />
             <Slider label="Holding Period" value={state.holdingPeriod} min={1} max={20} step={1} onChange={(v) => update({ holdingPeriod: v })} unit=" yrs" />
             <Slider label="CapEx Budget" value={state.capexBudget} min={0} max={state.purchasePrice * 0.1} step={10000} onChange={(v) => update({ capexBudget: v })} format={fmtUSD} />
-            <Slider label="Rentable SF" value={state.rentableSF} min={1000} max={500000} step={500} onChange={(v) => update({ rentableSF: v })} format={(v) => `${fmtN(v)} SF`} />
+            <Slider label="Rentable Sqft" value={state.rentableSF} min={500} max={50000} step={100} onChange={(v) => update({ rentableSF: v })} format={(v) => `${fmtN(v)} sqft`} />
             <Slider label="Exit Cap Rate %" value={state.exitCapRate} min={3} max={12} step={0.25} onChange={(v) => update({ exitCapRate: v })} unit="%" />
             <Slider label="Selling Costs %" value={state.sellingCostsPct} min={0.5} max={5} step={0.1} onChange={(v) => update({ sellingCostsPct: v })} unit="%" />
             <div className="mb-3">
@@ -668,9 +668,9 @@ export default function Simulator({ address, price }: { address?: string; price?
           </Section>
 
           <Section title="Revenue" icon={<DollarSign size={12} />} defaultOpen={false}>
-            <Slider label="Base Rent ($/SF/yr)" value={state.baseRentPerSF} min={5} max={150} step={0.5} onChange={(v) => update({ baseRentPerSF: v })} format={(v) => `$${v.toFixed(2)}/SF`} />
+            <Slider label="Rent ($/sqft/yr)" value={state.baseRentPerSF} min={5} max={80} step={0.5} onChange={(v) => update({ baseRentPerSF: v })} format={(v) => `$${v.toFixed(2)}/sqft`} />
             <Slider label="Rent Growth %" value={state.rentGrowthPct} min={-2} max={8} step={0.25} onChange={(v) => update({ rentGrowthPct: v })} unit="%" />
-            <Slider label="Vacancy Rate %" value={state.vacancyRatePct} min={0} max={50} step={0.5} onChange={(v) => update({ vacancyRatePct: v })} unit="%" />
+            <Slider label="Vacancy Rate %" value={state.vacancyRatePct} min={0} max={30} step={0.5} onChange={(v) => update({ vacancyRatePct: v })} unit="%" />
             <Slider label="Concessions (mo)" value={state.concessionMonths} min={0} max={12} step={0.5} onChange={(v) => update({ concessionMonths: v })} unit=" mo" />
             <Slider label="Ancillary Income %" value={state.ancillaryIncomePct} min={0} max={15} step={0.25} onChange={(v) => update({ ancillaryIncomePct: v })} unit="%" />
           </Section>
@@ -680,14 +680,14 @@ export default function Simulator({ address, price }: { address?: string; price?
             <Slider label="Mgmt Fee %" value={state.mgmtFeePct} min={1} max={10} step={0.25} onChange={(v) => update({ mgmtFeePct: v })} unit="%" />
             <Slider label="Property Taxes" value={state.propertyTaxes} min={0} max={state.purchasePrice * 0.03} step={1000} onChange={(v) => update({ propertyTaxes: v })} format={fmtUSD} />
             <Slider label="Insurance" value={state.insurance} min={0} max={state.purchasePrice * 0.015} step={500} onChange={(v) => update({ insurance: v })} format={fmtUSD} />
-            <Slider label="Utilities & Maint." value={state.utilitiesMaintenance} min={0} max={state.rentableSF * 20} step={1000} onChange={(v) => update({ utilitiesMaintenance: v })} format={fmtUSD} />
-            <Slider label="Other OpEx" value={state.otherOpex} min={0} max={state.rentableSF * 10} step={500} onChange={(v) => update({ otherOpex: v })} format={fmtUSD} />
+            <Slider label="Utilities & Maint." value={state.utilitiesMaintenance} min={0} max={state.rentableSF * 10} step={500} onChange={(v) => update({ utilitiesMaintenance: v })} format={fmtUSD} />
+            <Slider label="Other Expenses" value={state.otherOpex} min={0} max={state.rentableSF * 5} step={500} onChange={(v) => update({ otherOpex: v })} format={fmtUSD} />
           </Section>
 
-          <Section title="Below-NOI Costs" icon={<Layers size={12} />} defaultOpen={false}>
+          <Section title="Reserves & Leasing" icon={<Layers size={12} />} defaultOpen={false}>
             <Slider label="Recurring CapEx %" value={state.recurringCapexPct} min={0} max={5} step={0.1} onChange={(v) => update({ recurringCapexPct: v })} unit="%" />
-            <Slider label="TI ($/SF)" value={state.tiPerSF} min={0} max={150} step={1} onChange={(v) => update({ tiPerSF: v })} format={(v) => `$${v}/SF`} />
-            <Slider label="Leasing Comm %" value={state.leasingCommissionsPct} min={0} max={10} step={0.25} onChange={(v) => update({ leasingCommissionsPct: v })} unit="%" />
+            <Slider label="Turnover Cost ($/sqft)" value={state.tiPerSF} min={0} max={60} step={1} onChange={(v) => update({ tiPerSF: v })} format={(v) => `$${v}/sqft`} />
+            <Slider label="Leasing Fee %" value={state.leasingCommissionsPct} min={0} max={12} step={0.25} onChange={(v) => update({ leasingCommissionsPct: v })} unit="%" />
           </Section>
 
           <Section title="Debt Structure" icon={<TrendingUp size={12} />} defaultOpen={false}>
@@ -701,6 +701,52 @@ export default function Simulator({ address, price }: { address?: string; price?
               <div className="flex justify-between"><span className="text-dark-400">Annual Debt Svc</span><span className="text-white font-mono">{fmtUSD(fin.annualDebtService)}</span></div>
               <div className="flex justify-between"><span className="text-dark-400">Projected Exit</span><span className="text-gold-400 font-mono">{fmtUSD(fin.exitValue)}</span></div>
             </div>
+          </Section>
+
+          {/* ── Monthly Payment Estimator ── */}
+          <Section title="Monthly Payment Estimator" icon={<DollarSign size={12} />} defaultOpen={false}>
+            {(() => {
+              const pi = fin.monthlyPayment;
+              const taxes = state.propertyTaxes / 12;
+              const insurance = state.insurance / 12;
+              const total = pi + taxes + insurance;
+              const downPayment = state.purchasePrice * (1 - state.ltvPct / 100);
+              return (
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-dark-800 border border-dark-700 space-y-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-dark-400">Down Payment ({(100 - state.ltvPct).toFixed(0)}%)</span>
+                      <span className="text-white font-mono">{fmtUSD(downPayment)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-dark-400">Loan Amount</span>
+                      <span className="text-white font-mono">{fmtUSD(fin.loanAmount)}</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-dark-900 border border-gold-400/20 space-y-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-dark-300">Principal & Interest</span>
+                      <span className="text-white font-mono">{fmtUSD(pi)}<span className="text-dark-500">/mo</span></span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-dark-300">Property Taxes</span>
+                      <span className="text-white font-mono">{fmtUSD(taxes)}<span className="text-dark-500">/mo</span></span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-dark-300">Insurance</span>
+                      <span className="text-white font-mono">{fmtUSD(insurance)}<span className="text-dark-500">/mo</span></span>
+                    </div>
+                    <div className="border-t border-dark-700 pt-2 flex justify-between items-center">
+                      <span className="text-gold-400 font-semibold uppercase tracking-wider text-[10px]">Est. Monthly Total</span>
+                      <span className="text-gold-400 font-bold text-base font-mono">{fmtUSD(total)}<span className="text-gold-400/50 text-xs">/mo</span></span>
+                    </div>
+                  </div>
+                  <p className="text-dark-500 text-[10px] leading-relaxed">
+                    Estimate based on current rate ({state.interestRatePct}%), {state.amortizationYears}-yr amortization, {(100 - state.ltvPct).toFixed(0)}% down. Excludes HOA, PMI, and utilities.
+                  </p>
+                </div>
+              );
+            })()}
           </Section>
         </div>
 

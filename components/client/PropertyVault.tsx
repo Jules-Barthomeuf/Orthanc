@@ -6,6 +6,7 @@ import { Property } from "@/types";
 const ProvenancePanel = lazy(() => import("./ProvenancePanel").then(m => ({ default: m.ProvenancePanel })));
 const TechnicalPanel = lazy(() => import("./TechnicalPanel").then(m => ({ default: m.TechnicalPanel })));
 const MarketInsightPanel = lazy(() => import("./MarketInsightPanel").then(m => ({ default: m.MarketInsightPanel })));
+const RealTimeAnalysisPanel = lazy(() => import("./RealTimeAnalysisPanel").then(m => ({ default: m.RealTimeAnalysisPanel })));
 const InvestmentAdvisorPanel = lazy(() => import("./InvestmentAdvisorPanel").then(m => ({ default: m.InvestmentAdvisorPanel })));
 const OverviewPanel = lazy(() => import("./OverviewPanel").then(m => ({ default: m.OverviewPanel })));
 const LeaseAnalysisPanel = lazy(() => import("./LeaseAnalysisPanel").then(m => ({ default: m.LeaseAnalysisPanel })));
@@ -14,6 +15,7 @@ const Simulator = lazy(() => import("./Simulator"));
 const TABS = [
   { id: "overview", title: "Overview" },
   { id: "market", title: "Market" },
+  { id: "realtime", title: "Real Time Analysis" },
   { id: "technical", title: "Property" },
   { id: "documents", title: "Documents" },
   { id: "lease", title: "Lease Analysis" },
@@ -459,8 +461,9 @@ export function PropertyVault({
           {activeTab === "documents" && <DocumentsPanel property={data} />}
           {activeTab === "lease" && <LeaseAnalysisPanel property={data} />}
           {activeTab === "provenance" && <ProvenancePanel property={data} />}
-          {activeTab === "technical" && <TechnicalPanel property={data} />}
+          {activeTab === "technical" && <TechnicalPanel />}
           {activeTab === "market" && <MarketInsightPanel property={data} />}
+          {activeTab === "realtime" && <RealTimeAnalysisPanel property={data} editable={editable} />}
           {activeTab === "advisor" && <InvestmentAdvisorPanel property={data} />}
         </Suspense>
       </div>

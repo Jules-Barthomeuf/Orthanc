@@ -83,13 +83,13 @@ const GlobeIcon = () => (
 const FEATURES = [
   { icon: <ShieldIcon />, title: "Digital Property Vault", desc: "Every asset is sealed in a sovereign digital vault with complete provenance tracking, ownership history, and verified documentation." },
   { icon: <SparklesIcon />, title: "AI-Powered Analysis", desc: "Our intelligent assistant generates listings, analyzes markets, and provides investment insights in seconds — not weeks." },
-  { icon: <ChartIcon />, title: "Investment Intelligence", desc: "Real-time market data, ROI projections, rent-roll modeling, and comparable analysis to make informed decisions on commercial assets." },
+  { icon: <ChartIcon />, title: "Investment Intelligence", desc: "Real-time market data, ROI projections, rental income modeling, and comparable analysis to make informed decisions on any property." },
   { icon: <LockIcon />, title: "Bank-Grade Security", desc: "End-to-end encryption, document sealing, and immutable audit trails protect every transaction and document." },
 ];
 
 const VALUES = [
   { icon: <EyeIcon />, title: "Radical Transparency", desc: "We believe every property transaction deserves full visibility. From ownership history to maintenance records, nothing stays hidden." },
-  { icon: <HeartIcon />, title: "Craftsmanship Over Speed", desc: "Commercial real estate deserves meticulous care. We build tools that respect underwriting rigor, not shortcuts." },
+  { icon: <HeartIcon />, title: "Craftsmanship Over Speed", desc: "Every property transaction deserves meticulous care. We build tools that respect underwriting rigor, not shortcuts." },
   { icon: <GlobeIcon />, title: "Global, Yet Personal", desc: "Serving agents and investors worldwide while keeping every interaction intimate, private, and tailored." },
   { icon: <ShieldIcon />, title: "Trust as Foundation", desc: "In a world of uncertainty, we provide verifiable truth. Every document sealed, every data point authenticated." },
 ];
@@ -116,7 +116,7 @@ export default function Home() {
               <div className="gold-line-left w-16 mb-8 animate-reveal-line" />
 
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-white mb-6 tracking-tight leading-[1.05] animate-fade-up-d1">
-                The Truth Standard For Commercial Real Estate
+                The Truth Standard For Real Estate
               </h1>
 
               <p className="text-dark-300 text-base md:text-lg leading-relaxed max-w-xl mb-10 animate-fade-up-d2">
@@ -133,7 +133,7 @@ export default function Home() {
               </div>
 
               <p className="text-dark-500 text-xs animate-fade-up-d4">
-                Trusted by advisors managing $2B+ in commercial assets
+                Trusted by advisors managing $2B+ in assets under management
               </p>
             </div>
 
@@ -195,11 +195,11 @@ export default function Home() {
             <div>
               <p className="label-luxury text-gold-400/60 mb-4">What We Do</p>
               <h2 className="font-display text-4xl md:text-5xl text-white mb-6 leading-tight">
-                The Command Center for Commercial Real Estate
+                The Command Center for Real Estate
               </h2>
               <div className="gold-line-left w-16 mb-8" />
               <p className="text-dark-300 text-sm leading-relaxed mb-6">
-                Orthanc transforms how brokers, operators, and investors manage commercial assets. We combine artificial intelligence with sovereign-grade document management to create a single source of truth for every property.
+                Orthanc transforms how agents, operators, and investors manage properties. We combine artificial intelligence with sovereign-grade document management to create a single source of truth for every property.
               </p>
               <p className="text-dark-400 text-sm leading-relaxed mb-6">
                 From the moment a property enters the platform, it receives a complete digital identity — ownership provenance, market analysis, investment projections, maintenance history, and sealed documentation — all accessible through an intuitive vault interface.
@@ -305,9 +305,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: "Brokerage Teams", desc: "Manage deal pipelines with AI-generated listings, lease/sale documentation, and real-time market intelligence. Spend less time on paperwork, more time closing.", badge: "Brokers" },
-              { title: "Private Investors", desc: "Access verified property vaults with complete due diligence data: rent rolls, capex assumptions, and comparable transactions in one secure workspace.", badge: "Investors" },
-              { title: "Asset Managers", desc: "Oversee multiple commercial assets with institutional-grade reporting, sealed documentation, and AI-driven portfolio insights across your holdings.", badge: "Operators" },
+              { title: "Brokerage Teams", desc: "Manage deal pipelines with AI-generated listings, documentation, and real-time market intelligence. Spend less time on paperwork, more time closing.", badge: "Brokers" },
+              { title: "Private Investors", desc: "Access verified property vaults with complete due diligence data: rental projections, capex assumptions, and comparable transactions in one secure workspace.", badge: "Investors" },
+              { title: "Asset Managers", desc: "Oversee multiple properties with institutional-grade reporting, sealed documentation, and AI-driven portfolio insights across your holdings.", badge: "Operators" },
             ].map((item, i) => (
               <div key={item.title} className="bg-dark-800/50 border border-gold-400/[0.08] rounded-2xl p-8 hover:border-gold-400/20 transition-all duration-500 group">
                 <span className="label-luxury text-gold-400/50 text-[10px]">{item.badge}</span>
@@ -332,7 +332,7 @@ export default function Home() {
             Ready to Elevate Your Portfolio?
           </h2>
           <p className="text-dark-400 text-sm leading-relaxed mb-10 max-w-lg mx-auto">
-            Join the network of brokers, operators, and investors using Orthanc to manage commercial real estate with unprecedented intelligence.
+            Join the network of agents, operators, and investors using Orthanc to manage real estate with unprecedented intelligence.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/signup" className="luxury-button-primary text-sm py-3 px-10 w-full sm:w-auto text-center">

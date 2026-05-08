@@ -94,6 +94,31 @@ export interface MarketData {
   economicOutlook: string;
   priceHistory: { date: Date; price: number }[];
   agentPerspective?: AgentPerspective[];
+  agentPhoto?: string;
+  agentName?: string;
+  realTimeAnalysis?: RealTimeAnalysis;
+}
+
+export interface RealTimeAnalysis {
+  cards: RealTimeAnalysisCard[];
+  lastUpdated: Date;
+  nextRefreshAt?: Date;
+}
+
+export interface RealTimeAnalysisCard {
+  id: string;
+  title: string;
+  summary: string;
+  purchaseImpact: string;
+  category: "geopolitics" | "economy" | "policy" | "market" | "local" | "other";
+  impactDirection: "positive" | "neutral" | "negative";
+  impactScore: number;
+  source: string;
+  sourceUrl?: string;
+  publishedAt: Date;
+  visible: boolean;
+  hiddenAt?: Date;
+  hiddenReason?: string;
 }
 
 export interface AgentPerspective {
