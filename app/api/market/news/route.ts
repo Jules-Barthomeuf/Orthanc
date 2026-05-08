@@ -7,6 +7,8 @@ import {
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const MAX_NEWS_CARDS = 12;
 const MIN_NEWS_CARDS = 5;
+const MEDIASTACK_HTTPS_URL = "https://api.mediastack.com/v1/news";
+const MEDIASTACK_HTTP_URL = "http://api.mediastack.com/v1/news";
 
 const NEGATIVE_KEYWORDS = [
   "conflict",
@@ -127,18 +129,18 @@ function classifyScope(
   return "global";
 }
 
-function normalizeFromArticle(
+function normalizeFromMediastackArticle(
   article: any,
   context: { city: string; country: string; region: string }
 ): RealTimeAnalysisCard {
   const title = String(article?.title || "Untitled signal").trim();
-  const summary = String(article?.description || article?.content || "No summary available.").trim();
+  const summary = String(article?.description || "No summary available.").trim();
   const combinedText = `${title}. ${summary}`;
   const category = classifyCategory(combinedText);
   const scope = classifyScope(combinedText, context);
   const impact = computeImpact(combinedText);
-  const publishedAt = toDate(article?.publishedAt);
-  const sourceName = String(article?.source?.name || "News source").trim();
+  const publishedAt = toDate(article?.published_at);
+  const sourceName = String(article?.source || "News source").trim();
   const sourceUrl = article?.url ? String(article.url) : undefined;
 
   const sourceKey = sourceUrl || `${title}-${publishedAt.toISOString()}`;
@@ -188,24 +190,22 @@ function buildLocationContext(address: string, cityHint?: string) {
 function buildNewsQuery(address: string, cityHint?: string) {
   const { city, country, region } = buildLocationContext(address, cityHint);
 
-  const locationExpr = [city, country, region]
-    .filter(Boolean)
-    .map((v) => `"${v}"`)
-    .join(" OR ");
-
-  const marketExpr = [
+  const keywords = [
+    city,
+    country,
+    region,
     "real estate",
     "property market",
     "housing market",
-    "mortgage rates",
-    "geopolitical risk",
+    "mortgage",
+    "geopolitical",
     "inflation",
   ]
-    .map((v) => `"${v}"`)
-    .join(" OR ");
+    .filter(Boolean)
+    .join(",");
 
   return {
-    query: `(${locationExpr}) AND (${marketExpr})`,
+    keywords,
     city,
     country,
     region,
@@ -332,30 +332,55 @@ function ensureCoverageAndMinimum(
   return next;
 }
 
-async function fetchNewsCards(address: string, cityHint?: string): Promise<RealTimeAnalysisCard[]> {
+async function fetchMediastack(
+  apiKey: string,
+  keywords: string,
+  preferHttps: boolean
+) {
+  const base = preferHttps ? MEDIASTACK_HTTPS_URL : MEDIASTACK_HTTP_URL;
+  const url = `${base}?access_key=${encodeURIComponent(apiKey)}&keywords=${encodeURIComponent(keywords)}&languages=en&sort=published_desc&limit=${MAX_NEWS_CARDS}`;
+  return fetch(url, { cache: "no-store" });
+}
+
+async function fetchNewsCards(
+  address: string,
+  cityHint?: string
+): Promise<{ cards: RealTimeAnalysisCard[]; provider: "mediastack" | "mock"; debugReason?: string }> {
   const context = buildLocationContext(address, cityHint);
-  const apiKey = process.env.NEWS_API_KEY;
+  const apiKey = process.env.MEDIASTACK_API_KEY || process.env.NEWS_API_KEY;
   if (!apiKey) {
-    return ensureCoverageAndMinimum(buildMockCards(address, cityHint), context);
+    return {
+      cards: ensureCoverageAndMinimum(buildMockCards(address, cityHint), context),
+      provider: "mock",
+      debugReason: "missing_api_key",
+    };
   }
 
-  const { query } = buildNewsQuery(address, cityHint);
-  const encodedQuery = encodeURIComponent(query);
-  const url = `https://newsapi.org/v2/everything?q=${encodedQuery}&language=en&sortBy=publishedAt&pageSize=${MAX_NEWS_CARDS}&apiKey=${apiKey}`;
+  const { keywords } = buildNewsQuery(address, cityHint);
 
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    let res = await fetchMediastack(apiKey, keywords, true);
     if (!res.ok) {
-      return buildMockCards(address, cityHint);
+      // Free Mediastack plans can require HTTP transport.
+      res = await fetchMediastack(apiKey, keywords, false);
     }
+
+    if (!res.ok) {
+      return {
+        cards: ensureCoverageAndMinimum(buildMockCards(address, cityHint), context),
+        provider: "mock",
+        debugReason: `http_${res.status}`,
+      };
+    }
+
     const json = await res.json();
-    const articles = Array.isArray(json?.articles) ? json.articles : [];
+    const articles = Array.isArray(json?.data) ? json.data : [];
 
     const seen = new Set<string>();
     const cards: RealTimeAnalysisCard[] = [];
 
     for (const article of articles) {
-      const card = normalizeFromArticle(article, context);
+      const card = normalizeFromMediastackArticle(article, context);
       const fingerprint = card.sourceUrl || `${card.title}-${card.publishedAt.toISOString()}`;
       if (seen.has(fingerprint)) continue;
       seen.add(fingerprint);
@@ -363,9 +388,17 @@ async function fetchNewsCards(address: string, cityHint?: string): Promise<RealT
     }
 
     const base = cards.length > 0 ? cards : buildMockCards(address, cityHint);
-    return ensureCoverageAndMinimum(base, context);
+    return {
+      cards: ensureCoverageAndMinimum(base, context),
+      provider: cards.length > 0 ? "mediastack" : "mock",
+      debugReason: cards.length > 0 ? undefined : "no_articles",
+    };
   } catch {
-    return ensureCoverageAndMinimum(buildMockCards(address, cityHint), context);
+    return {
+      cards: ensureCoverageAndMinimum(buildMockCards(address, cityHint), context),
+      provider: "mock",
+      debugReason: "network_error",
+    };
   }
 }
 
@@ -409,20 +442,24 @@ async function generateAndPersist(propertyId: string, force = false) {
 
   const existing = property.marketData?.realTimeAnalysis;
   if (!force && existing && !isStale(existing)) {
+    const cachedCards = Array.isArray(existing.cards) ? existing.cards : [];
+    const hasMock = cachedCards.some(
+      (c) => c.source === "Orthanc Mock Feed" || c.source === "Orthanc Synthesized Signal"
+    );
     return {
       status: 200,
       payload: {
         ...existing,
-        source: process.env.NEWS_API_KEY ? "newsapi" : "mock",
+        source: hasMock ? "mock" : "mediastack",
       },
     };
   }
 
-  const nextCards = await fetchNewsCards(
+  const fetched = await fetchNewsCards(
     property.address || property.title || "property market",
     property.marketData?.city || undefined
   );
-  const mergedCards = mergeVisibility(nextCards, existing?.cards || []);
+  const mergedCards = mergeVisibility(fetched.cards, existing?.cards || []);
   const now = new Date();
 
   const analysis: RealTimeAnalysis = {
@@ -442,7 +479,8 @@ async function generateAndPersist(propertyId: string, force = false) {
     status: 200,
     payload: {
       ...analysis,
-      source: process.env.NEWS_API_KEY ? "newsapi" : "mock",
+      source: fetched.provider,
+      debugReason: fetched.debugReason,
     },
   };
 }
