@@ -34,6 +34,12 @@ function impactIcon(direction: RealTimeAnalysisCard["impactDirection"]) {
   return <MinusCircle size={14} />;
 }
 
+function scopeLabel(scope: RealTimeAnalysisCard["scope"]) {
+  if (scope === "local") return "Local";
+  if (scope === "regional") return "Regional";
+  return "Global";
+}
+
 export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAnalysisPanelProps) {
   const [analysis, setAnalysis] = useState<RealTimeAnalysis | null>(property.marketData?.realTimeAnalysis || null);
   const [loading, setLoading] = useState(false);
@@ -126,6 +132,23 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
 
   const visibleCards = useMemo(() => (analysis?.cards || []).filter((c) => c.visible), [analysis]);
   const hiddenCards = useMemo(() => (analysis?.cards || []).filter((c) => !c.visible), [analysis]);
+  const scopes: RealTimeAnalysisCard["scope"][] = ["local", "regional", "global"];
+
+  const visibleByScope = useMemo(() => {
+    return {
+      local: visibleCards.filter((c) => c.scope === "local"),
+      regional: visibleCards.filter((c) => c.scope === "regional"),
+      global: visibleCards.filter((c) => c.scope === "global"),
+    };
+  }, [visibleCards]);
+
+  const hiddenByScope = useMemo(() => {
+    return {
+      local: hiddenCards.filter((c) => c.scope === "local"),
+      regional: hiddenCards.filter((c) => c.scope === "regional"),
+      global: hiddenCards.filter((c) => c.scope === "global"),
+    };
+  }, [hiddenCards]);
 
   return (
     <div className="animate-fade-in-up">
@@ -170,67 +193,98 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
         </div>
       )}
 
-      <div className="space-y-4">
-        {visibleCards.map((card) => (
-          <div key={card.id} className="rounded-xl border border-gold-400/15 bg-dark-900/40 p-5">
-            <div className="flex flex-wrap justify-between gap-3 mb-3">
-              <div>
-                <h3 className="text-white text-base font-semibold">{card.title}</h3>
-                <div className="text-xs text-dark-400 mt-1">
-                  {card.source} · {formatDate(card.publishedAt)}
-                </div>
-              </div>
-              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-semibold uppercase tracking-wider ${impactColor(card.impactDirection)}`}>
-                {impactIcon(card.impactDirection)}
-                {card.impactDirection} ({card.impactScore})
-              </div>
-            </div>
+      <div className="space-y-7">
+        {scopes.map((scope) => {
+          const cards = visibleByScope[scope];
+          if (cards.length === 0) return null;
+          return (
+            <section key={scope}>
+              <h3 className="text-sm uppercase tracking-wider text-gold-400/80 mb-3">
+                {scopeLabel(scope)} Signals ({cards.length})
+              </h3>
+              <div className="space-y-4">
+                {cards.map((card) => (
+                  <div key={card.id} className="rounded-xl border border-gold-400/15 bg-dark-900/40 p-5">
+                    <div className="flex flex-wrap justify-between gap-3 mb-3">
+                      <div>
+                        <h3 className="text-white text-base font-semibold">{card.title}</h3>
+                        <div className="text-xs text-dark-400 mt-1">
+                          {card.source} · {formatDate(card.publishedAt)}
+                        </div>
+                      </div>
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-semibold uppercase tracking-wider ${impactColor(card.impactDirection)}`}>
+                        {impactIcon(card.impactDirection)}
+                        {card.impactDirection} ({card.impactScore})
+                      </div>
+                    </div>
 
-            <p className="text-white/75 text-sm leading-relaxed mb-2">{card.summary}</p>
-            <p className="text-gold-300/85 text-sm leading-relaxed mb-3">Impact on purchase: {card.purchaseImpact}</p>
+                    <p className="text-white/75 text-sm leading-relaxed mb-2">{card.summary}</p>
+                    <p className="text-gold-300/85 text-sm leading-relaxed mb-3">Impact on purchase: {card.purchaseImpact}</p>
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-dark-500">Category: {card.category}</span>
-              <div className="flex items-center gap-3">
-                {card.sourceUrl && (
-                  <a href={card.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-dark-300 hover:text-gold-400 underline underline-offset-2">
-                    View source
-                  </a>
-                )}
-                {editable && (
-                  <button
-                    onClick={() => updateVisibility(card.id, "hide")}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-red-400/40 text-red-300 hover:bg-red-500/10"
-                  >
-                    <EyeOff size={12} /> Hide
-                  </button>
-                )}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] uppercase tracking-wider text-dark-500">Category: {card.category}</span>
+                        <span className="text-[11px] uppercase tracking-wider text-gold-400/80 border border-gold-400/25 rounded px-1.5 py-0.5">
+                          {scopeLabel(card.scope)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {card.sourceUrl && (
+                          <a href={card.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-dark-300 hover:text-gold-400 underline underline-offset-2">
+                            View source
+                          </a>
+                        )}
+                        {editable && (
+                          <button
+                            onClick={() => updateVisibility(card.id, "hide")}
+                            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-red-400/40 text-red-300 hover:bg-red-500/10"
+                          >
+                            <EyeOff size={12} /> Hide
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          </div>
-        ))}
+            </section>
+          );
+        })}
       </div>
 
       {editable && hiddenCards.length > 0 && (
         <div className="mt-8">
           <h4 className="text-sm uppercase tracking-wider text-dark-400 mb-3">Hidden Cards ({hiddenCards.length})</h4>
-          <div className="space-y-3">
-            {hiddenCards.map((card) => (
-              <div key={card.id} className="rounded-lg border border-dark-700 bg-dark-900/20 p-4 opacity-80">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-white/80 text-sm font-medium">{card.title}</div>
-                    <div className="text-xs text-dark-500">Hidden {formatDate(card.hiddenAt)} · {card.hiddenReason || "manual"}</div>
+          <div className="space-y-5">
+            {scopes.map((scope) => {
+              const cards = hiddenByScope[scope];
+              if (cards.length === 0) return null;
+              return (
+                <section key={scope}>
+                  <h5 className="text-xs uppercase tracking-wider text-dark-500 mb-2">
+                    {scopeLabel(scope)} Hidden ({cards.length})
+                  </h5>
+                  <div className="space-y-3">
+                    {cards.map((card) => (
+                      <div key={card.id} className="rounded-lg border border-dark-700 bg-dark-900/20 p-4 opacity-80">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-white/80 text-sm font-medium">{card.title}</div>
+                            <div className="text-xs text-dark-500">Hidden {formatDate(card.hiddenAt)} · {card.hiddenReason || "manual"}</div>
+                          </div>
+                          <button
+                            onClick={() => updateVisibility(card.id, "restore")}
+                            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10"
+                          >
+                            <Undo2 size={12} /> Restore
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => updateVisibility(card.id, "restore")}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10"
-                  >
-                    <Undo2 size={12} /> Restore
-                  </button>
-                </div>
-              </div>
-            ))}
+                </section>
+              );
+            })}
           </div>
         </div>
       )}

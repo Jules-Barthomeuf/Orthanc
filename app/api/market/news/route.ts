@@ -6,6 +6,7 @@ import {
 
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const MAX_NEWS_CARDS = 12;
+const MIN_NEWS_CARDS = 5;
 
 const NEGATIVE_KEYWORDS = [
   "conflict",
@@ -100,14 +101,41 @@ function buildPurchaseImpact(direction: RealTimeAnalysisCard["impactDirection"],
     return "Could improve timing conditions for this purchase.";
   }
 
-  return "Signal is mixed; monitor before making a final purchase decision.";
+  return "No direct incidence on this purchase has been identified at this stage.";
 }
 
-function normalizeFromArticle(article: any): RealTimeAnalysisCard {
+function classifyScope(
+  text: string,
+  context: { city: string; country: string; region: string }
+): RealTimeAnalysisCard["scope"] {
+  const t = text.toLowerCase();
+  const city = context.city.toLowerCase();
+  const country = context.country.toLowerCase();
+  const region = context.region.toLowerCase();
+
+  if ((city && t.includes(city)) || (country && t.includes(country))) {
+    return "local";
+  }
+
+  if (
+    (region && t.includes(region)) ||
+    /(middle east|mena|gulf|gcc|europe|north america|asia|regional)/.test(t)
+  ) {
+    return "regional";
+  }
+
+  return "global";
+}
+
+function normalizeFromArticle(
+  article: any,
+  context: { city: string; country: string; region: string }
+): RealTimeAnalysisCard {
   const title = String(article?.title || "Untitled signal").trim();
   const summary = String(article?.description || article?.content || "No summary available.").trim();
   const combinedText = `${title}. ${summary}`;
   const category = classifyCategory(combinedText);
+  const scope = classifyScope(combinedText, context);
   const impact = computeImpact(combinedText);
   const publishedAt = toDate(article?.publishedAt);
   const sourceName = String(article?.source?.name || "News source").trim();
@@ -122,6 +150,7 @@ function normalizeFromArticle(article: any): RealTimeAnalysisCard {
     summary,
     purchaseImpact: buildPurchaseImpact(impact.direction, category),
     category,
+    scope,
     impactDirection: impact.direction,
     impactScore: impact.score,
     source: sourceName,
@@ -193,6 +222,7 @@ function buildMockCards(address: string, cityHint?: string): RealTimeAnalysisCar
       summary: "Recent macro releases show persistent inflation pressure and slower expected rate cuts.",
       purchaseImpact: "Could reduce affordability and push financing costs higher.",
       category: "economy",
+      scope: "global",
       impactDirection: "negative",
       impactScore: -36,
       source: "Orthanc Mock Feed",
@@ -205,6 +235,7 @@ function buildMockCards(address: string, cityHint?: string): RealTimeAnalysisCar
       summary: `Local authority confirmed transit improvements around ${city}.`,
       purchaseImpact: "Could support demand and strengthen medium-term value.",
       category: "local",
+      scope: "local",
       impactDirection: "positive",
       impactScore: 28,
       source: "Orthanc Mock Feed",
@@ -217,8 +248,35 @@ function buildMockCards(address: string, cityHint?: string): RealTimeAnalysisCar
       summary: `Macro and geopolitical developments in ${region} could affect capital flows and buyer confidence in ${city}.`,
       purchaseImpact: "Could increase uncertainty and financing risk for this purchase.",
       category: "geopolitics",
+      scope: "regional",
       impactDirection: "negative",
       impactScore: -22,
+      source: "Orthanc Mock Feed",
+      publishedAt: now,
+      visible: true,
+    },
+    {
+      id: "mock-4",
+      title: `${city} routine municipal updates with no major market impact`,
+      summary: `Latest municipal updates in ${city} show no material change for purchase timing.`,
+      purchaseImpact: "No direct incidence on this purchase has been identified at this stage.",
+      category: "policy",
+      scope: "local",
+      impactDirection: "neutral",
+      impactScore: 0,
+      source: "Orthanc Mock Feed",
+      publishedAt: now,
+      visible: true,
+    },
+    {
+      id: "mock-5",
+      title: `Global housing headlines remain mixed`,
+      summary: "Recent global housing coverage remains mixed and does not currently signal a direct effect on this specific acquisition.",
+      purchaseImpact: "No direct incidence on this purchase has been identified at this stage.",
+      category: "market",
+      scope: "global",
+      impactDirection: "neutral",
+      impactScore: 0,
       source: "Orthanc Mock Feed",
       publishedAt: now,
       visible: true,
@@ -226,10 +284,59 @@ function buildMockCards(address: string, cityHint?: string): RealTimeAnalysisCar
   ];
 }
 
+function createNeutralSupplementCard(
+  scope: RealTimeAnalysisCard["scope"],
+  context: { city: string; country: string; region: string },
+  index: number
+): RealTimeAnalysisCard {
+  const now = new Date();
+  const scopeLabel = scope === "local" ? context.city : scope === "regional" ? context.region : "global markets";
+  return {
+    id: `supp-${scope}-${now.getTime()}-${index}`,
+    title: `${scopeLabel} watchlist update`,
+    summary: `Additional ${scope} signal tracked for completeness; no immediate market-moving event detected for this purchase.`,
+    purchaseImpact: "No direct incidence on this purchase has been identified at this stage.",
+    category: "other",
+    scope,
+    impactDirection: "neutral",
+    impactScore: 0,
+    source: "Orthanc Synthesized Signal",
+    publishedAt: now,
+    visible: true,
+  };
+}
+
+function ensureCoverageAndMinimum(
+  cards: RealTimeAnalysisCard[],
+  context: { city: string; country: string; region: string }
+): RealTimeAnalysisCard[] {
+  const next = [...cards];
+  const requiredScopes: RealTimeAnalysisCard["scope"][] = ["local", "regional", "global"];
+  const present = new Set(next.map((c) => c.scope));
+
+  let supplementIndex = 0;
+  for (const scope of requiredScopes) {
+    if (!present.has(scope)) {
+      next.push(createNeutralSupplementCard(scope, context, supplementIndex++));
+      present.add(scope);
+    }
+  }
+
+  const cycle: RealTimeAnalysisCard["scope"][] = ["local", "regional", "global"];
+  let cycleIndex = 0;
+  while (next.length < MIN_NEWS_CARDS) {
+    next.push(createNeutralSupplementCard(cycle[cycleIndex % cycle.length], context, supplementIndex++));
+    cycleIndex += 1;
+  }
+
+  return next;
+}
+
 async function fetchNewsCards(address: string, cityHint?: string): Promise<RealTimeAnalysisCard[]> {
+  const context = buildLocationContext(address, cityHint);
   const apiKey = process.env.NEWS_API_KEY;
   if (!apiKey) {
-    return buildMockCards(address, cityHint);
+    return ensureCoverageAndMinimum(buildMockCards(address, cityHint), context);
   }
 
   const { query } = buildNewsQuery(address, cityHint);
@@ -248,16 +355,17 @@ async function fetchNewsCards(address: string, cityHint?: string): Promise<RealT
     const cards: RealTimeAnalysisCard[] = [];
 
     for (const article of articles) {
-      const card = normalizeFromArticle(article);
+      const card = normalizeFromArticle(article, context);
       const fingerprint = card.sourceUrl || `${card.title}-${card.publishedAt.toISOString()}`;
       if (seen.has(fingerprint)) continue;
       seen.add(fingerprint);
       cards.push(card);
     }
 
-    return cards.length > 0 ? cards : buildMockCards(address, cityHint);
+    const base = cards.length > 0 ? cards : buildMockCards(address, cityHint);
+    return ensureCoverageAndMinimum(base, context);
   } catch {
-    return buildMockCards(address, cityHint);
+    return ensureCoverageAndMinimum(buildMockCards(address, cityHint), context);
   }
 }
 

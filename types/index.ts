@@ -111,6 +111,7 @@ export interface RealTimeAnalysisCard {
   summary: string;
   purchaseImpact: string;
   category: "geopolitics" | "economy" | "policy" | "market" | "local" | "other";
+  scope: "local" | "regional" | "global";
   impactDirection: "positive" | "neutral" | "negative";
   impactScore: number;
   source: string;
