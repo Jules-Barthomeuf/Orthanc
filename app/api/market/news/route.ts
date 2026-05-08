@@ -131,7 +131,60 @@ function normalizeFromArticle(article: any): RealTimeAnalysisCard {
   };
 }
 
-function buildMockCards(address: string): RealTimeAnalysisCard[] {
+function buildLocationContext(address: string, cityHint?: string) {
+  const parts = address
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const city = cityHint?.trim() || parts[parts.length - 2] || parts[0] || "local market";
+  const country = parts[parts.length - 1] || "";
+
+  const locationText = `${city} ${country}`.toLowerCase();
+
+  let region = "global";
+  if (/(dubai|abu dhabi|uae|united arab emirates|saudi|qatar|bahrain|oman|kuwait|middle east)/.test(locationText)) {
+    region = "Middle East";
+  } else if (/(france|germany|italy|spain|uk|united kingdom|europe)/.test(locationText)) {
+    region = "Europe";
+  } else if (/(us|usa|united states|canada|north america)/.test(locationText)) {
+    region = "North America";
+  } else if (/(singapore|japan|china|hong kong|asia)/.test(locationText)) {
+    region = "Asia";
+  }
+
+  return { city, country, region };
+}
+
+function buildNewsQuery(address: string, cityHint?: string) {
+  const { city, country, region } = buildLocationContext(address, cityHint);
+
+  const locationExpr = [city, country, region]
+    .filter(Boolean)
+    .map((v) => `"${v}"`)
+    .join(" OR ");
+
+  const marketExpr = [
+    "real estate",
+    "property market",
+    "housing market",
+    "mortgage rates",
+    "geopolitical risk",
+    "inflation",
+  ]
+    .map((v) => `"${v}"`)
+    .join(" OR ");
+
+  return {
+    query: `(${locationExpr}) AND (${marketExpr})`,
+    city,
+    country,
+    region,
+  };
+}
+
+function buildMockCards(address: string, cityHint?: string): RealTimeAnalysisCard[] {
+  const { city, region } = buildLocationContext(address, cityHint);
   const now = new Date();
   return [
     {
@@ -149,7 +202,7 @@ function buildMockCards(address: string): RealTimeAnalysisCard[] {
     {
       id: "mock-2",
       title: "New transit expansion announced near target corridor",
-      summary: `Local authority confirmed transit improvements around ${address.split(",")[0] || "the area"}.`,
+      summary: `Local authority confirmed transit improvements around ${city}.`,
       purchaseImpact: "Could support demand and strengthen medium-term value.",
       category: "local",
       impactDirection: "positive",
@@ -158,22 +211,35 @@ function buildMockCards(address: string): RealTimeAnalysisCard[] {
       publishedAt: now,
       visible: true,
     },
+    {
+      id: "mock-3",
+      title: `${region} geopolitical watch: potential market volatility`,
+      summary: `Macro and geopolitical developments in ${region} could affect capital flows and buyer confidence in ${city}.`,
+      purchaseImpact: "Could increase uncertainty and financing risk for this purchase.",
+      category: "geopolitics",
+      impactDirection: "negative",
+      impactScore: -22,
+      source: "Orthanc Mock Feed",
+      publishedAt: now,
+      visible: true,
+    },
   ];
 }
 
-async function fetchNewsCards(address: string): Promise<RealTimeAnalysisCard[]> {
+async function fetchNewsCards(address: string, cityHint?: string): Promise<RealTimeAnalysisCard[]> {
   const apiKey = process.env.NEWS_API_KEY;
   if (!apiKey) {
-    return buildMockCards(address);
+    return buildMockCards(address, cityHint);
   }
 
-  const query = encodeURIComponent(`(${address}) OR (real estate ${address}) OR (housing market ${address})`);
-  const url = `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=${MAX_NEWS_CARDS}&apiKey=${apiKey}`;
+  const { query } = buildNewsQuery(address, cityHint);
+  const encodedQuery = encodeURIComponent(query);
+  const url = `https://newsapi.org/v2/everything?q=${encodedQuery}&language=en&sortBy=publishedAt&pageSize=${MAX_NEWS_CARDS}&apiKey=${apiKey}`;
 
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
-      return buildMockCards(address);
+      return buildMockCards(address, cityHint);
     }
     const json = await res.json();
     const articles = Array.isArray(json?.articles) ? json.articles : [];
@@ -189,9 +255,9 @@ async function fetchNewsCards(address: string): Promise<RealTimeAnalysisCard[]> 
       cards.push(card);
     }
 
-    return cards.length > 0 ? cards : buildMockCards(address);
+    return cards.length > 0 ? cards : buildMockCards(address, cityHint);
   } catch {
-    return buildMockCards(address);
+    return buildMockCards(address, cityHint);
   }
 }
 
@@ -244,7 +310,10 @@ async function generateAndPersist(propertyId: string, force = false) {
     };
   }
 
-  const nextCards = await fetchNewsCards(property.address || property.title || "property market");
+  const nextCards = await fetchNewsCards(
+    property.address || property.title || "property market",
+    property.marketData?.city || undefined
+  );
   const mergedCards = mergeVisibility(nextCards, existing?.cards || []);
   const now = new Date();
 
