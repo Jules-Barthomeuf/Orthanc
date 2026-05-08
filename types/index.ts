@@ -1,4 +1,5 @@
 export type HoldingStructure = 'personal' | 'llc' | 'trust' | 'foreign' | 'sci';
+export type PropertySegment = 'lre' | 'cre';
 export interface Property {
   id: string;
   title: string;
@@ -24,6 +25,7 @@ export interface Property {
   capRate?: number;
   irr?: number;
   locked?: boolean;
+  segment?: PropertySegment;
 }
 
 export interface Document {

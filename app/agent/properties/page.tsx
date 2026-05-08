@@ -12,6 +12,17 @@ const PAGE_SIZE = 12;
 
 const getCacheKey = (userId: string, page: number) => `agentPropPage:${userId}:${page}`;
 
+function getSegmentLabel(segment?: string) {
+  return segment === "cre" ? "CRE" : "LRE";
+}
+
+function getSegmentBadgeClass(segment?: string) {
+  if (segment === "cre") {
+    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
+  }
+  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
+}
+
 export default function AgentPropertiesPage() {
   const { user } = useAuthStore();
   const router = useRouter();
@@ -183,6 +194,11 @@ export default function AgentPropertiesPage() {
                         </svg>
                       </div>
                     )}
+                    <div className="absolute top-4 left-5">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(property.segment)}`}>
+                        {getSegmentLabel(property.segment)}
+                      </span>
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/85 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3">
                       <h2 className="font-sans text-xl font-semibold text-white leading-tight">

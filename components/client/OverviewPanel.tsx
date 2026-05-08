@@ -52,67 +52,6 @@ export function OverviewPanel({ property }: OverviewPanelProps) {
           </div>
         </div>
 
-        {/* Cap Rate vs Asset Classes */}
-        <div className="mt-10">
-          <h4 className="font-display text-lg text-white mb-3">Cap Rate vs Asset Classes</h4>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <table className="w-full text-sm text-left border-separate border-spacing-y-2">
-                <thead>
-                  <tr className="text-dark-400">
-                    <th className="pb-1">Asset Class</th>
-                    <th className="pb-1">Typical Cap Rate / Yield</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="bg-dark-900/40">
-                    <td className="text-white font-medium">Subject Property</td>
-                    <td className="text-gold-400 font-semibold">{property.investmentAnalysis?.capRate ? `${property.investmentAnalysis.capRate}%` : "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-white/80">Prime Residential (Miami)</td>
-                    <td className="text-white/60">3.0% – 4.5%</td>
-                  </tr>
-                  <tr className="bg-dark-900/40">
-                    <td className="text-white/80">Class A Office (US)</td>
-                    <td className="text-white/60">5.0% – 6.5%</td>
-                  </tr>
-                  <tr>
-                    <td className="text-white/80">Retail (Core Markets)</td>
-                    <td className="text-white/60">4.5% – 6.0%</td>
-                  </tr>
-                  <tr className="bg-dark-900/40">
-                    <td className="text-white/80">US Treasuries (10Y)</td>
-                    <td className="text-white/60">3.8% (2026)</td>
-                  </tr>
-                  <tr>
-                    <td className="text-white/80">S&P 500 Dividend Yield</td>
-                    <td className="text-white/60">1.6%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="flex-1 flex items-center justify-center">
-              {/* Mini bar chart visuel */}
-              <div className="w-full max-w-xs">
-                {[{label:'Property',val:property.investmentAnalysis?.capRate||0,color:'bg-gold-400'},
-                  {label:'Prime Res.',val:3.8,color:'bg-emerald-400/80'},
-                  {label:'Office',val:5.7,color:'bg-gold-400/80'},
-                  {label:'Retail',val:5.2,color:'bg-pink-400/80'},
-                  {label:'UST 10Y',val:3.8,color:'bg-cyan-400/80'},
-                  {label:'S&P 500',val:1.6,color:'bg-gray-400/60'}].map((d)=>(
-                  <div key={d.label} className="flex items-center mb-2">
-                    <div className="w-24 text-xs text-white/70">{d.label}</div>
-                    <div className="flex-1 mx-2 h-3 rounded bg-dark-900/60 relative">
-                      <div className={`${d.color} h-3 rounded`} style={{width:`${Math.min(d.val*18,100)}%`}} />
-                    </div>
-                    <div className="w-10 text-xs text-white/80 text-right">{d.val ? d.val+"%" : "—"}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Neighborhood & Market Summary */}

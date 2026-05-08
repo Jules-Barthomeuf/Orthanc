@@ -84,6 +84,7 @@ function TypingDots() {
 
 /* ─── Property creation — paste & parse flow ─── */
 interface PropertyDraft {
+  segment?: 'lre' | 'cre';
   address?: string;
   price?: number;
   bedrooms?: number;
@@ -320,7 +321,7 @@ export function AgentDashboard() {
   const [portalDraft, setPortalDraft] = useState<{ name: string; description: string }>({ name: "", description: "" });
 
   /* ── Create mode state ── */
-  const [draft, setDraft] = useState<PropertyDraft>({});
+  const [draft, setDraft] = useState<PropertyDraft>({ segment: 'lre' });
   const [showPreview, setShowPreview] = useState(false);
   const [rawListingText, setRawListingText] = useState("");
 
@@ -356,38 +357,29 @@ export function AgentDashboard() {
         addToast({ type: 'error', message: scraped.error || 'Scraping failed' });
         return;
       }
-      // Save directly as a property
-      const body = {
-        title: scraped.title || 'Imported Property',
+      setMode('create');
+      setShowPreview(true);
+      setDraft((prev) => ({
+        ...prev,
         address: scraped.address || '',
         price: scraped.price || 0,
         description: scraped.description || '',
-        bedroom: scraped.bedroom || 0,
-        bathroom: scraped.bathroom || 0,
+        bedrooms: scraped.bedroom || 0,
+        bathrooms: scraped.bathroom || 0,
         squareFeet: scraped.squareFeet || 0,
         yearBuilt: scraped.yearBuilt || 0,
         lot: scraped.lot || 0,
-        images: [],
-        agentId: user?.id || agentId,
-        locked: true,
-      };
-      const saveRes = await fetch('/api/properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (saveRes.ok) {
-        const saved = await saveRes.json();
-        addToast({ type: 'success', message: `Property imported: ${scraped.title || 'Untitled'}` });
-        setLinkUrl('');
-        setMessages((prev) => [
-          ...prev,
-          { role: 'ai', content: `✅ **Property imported from link!**\n\n**${scraped.title || 'Untitled'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}${scraped.bedroom ? `🛏️ ${scraped.bedroom} bed${scraped.bedroom > 1 ? 's' : ''}` : ''}${scraped.bathroom ? ` · 🛁 ${scraped.bathroom} bath${scraped.bathroom > 1 ? 's' : ''}` : ''}${scraped.squareFeet ? ` · 📐 ${scraped.squareFeet.toLocaleString()} sqft` : ''}\n\nThe property has been saved and locked. [View in Properties](/agent/properties).` },
-        ]);
-      } else {
-        const err = await saveRes.json().catch(() => ({}));
-        addToast({ type: 'error', message: err.error || 'Failed to save property' });
-      }
+        segment: prev.segment || 'lre',
+      }));
+      addToast({ type: 'success', message: `Listing imported: ${scraped.title || 'Untitled'}` });
+      setLinkUrl('');
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'ai',
+          content: `✅ **Listing imported.**\n\n**${scraped.title || 'Imported Property'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}Choose **LRE** or **CRE** in the preview panel, then click **Create Property**.`,
+        },
+      ]);
     } catch {
       addToast({ type: 'error', message: 'Import failed — check the URL and try again' });
     } finally {
@@ -398,7 +390,7 @@ export function AgentDashboard() {
   /* ── Activate Create Property mode ── */
   const activateCreateMode = () => {
     setMode("create");
-    setDraft({});
+    setDraft({ segment: 'lre' });
     setShowPreview(false);
     setMessages([
       { role: "ai", content: "**Paste everything you have about this property** — a Zillow listing, MLS sheet, or just a description with the key details.\n\nI'll extract the price, address, beds, baths, sqft, year built, lot size, HOA, taxes, features, and description all at once.\n\nYou can also upload photos after." },
@@ -496,7 +488,7 @@ export function AgentDashboard() {
   const resetToDefault = () => {
     setMode("default");
     setMessages([]);
-    setDraft({});
+    setDraft({ segment: 'lre' });
     setShowPreview(false);
     setValue("");
     setUploadedImages([]);
@@ -527,7 +519,7 @@ export function AgentDashboard() {
       return;
     }
 
-    setDraft(parsed);
+    setDraft((prev) => ({ ...parsed, segment: prev.segment || 'lre' }));
 
     // Build summary
     const items: string[] = [];
@@ -561,8 +553,7 @@ export function AgentDashboard() {
     const price = draftData.price || 5000000;
     const address = draftData.address || `Auto-generated Address ${now}`;
 
-    // Generate a commercial-oriented default description
-    function generateCommercialDescription(d: PropertyDraft) {
+    function generateSegmentDescription(d: PropertyDraft) {
       const beds = d.bedrooms || 4;
       const baths = d.bathrooms || 3;
       const sqft = d.squareFeet || 4000;
@@ -584,7 +575,10 @@ export function AgentDashboard() {
       if (features.includes('Waterfront')) extras.push('waterfront access');
       if (features.includes('Concierge')) extras.push('concierge services');
       const extrasText = extras.length ? 'Features ' + extras.join(', ') + '.' : '';
-      return `Commercial asset${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} office/flex areas and ${baths} restrooms. ${extrasText} Suitable for income generation, tenant optimization, and long-term value creation.`;
+      if (d.segment === 'cre') {
+        return `Commercial asset${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} office/flex areas and ${baths} restrooms. ${extrasText} Suitable for income generation, tenant optimization, and long-term value creation.`;
+      }
+      return `Luxury residence${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} bedrooms and ${baths} bathrooms. ${extrasText}`;
     }
 
     const propertyPayload = {
@@ -592,7 +586,7 @@ export function AgentDashboard() {
       title: address,
       address,
       price,
-      description: draftData.description || generateCommercialDescription(draftData),
+      description: draftData.description || generateSegmentDescription(draftData),
       images: uploadedImages.length > 0 ? uploadedImages : ["https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200"],
       agentId: user?.id || agentId,
       bedroom: draftData.bedrooms || 4,
@@ -600,6 +594,7 @@ export function AgentDashboard() {
       squareFeet: draftData.squareFeet || 4000,
       yearBuilt: draftData.yearBuilt || 2020,
       lot: draftData.lot || 0.45,
+      segment: draftData.segment === 'cre' ? 'cre' : 'lre',
       owner: "Unknown Owner",
       documents: uploadedDocs.length > 0 ? uploadedDocs : [
         { id: `doc-${now}-1`, name: "Deed - Auto", type: "deed", url: "#", uploadedAt: new Date(), analysis: "Mock deed record." },
@@ -1097,6 +1092,17 @@ export function AgentDashboard() {
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Home Type</label>
                 <input value={draft.homeType || ''} onChange={e => updateDraftField('homeType', e.target.value)}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
+              </div>
+              <div>
+                <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Segment</label>
+                <select
+                  value={draft.segment || 'lre'}
+                  onChange={(e) => updateDraftField('segment', e.target.value === 'cre' ? 'cre' : 'lre')}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30"
+                >
+                  <option value="lre">LRE - Luxury Real Estate</option>
+                  <option value="cre">CRE - Commercial Real Estate</option>
+                </select>
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Bedrooms</label>

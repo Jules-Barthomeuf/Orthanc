@@ -1,1319 +1,574 @@
 "use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  DollarSign, ChevronDown, Percent, CreditCard, TrendingUp, Landmark, ShieldCheck, Gem, Target, Scale, Info, HelpCircle, X, Timer, Crosshair, ArrowRight, PieChart, BarChart3, ChartNoAxesCombined, Building2, ReceiptText
-} from 'lucide-react';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { useState, useMemo, useCallback } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
+  LineElement,
+  PointElement,
   ArcElement,
   Filler,
-  Tooltip as ChartTooltip,
-  Legend as ChartLegend,
-} from 'chart.js';
-import SimulatorChat from './SimulatorChat';
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar, Line, Doughnut } from "react-chartjs-2";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Building2,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  PieChart,
+  TableProperties,
+  ChevronDown,
+  ChevronUp,
+  Percent,
+  Layers,
+  Target,
+} from "lucide-react";
+import SimulatorChat, { SimStatePartial } from "./SimulatorChat";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
+  LineElement,
+  PointElement,
   ArcElement,
   Filler,
-  ChartTooltip,
-  ChartLegend,
+  Tooltip,
+  Legend
 );
-import type { HoldingStructure } from '@/types';
 
-interface SimState {
-  // Property basics
-  propertyValue: number;
-  grossAnnualRent: number;
-  vacancyRate: number; // percentage of gross rent lost to vacancy
+/* ═══════════════════════════════════════════════════════════════
+   TYPES
+   ═══════════════════════════════════════════════════════════════ */
 
-  // Commercial operating expenses
-  concierge: number;
-  specializedSecurity: number;
-  highEndLandscaping: number;
-  poolMaintenance: number;
-  wineClimate: number;
-  smartHomeSystems: number;
-  propertyManagement: number;
-
-  // Staffing — the "Carry Cost" reality
-  liveInStaff: number;
-  securityTeam: number;
-  propertyManagers: number;
-  avgStaffSalary: number;
-
-  // Acquisition costs
-  closingCosts: number;
-  renovationCosts: number;
-  agentCommission: number; // percentage
-
-  // Financing
-  ltvRatio: number;
-  interestRate: number;
+export interface CREState {
+  // Acquisition
+  purchasePrice: number;
+  closingCostsPct: number;
+  holdingPeriod: number;
+  capexBudget: number;
+  propertyType: string;
+  rentableSF: number;
+  exitCapRate: number;
+  sellingCostsPct: number;
+  // Revenue
+  baseRentPerSF: number;
+  rentGrowthPct: number;
+  vacancyRatePct: number;
+  concessionMonths: number;
+  ancillaryIncomePct: number;
+  // OpEx
+  expenseGrowthPct: number;
+  mgmtFeePct: number;
+  propertyTaxes: number;
+  insurance: number;
+  utilitiesMaintenance: number;
+  otherOpex: number;
+  // Below-NOI
+  recurringCapexPct: number;
+  tiPerSF: number;
+  leasingCommissionsPct: number;
+  // Debt
+  ltvPct: number;
+  interestRatePct: number;
   loanTermYears: number;
-
-  // Holding structure
-  holdingStructure: HoldingStructure;
-
-  // Appreciation & Scarcity
-  baseAppreciationRate: number;
-  scarcityPrivateBeach: boolean;
-  scarcityHistoricHeritage: boolean;
-  scarcityStarchitect: boolean;
-  scarcityUniqueView: boolean;
-
-  // Hold & exit
-  holdPeriodYears: number;
-  targetExitProfit: number;
-
-  // Liquidity context
-  priceBracket: 'ultra' | 'premium' | 'entry';
-  marketRegion: string;
-
-  // Tax
-  propertyTaxRate: number;
-  annualInsurance: number;
+  amortizationYears: number;
+  // Scenarios
+  scenario: "base" | "upside" | "downside";
 }
 
-const DEFAULT_STATE: SimState = {
-  propertyValue: 15_000_000,
-  grossAnnualRent: 600_000,
-  vacancyRate: 10,
+const PROPERTY_TYPES = [
+  "Office",
+  "Retail",
+  "Industrial",
+  "Multifamily",
+  "Mixed-Use",
+  "Hospitality",
+  "Self-Storage",
+  "Medical Office",
+];
 
-  concierge: 120_000,
-  specializedSecurity: 180_000,
-  highEndLandscaping: 95_000,
-  poolMaintenance: 45_000,
-  wineClimate: 25_000,
-  smartHomeSystems: 35_000,
-  propertyManagement: 60_000,
-
-  liveInStaff: 2,
-  securityTeam: 1,
-  propertyManagers: 1,
-  avgStaffSalary: 85_000,
-
-  closingCosts: 150_000,
-  renovationCosts: 0,
-  agentCommission: 5,
-
-  ltvRatio: 50,
-  interestRate: 5.5,
-  loanTermYears: 30,
-
-  holdingStructure: 'llc',
-
-  baseAppreciationRate: 3.5,
-  scarcityPrivateBeach: false,
-  scarcityHistoricHeritage: false,
-  scarcityStarchitect: false,
-  scarcityUniqueView: false,
-
-  holdPeriodYears: 10,
-  targetExitProfit: 5_000_000,
-
-  priceBracket: 'ultra',
-  marketRegion: 'beverly-hills',
-
-  propertyTaxRate: 1.1,
-  annualInsurance: 75_000,
-};
-
-/* ── Generate proportional defaults based on property price ── */
-function generateScaledDefaults(price: number): Partial<SimState> {
-  // Price bracket thresholds
-  const isUltra = price >= 10_000_000;
-  const isPremium = price >= 5_000_000;
-
-  // Gross rent: ~6% of value as a blended commercial rent assumption
-  const grossAnnualRent = round(price * 0.06, 25_000);
-
-  // Closing costs: ~3% of purchase price
-  const closingCosts = round(price * 0.03, 5_000);
-
-  // Renovation: scaled by tier
-  const renovationCosts = isUltra ? round(price * 0.05, 50_000)
-    : isPremium ? round(price * 0.04, 25_000)
-    : round(price * 0.06, 25_000); // smaller assets often need more capex
-
-  // Property management: 10% of gross rent
-  const propertyManagement = round(grossAnnualRent * 0.10, 5_000);
-
-  // Insurance: ~0.5% of value
-  const annualInsurance = round(price * 0.005, 1_000);
-
-  // Property Tax: higher default for entry/premium, adjustable
-  const propertyTaxRate = price >= 10_000_000 ? 1.1 : 1.2;
-
-  // Operating expenses — scaled for commercial assets
-  const concierge = isPremium ? round(price * 0.008, 10_000) : 0;
-  const specializedSecurity = isPremium ? round(price * 0.012, 10_000) : 0;
-  const highEndLandscaping = round(price * (isUltra ? 0.006 : isPremium ? 0.004 : 0.0012), 1_000);
-  const poolMaintenance = round(price * (isUltra ? 0.003 : isPremium ? 0.002 : 0.0008), 1_000);
-  const wineClimate = isUltra ? round(price * 0.0017, 5_000) : 0;
-  const smartHomeSystems = isPremium ? round(price * 0.0023, 5_000) : round(price * 0.0012, 1_000);
-
-  // Staffing — more common in larger commercial assets
-  const liveInStaff = isUltra ? 2 : 0;
-  const securityTeam = isUltra ? 1 : 0;
-  const propertyManagers = isPremium ? 1 : 0;
-  const avgStaffSalary = 85_000;
-
-  // Price bracket for market DOM data
-  const priceBracket: SimState['priceBracket'] = isUltra ? 'ultra' : isPremium ? 'premium' : 'entry';
-
-  // Hold & exit scaled to value
-  const holdPeriodYears = 10;
-  const targetExitProfit = round(price * 0.30, 500_000) || 500_000;
-
+function defaultState(price?: number): CREState {
+  const p = price ?? 5_000_000;
+  const sf = Math.round(p / 250);
   return {
-    propertyValue: price,
-    grossAnnualRent,
-    vacancyRate: 10,
-    closingCosts,
-    renovationCosts,
-    concierge,
-    specializedSecurity,
-    highEndLandscaping,
-    poolMaintenance,
-    wineClimate,
-    smartHomeSystems,
-    propertyManagement,
-    liveInStaff,
-    securityTeam,
-    propertyManagers,
-    avgStaffSalary,
-    agentCommission: 5,
-    priceBracket,
-    propertyTaxRate,
-    annualInsurance,
-    holdPeriodYears,
-    targetExitProfit,
+    purchasePrice: p,
+    closingCostsPct: 2.5,
+    holdingPeriod: 5,
+    capexBudget: p * 0.02,
+    propertyType: "Office",
+    rentableSF: sf,
+    exitCapRate: 6.5,
+    sellingCostsPct: 2.0,
+    baseRentPerSF: 28,
+    rentGrowthPct: 3.0,
+    vacancyRatePct: 7.0,
+    concessionMonths: 1,
+    ancillaryIncomePct: 3.0,
+    expenseGrowthPct: 2.5,
+    mgmtFeePct: 3.5,
+    propertyTaxes: p * 0.012,
+    insurance: p * 0.003,
+    utilitiesMaintenance: sf * 4,
+    otherOpex: sf * 1.5,
+    recurringCapexPct: 1.0,
+    tiPerSF: 35,
+    leasingCommissionsPct: 3.0,
+    ltvPct: 65,
+    interestRatePct: 6.5,
+    loanTermYears: 10,
+    amortizationYears: 30,
+    scenario: "base",
   };
 }
-
-/** Round to nearest step */
-function round(v: number, step: number): number {
-  return Math.round(v / step) * step;
-}
-
-/* ── Neighborhood detect ── */
-const ADDRESS_KEYWORDS: Record<string, string[]> = {
-  'miami-beach': ['miami', 'south beach', 'biscayne', 'coral gables', 'brickell', 'key biscayne'],
-  'palm-beach': ['palm beach', 'west palm', 'jupiter', 'boca raton'],
-  'bel-air': ['bel air', 'bel-air', 'holmby hills'],
-  'beverly-hills': ['beverly hills', 'trousdale', 'benedict canyon'],
-  'malibu': ['malibu', 'pacific palisades'],
-  'hamptons': ['hamptons', 'east hampton', 'southampton', 'montauk'],
-  'aspen': ['aspen', 'snowmass'],
-  'monaco': ['monaco', 'monte carlo'],
-  'manhattan': ['manhattan', 'tribeca', 'soho', 'new york', 'nyc'],
-  'mayfair': ['mayfair', 'belgravia', 'knightsbridge', 'london'],
-  'saint-tropez': ['saint-tropez', 'st tropez', 'ramatuelle'],
-  'paris-16': ['paris', '16e', '16th', 'passy', 'auteuil'],
-};
-
-function detectRegion(address: string): string {
-  const lower = address.toLowerCase();
-  for (const [key, keywords] of Object.entries(ADDRESS_KEYWORDS)) {
-    if (keywords.some((kw) => lower.includes(kw))) return key;
-  }
-  return 'manhattan';
-}
-
-/* ── Market data for liquidity forecasting ── */
-const MARKET_LIQUIDITY: Record<string, { label: string; avgDOM: Record<string, number>; brokerFee: number }> = {
-  'miami-beach':   { label: 'Brickell / Miami CBD, FL', avgDOM: { ultra: 280, premium: 180, entry: 90 },  brokerFee: 2.5 },
-  'palm-beach':    { label: 'West Palm Office Corridor, FL', avgDOM: { ultra: 320, premium: 200, entry: 110 }, brokerFee: 2.5 },
-  'bel-air':       { label: 'Century City, CA',      avgDOM: { ultra: 350, premium: 220, entry: 120 }, brokerFee: 2.5 },
-  'beverly-hills': { label: 'Downtown Los Angeles, CA', avgDOM: { ultra: 300, premium: 190, entry: 100 }, brokerFee: 2.5 },
-  'malibu':        { label: 'Santa Monica Office Belt, CA', avgDOM: { ultra: 360, premium: 240, entry: 130 }, brokerFee: 2.5 },
-  'hamptons':      { label: 'Boston Core, MA',       avgDOM: { ultra: 400, premium: 260, entry: 150 }, brokerFee: 2.5 },
-  'aspen':         { label: 'Denver CBD, CO',        avgDOM: { ultra: 310, premium: 200, entry: 100 }, brokerFee: 2.5 },
-  'monaco':        { label: 'Singapore CBD',         avgDOM: { ultra: 450, premium: 300, entry: 160 }, brokerFee: 2.0 },
-  'manhattan':     { label: 'Manhattan Office Core, NY', avgDOM: { ultra: 270, premium: 160, entry: 80 },  brokerFee: 3.0 },
-  'mayfair':       { label: 'City of London',        avgDOM: { ultra: 380, premium: 250, entry: 140 }, brokerFee: 2.0 },
-  'saint-tropez':  { label: 'Paris La Defense',      avgDOM: { ultra: 500, premium: 340, entry: 200 }, brokerFee: 2.0 },
-  'paris-16':      { label: 'Frankfurt Bankenviertel', avgDOM: { ultra: 340, premium: 210, entry: 120 }, brokerFee: 2.0 },
-};
-
-/* ── Tax impact by holding structure ── */
-const TAX_PROFILES: Record<string, { label: string; effectiveCapGainRate: number; yearlyBenefit: number; setupCost: number; description: string }> = {
-  personal: { label: 'Individual Ownership', effectiveCapGainRate: 0.238, yearlyBenefit: 0,     setupCost: 0,      description: 'Direct ownership. Eligible for Homestead Exemption and 3% Save Our Homes cap. No liability shield.' },
-  llc:      { label: 'Domestic LLC',         effectiveCapGainRate: 0.20,  yearlyBenefit: 0.003, setupCost: 15_000, description: 'Florida LLC. Pass-through entity with personal liability protection. Annual filings and legal maintenance.' },
-  trust:    { label: 'Irrevocable Trust',    effectiveCapGainRate: 0.15,  yearlyBenefit: 0.005, setupCost: 50_000, description: 'Trust managed by a Trustee. Removes asset from taxable estate. Step-up in basis for heirs.' },
-  foreign:  { label: 'Foreign Corporate Structure', effectiveCapGainRate: 0.20, yearlyBenefit: 0.002, setupCost: 30_000, description: 'Offshore corp (e.g. BVI) holds FL LLC. Used by international buyers. FIRPTA 15% withholding applies.' },
-};
 
 /* ═══════════════════════════════════════════════════════════════
    FINANCIAL ENGINE
    ═══════════════════════════════════════════════════════════════ */
 
-function useFinancials(s: SimState) {
-  return useMemo(() => {
-    // ── Operating Expenses ──
-    const operatingOpex =
-      s.concierge + s.specializedSecurity + s.highEndLandscaping +
-      s.poolMaintenance + s.wineClimate + s.smartHomeSystems + s.propertyManagement;
+interface YearRow {
+  year: number;
+  gpi: number;
+  vacancyLoss: number;
+  concessionLoss: number;
+  ancillary: number;
+  egi: number;
+  opex: number;
+  noi: number;
+  debtService: number;
+  recurringCapex: number;
+  ti: number;
+  lc: number;
+  cfad: number;
+  dscr: number;
+  loanBalance: number;
+}
 
-    const totalStaff = s.liveInStaff + s.securityTeam + s.propertyManagers;
-    const staffingCost = totalStaff * s.avgStaffSalary;
+export interface FinancialSummary {
+  goingInCapRate: number;
+  noiMargin: number;
+  cashOnCash: number;
+  dscr: number;
+  equityMultiple: number;
+  irr: number;
+  npv: number;
+  breakEvenOccupancy: number;
+  loanAmount: number;
+  equityInvested: number;
+  totalCashInvested: number;
+  exitValue: number;
+  exitProceeds: number;
+  rows: YearRow[];
+  // chat compat
+  noi: number;
+  capRate: number;
+  irrPercent: number;
+  carryRatio: number;
+  breakEvenAppreciation: number;
+  totalCarryCost: number;
+  annualCashFlow: number;
+  annualDebtService: number;
+  monthlyPayment: number;
+  netExitWithBenefit: number;
+  effectiveAppreciation: number;
+  effectiveRent: number;
+  vacancyLoss: number;
+  [key: string]: any;
+}
 
-    const specializedMaint = 0;
+function pmt(rate: number, nper: number, pv: number): number {
+  if (rate === 0) return pv / nper;
+  return (rate * pv * Math.pow(1 + rate, nper)) / (Math.pow(1 + rate, nper) - 1);
+}
 
-    const totalCarryCost = operatingOpex + staffingCost + specializedMaint +
-      (s.propertyValue * s.propertyTaxRate / 100) + s.annualInsurance;
-
-    // ── Closing / Acquisition Cost Breakdown ──
-    const agentCommissionAmount = s.propertyValue * (s.agentCommission / 100);
-    const propertyTaxAtClose = s.propertyValue * s.propertyTaxRate / 100;
-    const titleInsurance = Math.round(s.propertyValue * 0.005);
-    const totalClosingCost = s.closingCosts + agentCommissionAmount + s.renovationCosts + titleInsurance;
-
-    // ── 1. NOI = (Gross Rental Income − Vacancy Loss) − Operating Expenses ──
-    const vacancyLoss = s.grossAnnualRent * (s.vacancyRate / 100);
-    const effectiveRent = s.grossAnnualRent - vacancyLoss;
-    const noi = effectiveRent - totalCarryCost;
-
-    // ── 2. Cap Rate = NOI / Property Value ──
-    const capRate = (noi / s.propertyValue) * 100;
-
-    // ── Debt Service ──
-    const loanAmount = s.propertyValue * (s.ltvRatio / 100);
-    const equityInvested = s.propertyValue - loanAmount;
-    const monthlyRate = s.interestRate / 100 / 12;
-    const numPayments = s.loanTermYears * 12;
-    const monthlyPayment = loanAmount > 0
-      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
-      : 0;
-    const annualDebtService = monthlyPayment * 12;
-    const dscr = annualDebtService > 0 ? noi / annualDebtService : Infinity;
-
-    // ── 3. Cash-on-Cash = Annual Pre-Tax Cash Flow / Total Cash Invested ──
-    // Total Cash Invested = Down Payment + Closing Costs + Immediate Renovations + Structure Setup
-    const annualCashFlow = noi - annualDebtService;
-    const totalCashInvested = equityInvested + s.closingCosts + s.renovationCosts + TAX_PROFILES[s.holdingStructure].setupCost;
-    const cashOnCash = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
-
-    // ── Scarcity Multiplier ──
-    let scarcityBonus = 0;
-    if (s.scarcityPrivateBeach) scarcityBonus += 1.2;
-    if (s.scarcityHistoricHeritage) scarcityBonus += 0.8;
-    if (s.scarcityStarchitect) scarcityBonus += 1.0;
-    if (s.scarcityUniqueView) scarcityBonus += 0.6;
-    const effectiveAppreciation = s.baseAppreciationRate + scarcityBonus;
-
-    // ── Projected Value / Equity Over Time ──
-    const years = Array.from({ length: s.holdPeriodYears }, (_, i) => i + 1);
-    const projectedValues = years.map((y) => s.propertyValue * Math.pow(1 + effectiveAppreciation / 100, y));
-    const remainingLoan = years.map((y) => {
-      if (loanAmount === 0) return 0;
-      const paid = y * 12;
-      const factor = Math.pow(1 + monthlyRate, numPayments);
-      const factorPaid = Math.pow(1 + monthlyRate, paid);
-      return loanAmount * (factor - factorPaid) / (factor - 1);
-    });
-    const equityOverTime = projectedValues.map((v, i) => v - remainingLoan[i]);
-    const cumulativeCashFlow = years.map((y) => annualCashFlow * y);
-
-    // ── 4. IRR (Newton-Raphson) ──
-    // Year 0: Negative Cash Out = Down Payment + Closing Costs + Renovations + Structure Setup
-    // Years 1–N: Annual Cash Flow
-    // Year N: + Net Sale Proceeds
-    const taxProfile = TAX_PROFILES[s.holdingStructure];
-    const exitValue = projectedValues[projectedValues.length - 1] || s.propertyValue;
-    const capitalGain = exitValue - s.propertyValue;
-    const taxOnGain = Math.max(0, capitalGain) * taxProfile.effectiveCapGainRate;
-    const brokerFee = MARKET_LIQUIDITY[s.marketRegion]?.brokerFee ?? 5;
-    const sellingCosts = exitValue * (brokerFee / 100);
-    const netExitProceeds = exitValue - (remainingLoan[remainingLoan.length - 1] || 0) - taxOnGain - sellingCosts;
-    const structureBenefit = taxProfile.yearlyBenefit * s.propertyValue * s.holdPeriodYears;
-    const netExitWithBenefit = netExitProceeds + structureBenefit;
-
-    const cashFlows = [-(equityInvested + s.closingCosts + s.renovationCosts + taxProfile.setupCost)];
-    for (let y = 0; y < s.holdPeriodYears - 1; y++) {
-      cashFlows.push(annualCashFlow + taxProfile.yearlyBenefit * s.propertyValue);
+function calcIRR(cashflows: number[]): number {
+  let rate = 0.1;
+  for (let i = 0; i < 200; i++) {
+    let npv = 0;
+    let dnpv = 0;
+    for (let t = 0; t < cashflows.length; t++) {
+      npv += cashflows[t] / Math.pow(1 + rate, t);
+      dnpv -= (t * cashflows[t]) / Math.pow(1 + rate, t + 1);
     }
-    cashFlows.push(annualCashFlow + netExitWithBenefit);
+    if (Math.abs(dnpv) < 1e-12) break;
+    const newRate = rate - npv / dnpv;
+    if (Math.abs(newRate - rate) < 1e-8) { rate = newRate; break; }
+    rate = newRate;
+  }
+  return isFinite(rate) ? rate : 0;
+}
 
-    // ── 5. Carry Cost Ratio = Annual Holding Costs / Property Value ──
-    const carryRatio = (totalCarryCost / s.propertyValue) * 100;
+function calcNPV(cashflows: number[], hurdle: number): number {
+  return cashflows.reduce((acc, cf, t) => acc + cf / Math.pow(1 + hurdle, t), 0);
+}
 
-    // ── 6. Break-Even Appreciation Rate ──
-    // = (Total Acquisition Costs + Total Holding Costs − Total Rental Income) / (Years Held × Property Value)
-    const totalAcquisitionCosts = s.closingCosts + s.renovationCosts + taxProfile.setupCost;
-    const totalHoldingCosts = totalCarryCost * s.holdPeriodYears;
-    const totalRentalIncome = effectiveRent * s.holdPeriodYears;
-    const breakEvenAppreciation = s.holdPeriodYears > 0
-      ? ((totalAcquisitionCosts + totalHoldingCosts - totalRentalIncome) / (s.propertyValue * s.holdPeriodYears)) * 100
-      : 0;
-
-    let irr = 0.08;
-    for (let iter = 0; iter < 200; iter++) {
-      let npv = 0, dNpv = 0;
-      for (let t = 0; t < cashFlows.length; t++) {
-        const disc = Math.pow(1 + irr, t);
-        npv += cashFlows[t] / disc;
-        if (t > 0) dNpv -= t * cashFlows[t] / Math.pow(1 + irr, t + 1);
-      }
-      if (Math.abs(dNpv) < 1e-10) break;
-      const newIrr = irr - npv / dNpv;
-      if (Math.abs(newIrr - irr) < 1e-8) { irr = newIrr; break; }
-      irr = newIrr;
-    }
-    const irrPercent = irr * 100;
-
-    // ── Liquidity Forecast ──
-    const mktData = MARKET_LIQUIDITY[s.marketRegion] || MARKET_LIQUIDITY['beverly-hills'];
-    const avgDOM = mktData.avgDOM[s.priceBracket] || 300;
-    const carryCostDuringListing = (totalCarryCost / 365) * avgDOM;
-
-    // ── Target Exit: Required appreciation ──
-    const targetExitValue = s.propertyValue + s.targetExitProfit + sellingCosts + taxOnGain;
-    const requiredAppreciation = s.holdPeriodYears > 0
-      ? (Math.pow(targetExitValue / s.propertyValue, 1 / s.holdPeriodYears) - 1) * 100
-      : 0;
-
+function applyScenario(s: CREState): CREState {
+  if (s.scenario === "upside")
     return {
-      operatingOpex, staffingCost, specializedMaint, totalCarryCost,
-      vacancyLoss, effectiveRent,
-      noi, capRate,
-      loanAmount, equityInvested, totalCashInvested, monthlyPayment, annualDebtService, dscr,
-      annualCashFlow, cashOnCash,
-      carryRatio, breakEvenAppreciation,
-      scarcityBonus, effectiveAppreciation,
-      years, projectedValues, equityOverTime, cumulativeCashFlow, remainingLoan,
-      irrPercent,
-      taxProfile, taxOnGain, sellingCosts, netExitProceeds, netExitWithBenefit, structureBenefit,
-      avgDOM, mktData, carryCostDuringListing,
-      exitValue, capitalGain,
-      requiredAppreciation, targetExitValue,
-      totalStaff,
-      agentCommissionAmount, titleInsurance, totalClosingCost,
-      liquidityScore: undefined,
-      riskScore: undefined,
+      ...s,
+      baseRentPerSF: s.baseRentPerSF * 1.1,
+      vacancyRatePct: s.vacancyRatePct * 0.8,
+      rentGrowthPct: s.rentGrowthPct + 1,
+      exitCapRate: s.exitCapRate - 0.5,
     };
-  }, [s]);
+  if (s.scenario === "downside")
+    return {
+      ...s,
+      baseRentPerSF: s.baseRentPerSF * 0.9,
+      vacancyRatePct: s.vacancyRatePct * 1.3,
+      rentGrowthPct: Math.max(0, s.rentGrowthPct - 1),
+      exitCapRate: s.exitCapRate + 0.75,
+    };
+  return s;
+}
+
+function computeFinancials(raw: CREState): FinancialSummary {
+  const s = applyScenario(raw);
+  const {
+    purchasePrice: pp, closingCostsPct, holdingPeriod: N, capexBudget,
+    rentableSF: sf, exitCapRate, sellingCostsPct,
+    baseRentPerSF, rentGrowthPct, vacancyRatePct, concessionMonths,
+    ancillaryIncomePct, expenseGrowthPct, mgmtFeePct,
+    propertyTaxes, insurance, utilitiesMaintenance, otherOpex,
+    recurringCapexPct, tiPerSF, leasingCommissionsPct,
+    ltvPct, interestRatePct, amortizationYears,
+  } = s;
+
+  const closingCosts = pp * (closingCostsPct / 100);
+  const totalAcquisition = pp + closingCosts + capexBudget;
+  const loanAmount = pp * (ltvPct / 100);
+  const equity = totalAcquisition - loanAmount;
+
+  const monthlyRate = interestRatePct / 100 / 12;
+  const nperMonths = amortizationYears * 12;
+  const annualDS = pmt(monthlyRate, nperMonths, loanAmount) * 12;
+
+  let loanBal = loanAmount;
+  const rows: YearRow[] = [];
+  const cfArray: number[] = [-equity];
+
+  for (let yr = 1; yr <= N; yr++) {
+    const g = Math.pow(1 + rentGrowthPct / 100, yr - 1);
+    const eg = Math.pow(1 + expenseGrowthPct / 100, yr - 1);
+    const gpi = baseRentPerSF * sf * g;
+    const vacLoss = gpi * (vacancyRatePct / 100);
+    const concLoss = (gpi / 12) * concessionMonths * (vacancyRatePct / 100);
+    const ancillary = (gpi - vacLoss) * (ancillaryIncomePct / 100);
+    const egi = gpi - vacLoss - concLoss + ancillary;
+
+    const mgmt = egi * (mgmtFeePct / 100);
+    const opex = (mgmt + propertyTaxes + insurance + utilitiesMaintenance + otherOpex) * eg;
+    const noi = egi - opex;
+
+    const recurCapex = noi * (recurringCapexPct / 100);
+    const tiCost = sf * tiPerSF * (vacancyRatePct / 100) * 0.3;
+    const lcCost = gpi * (leasingCommissionsPct / 100) * (vacancyRatePct / 100) * 0.3;
+
+    const annualInterest = loanBal * (interestRatePct / 100);
+    const annualPrincipal = annualDS - annualInterest;
+    loanBal = Math.max(0, loanBal - annualPrincipal);
+
+    const cfad = noi - annualDS - recurCapex - tiCost - lcCost;
+    const dscr = annualDS > 0 ? noi / annualDS : 999;
+
+    rows.push({
+      year: yr, gpi, vacancyLoss: vacLoss, concessionLoss: concLoss, ancillary,
+      egi, opex, noi, debtService: annualDS, recurringCapex: recurCapex,
+      ti: tiCost, lc: lcCost, cfad, dscr, loanBalance: loanBal,
+    });
+
+    if (yr < N) {
+      cfArray.push(cfad);
+    } else {
+      const yr1NxtNOI = noi * (1 + rentGrowthPct / 100);
+      const exitPrice = yr1NxtNOI / (exitCapRate / 100);
+      const exitNet = exitPrice * (1 - sellingCostsPct / 100) - loanBal;
+      cfArray.push(cfad + exitNet);
+    }
+  }
+
+  const yr1 = rows[0];
+  const goingInCapRate = yr1 ? (yr1.noi / pp) * 100 : 0;
+  const noiMargin = yr1 ? (yr1.noi / yr1.gpi) * 100 : 0;
+  const cashOnCash = equity > 0 ? ((rows[0]?.cfad ?? 0) / equity) * 100 : 0;
+  const dscr = yr1?.dscr ?? 0;
+
+  const totalCF = cfArray.reduce((a, b) => a + b, 0);
+  const equityMultiple = equity > 0 ? (totalCF + equity) / equity : 0;
+  const irr = calcIRR(cfArray) * 100;
+  const npv = calcNPV(cfArray, 0.08);
+
+  const yr1OpexFixed = yr1 ? yr1.opex + annualDS : 0;
+  const breakEvenOccupancy = yr1 ? (yr1OpexFixed / yr1.gpi) * 100 : 0;
+
+  const lastRow = rows[rows.length - 1];
+  const finalNOI = lastRow ? lastRow.noi * (1 + rentGrowthPct / 100) : 0;
+  const exitValue = finalNOI / (exitCapRate / 100);
+  const exitProceeds = exitValue * (1 - sellingCostsPct / 100) - loanBal;
+
+  return {
+    goingInCapRate, noiMargin, cashOnCash, dscr, equityMultiple, irr, npv, breakEvenOccupancy,
+    loanAmount, equityInvested: equity, totalCashInvested: totalAcquisition, exitValue, exitProceeds, rows,
+    noi: yr1?.noi ?? 0, capRate: goingInCapRate, irrPercent: irr,
+    carryRatio: 0, breakEvenAppreciation: breakEvenOccupancy,
+    totalCarryCost: yr1?.opex ?? 0, annualCashFlow: yr1?.cfad ?? 0,
+    annualDebtService: annualDS, monthlyPayment: annualDS / 12,
+    netExitWithBenefit: exitProceeds, effectiveAppreciation: 0,
+    effectiveRent: yr1?.egi ?? 0, vacancyLoss: yr1?.vacancyLoss ?? 0,
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   UI PRIMITIVES
+   UI HELPERS
    ═══════════════════════════════════════════════════════════════ */
 
-function Section({ title, icon, children, defaultOpen = false }: {
-  title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean;
-}) {
+function fmtN(n: number, d = 0) {
+  return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtUSD(n: number) {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${fmtN(n)}`;
+}
+function fmtPct(n: number) { return `${n.toFixed(2)}%`; }
+
+interface SliderProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  format?: (v: number) => string;
+  unit?: string;
+}
+
+function Slider({ label, value, min, max, step, onChange, format, unit }: SliderProps) {
+  const display = format ? format(value) : `${value}${unit ?? ""}`;
+  return (
+    <div className="mb-3">
+      <div className="flex justify-between items-center mb-1">
+        <span className="label-luxury">{label}</span>
+        <span className="text-gold-400 text-xs font-mono">{display}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-full h-1 rounded appearance-none bg-dark-700 accent-gold-400 cursor-pointer"
+      />
+    </div>
+  );
+}
+
+interface KPICardProps {
+  label: string;
+  value: string;
+  sub?: string;
+  highlight?: boolean;
+  negative?: boolean;
+}
+
+function KPICard({ label, value, sub, highlight, negative }: KPICardProps) {
+  return (
+    <div className={`rounded-xl p-3 border ${highlight ? "border-gold-400/60 bg-gold-900/10" : "border-dark-700 bg-dark-800"}`}>
+      <div className="label-luxury mb-1">{label}</div>
+      <div className={`text-xl font-bold ${negative ? "text-red-400" : highlight ? "text-gold-400" : "text-white"}`}>{value}</div>
+      {sub && <div className="text-dark-400 text-xs mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+interface SectionProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+function Section({ title, icon, children, defaultOpen = true }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-white/[0.03]">
-      <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-4 px-5 text-left group hover:bg-white/[0.02] transition-colors"
-      >
-        <span className="flex items-center gap-3">
-          <span className="text-gold-400/50 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
-          <span className="text-base font-medium text-white/90 tracking-wide">{title}</span>
-        </span>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown size={15} className="text-white/30" />
-        </motion.span>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} className="overflow-hidden">
-            <div className="px-5 pb-5 pt-1 space-y-5">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function SliderInput({ label, value, onChange, min, max, step = 1, unit = '', formatFn }: {
-  label: string; value: number; onChange: (v: number) => void;
-  min: number; max: number; step?: number; unit?: string; formatFn?: (v: number) => string;
-}) {
-  const display = formatFn ? formatFn(value) : `${value}${unit}`;
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-xs uppercase tracking-[0.15em] text-white/40 font-medium">{label}</span>
-        <span className="text-sm text-white font-mono">{display}</span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="sim-slider w-full" />
-    </div>
-  );
-}
-
-function ToggleGroup({ label, options, value, onChange }: {
-  label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <span className="text-xs uppercase tracking-[0.15em] text-white/40 font-medium block mb-2.5">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt) => (
-          <button key={opt.value} onClick={() => onChange(opt.value)}
-            className={`px-3.5 py-2 text-sm rounded-lg border transition-all duration-200 ${
-              value === opt.value
-                ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
-                : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15 hover:text-white/60'
-            }`}
-          >{opt.label}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function NumberStepper({ label, value, onChange, min = 0, max = 10 }: {
-  label: string; value: number; onChange: (v: number) => void; min?: number; max?: number;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-white/50">{label}</span>
-      <div className="flex items-center gap-3">
-        <button onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-7 h-7 rounded-lg border border-white/10 text-white/40 hover:border-white/25 hover:text-white/80 text-sm flex items-center justify-center transition-colors"
-        >−</button>
-        <span className="text-base text-white/80 font-mono w-5 text-center">{value}</span>
-        <button onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-7 h-7 rounded-lg border border-white/10 text-white/40 hover:border-white/25 hover:text-white/80 text-sm flex items-center justify-center transition-colors"
-        >+</button>
-      </div>
-    </div>
-  );
-}
-
-function ToggleSwitch({ label, value, onChange, tooltip }: {
-  label: string; value: boolean; onChange: (v: boolean) => void; tooltip?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-white/50 flex items-center gap-1.5">
-        {label}
-        {tooltip && (
-          <span className="group relative">
-            <Info size={12} className="text-white/20 cursor-help" />
-            <span className="invisible group-hover:visible absolute left-5 -top-1 z-50 w-48 p-2 text-xs text-white/70 bg-dark-800 border border-white/10 rounded-lg shadow-xl">
-              {tooltip}
-            </span>
-          </span>
-        )}
-      </span>
-      <button onClick={() => onChange(!value)}
-        className={`w-11 h-6 rounded-full transition-all duration-300 relative ${value ? 'bg-gold-400/20' : 'bg-white/10'}`}
-      >
-        <span className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-300 ${
-          value ? 'left-[22px] bg-gold-400' : 'left-0.5 bg-white/40'
-        }`} />
-      </button>
-    </div>
-  );
-}
-
-/* helper: formatted $ */
-function fmt$(v: number, decimals = 0): string {
-  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(decimals || 1)}M`;
-  if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
-  return `$${v.toFixed(0)}`;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   KPI CARD
-   ═══════════════════════════════════════════════════════════════ */
-
-function KpiCard({ label, value, sub, color = 'white', icon }: {
-  label: string; value: string; sub?: string; color?: string; icon?: React.ReactNode;
-}) {
-  const colorMap: Record<string, string> = {
-    green: 'text-emerald-400',
-    red: 'text-red-400',
-    amber: 'text-amber-400',
-    gold: 'text-gold-400',
-    white: 'text-white/80',
-  };
-  return (
-    <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 hover:border-white/[0.1] transition-colors">
-      <div className="flex items-center gap-2 mb-2">
-        {icon && <span className="text-white/30">{icon}</span>}
-        <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">{label}</span>
-      </div>
-      <div className={`text-2xl font-mono font-bold ${colorMap[color] || colorMap.white}`}>{value}</div>
-      {sub && <div className="text-xs text-white/30 mt-1">{sub}</div>}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CLOSING COST BREAKDOWN CHART
-   ═══════════════════════════════════════════════════════════════ */
-
-function ClosingCostChart({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const items = [
-    { label: 'Closing Costs (Fees & Title)', value: state.closingCosts, color: 'rgba(201,169,110,0.7)' },
-    { label: 'Agent Commission', value: fin.agentCommissionAmount, color: 'rgba(168,85,247,0.6)' },
-    { label: 'Title Insurance', value: fin.titleInsurance, color: 'rgba(56,189,248,0.6)' },
-    { label: 'Immediate Renovations', value: state.renovationCosts, color: 'rgba(74,222,128,0.6)' },
-  ].filter(i => i.value > 0);
-
-  const barData = {
-    labels: items.map(i => i.label),
-    datasets: [{
-      data: items.map(i => i.value),
-      backgroundColor: items.map(i => i.color),
-      borderColor: 'rgba(20,20,20,1)',
-      borderWidth: 1,
-      borderRadius: 6,
-      barThickness: 28,
-    }],
-  };
-  const barOptions = {
-    indexAxis: 'y' as const,
-    responsive: true, maintainAspectRatio: false,
-    scales: {
-      x: { ticks: { color: 'rgba(255,255,255,0.35)', callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.04)' } },
-      y: { ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 12 } }, grid: { display: false } },
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 12,
-        callbacks: { label: (ctx: any) => `${ctx.label}: ${fmt$(ctx.parsed.x)}` },
-      },
-    },
-  };
-
-  return (
-    <div className="sim-visual-card space-y-5">
-      <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Total Acquisition Cost</div>
-        <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-display text-white/85">{fmt$(fin.totalClosingCost)}</span>
-          <span className="text-sm text-white/30">to close on {fmt$(state.propertyValue)}</span>
-        </div>
-        <div className="text-sm text-white/35 mt-1">
-          {((fin.totalClosingCost / state.propertyValue) * 100).toFixed(1)}% of property value &middot; Agent commission {state.agentCommission}%
-        </div>
-      </div>
-
-      {/* Items grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {items.map(i => (
-          <div key={i.label} className="bg-dark-900/60 border border-white/[0.06] rounded-lg p-3">
-            <div className="text-[10px] uppercase tracking-wider text-white/30 mb-1 truncate">{i.label}</div>
-            <div className="text-lg font-mono text-white/80">{fmt$(i.value)}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Horizontal bar */}
-      <div className="h-[180px]">
-        <Bar data={barData} options={barOptions} />
-      </div>
-
-      {/* Total line */}
-      <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
-        <span className="text-sm text-white/50 font-medium">Total Out-of-Pocket at Close</span>
-        <span className="text-xl font-mono font-bold text-gold-400">{fmt$(fin.totalClosingCost + fin.equityInvested)}</span>
-      </div>
-      <div className="text-xs text-white/30">
-        Down payment ({100 - state.ltvRatio}%): {fmt$(fin.equityInvested)} + Acquisition costs: {fmt$(fin.totalClosingCost)}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   OVERVIEW DASHBOARD
-   ═══════════════════════════════════════════════════════════════ */
-
-function OverviewDashboard({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  return (
-    <div className="sim-visual-card space-y-6">
-
-      <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Investment Overview</div>
-        <div className="text-2xl font-display text-white/85">Core Financial Metrics</div>
-        <div className="text-sm text-white/35 mt-1">
-          {fmt$(state.propertyValue)} · {TAX_PROFILES[state.holdingStructure].label} · {state.holdPeriodYears}yr hold
-        </div>
-
-        {/* Chiffres avancés et scores synthétiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
-            <div className="text-xs text-dark-400 mb-1">Initial Investment</div>
-            <div className="font-display text-lg text-white">{fmt$(fin.totalCashInvested)}</div>
-          </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
-            <div className="text-xs text-dark-400 mb-1">Annual Opex</div>
-            <div className="font-display text-lg text-white">{fmt$(fin.totalCarryCost)}</div>
-          </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
-            <div className="text-xs text-dark-400 mb-1">Liquidity Score</div>
-            <div className="font-display text-lg text-emerald-400">{fin.liquidityScore ? fin.liquidityScore : '—'}</div>
-          </div>
-          <div className="bg-dark-900/60 border border-gold-400/10 rounded-lg p-4 text-center">
-            <div className="text-xs text-dark-400 mb-1">Risk Score</div>
-            <div className="font-display text-lg text-red-400">{fin.riskScore ? fin.riskScore : '—'}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-        <KpiCard
-          label="Net Operating Income"
-          value={fmt$(fin.noi)}
-          sub={`(${fmt$(fin.effectiveRent)} rent − ${state.vacancyRate}% vacancy) − ${fmt$(fin.totalCarryCost)} opex`}
-          color={fin.noi >= 0 ? 'green' : 'red'}
-          icon={<DollarSign size={14} />}
-        />
-        <KpiCard
-          label="Cap Rate"
-          value={`${fin.capRate.toFixed(2)}%`}
-          sub={`NOI ${fmt$(fin.noi)} / ${fmt$(state.propertyValue)}`}
-          color={fin.capRate >= 3 ? 'green' : fin.capRate >= 1 ? 'amber' : 'red'}
-          icon={<Percent size={14} />}
-        />
-        <KpiCard
-          label="Cash-on-Cash Return"
-          value={`${fin.cashOnCash.toFixed(2)}%`}
-          sub={`${fmt$(fin.annualCashFlow)} / ${fmt$(fin.totalCashInvested)} invested`}
-          color={fin.cashOnCash >= 4 ? 'green' : fin.cashOnCash >= 0 ? 'amber' : 'red'}
-          icon={<CreditCard size={14} />}
-        />
-        <KpiCard
-          label="IRR"
-          value={`${isFinite(fin.irrPercent) ? fin.irrPercent.toFixed(1) : '\u2014'}%`}
-          sub={`${state.holdPeriodYears}-year hold`}
-          color={fin.irrPercent >= 8 ? 'green' : fin.irrPercent >= 4 ? 'amber' : 'red'}
-          icon={<TrendingUp size={14} />}
-        />
-      </div>
-
-      {/* Secondary KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
-        <KpiCard
-          label="LTV"
-          value={`${state.ltvRatio}%`}
-          sub={`Loan: ${fmt$(fin.loanAmount)}`}
-          icon={<Landmark size={14} />}
-        />
-        <KpiCard
-          label="DSCR"
-          value={isFinite(fin.dscr) ? fin.dscr.toFixed(2) : '\u221E'}
-          sub={fin.dscr >= 1.25 ? 'Healthy coverage' : fin.dscr >= 1 ? 'Tight' : 'Negative coverage'}
-          color={fin.dscr >= 1.25 ? 'green' : fin.dscr >= 1 ? 'amber' : 'red'}
-          icon={<ShieldCheck size={14} />}
-        />
-        <KpiCard
-          label="Break-Even Appreciation"
-          value={`${fin.breakEvenAppreciation.toFixed(2)}%`}
-          sub={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'Covered by growth' : `Need ${(fin.breakEvenAppreciation - fin.effectiveAppreciation).toFixed(1)}% more`}
-          color={fin.breakEvenAppreciation <= fin.effectiveAppreciation ? 'green' : 'amber'}
-          icon={<Target size={14} />}
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   FINANCIAL PROJECTIONS CHART
-   ═══════════════════════════════════════════════════════════════ */
-
-function FinancialProjectionsChart({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const labels = fin.years.map((y) => `Y${y}`);
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'Asset Value',
-        data: fin.projectedValues,
-        borderColor: '#a0a0a8',
-        backgroundColor: 'rgba(160,160,168,0.06)',
-        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
-        yAxisID: 'y' as const,
-      },
-      {
-        label: 'Net Equity',
-        data: fin.equityOverTime,
-        borderColor: '#4ade80',
-        backgroundColor: 'rgba(74,222,128,0.05)',
-        fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0, borderDash: [4, 4],
-        yAxisID: 'y' as const,
-      },
-      {
-        label: 'Cumulative Cash Flow',
-        data: fin.cumulativeCashFlow,
-        borderColor: fin.annualCashFlow >= 0 ? '#38bdf8' : '#f87171',
-        backgroundColor: fin.annualCashFlow >= 0 ? 'rgba(56,189,248,0.05)' : 'rgba(248,113,113,0.05)',
-        fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0,
-        yAxisID: 'y1' as const,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true, maintainAspectRatio: false,
-    interaction: { mode: 'index' as const, intersect: false },
-    plugins: {
-      legend: { display: true, position: 'top' as const, labels: { color: '#888', font: { size: 12 }, boxWidth: 14, padding: 16 } },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 14,
-        callbacks: { label: (ctx: any) => `${ctx.dataset.label}: ${fmt$(ctx.parsed.y)}` },
-      },
-    },
-    scales: {
-      x: { ticks: { color: '#555', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.02)' } },
-      y: { position: 'left' as const, ticks: { color: '#555', font: { size: 11 }, callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.03)' } },
-      y1: { position: 'right' as const, ticks: { color: '#555', font: { size: 11 }, callback: (v: any) => fmt$(v) }, grid: { display: false } },
-    },
-  };
-
-  return (
-    <div className="sim-visual-card">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Financial Projections</div>
-          <div className="flex items-center">
-            <span className="text-2xl font-display text-white/85">
-              {fin.effectiveAppreciation.toFixed(1)}% Effective Growth
-              <span className="text-sm text-white/30 ml-2">&middot;</span>
-              <span className="text-sm text-white/40 ml-2">{state.ltvRatio}% LTV</span>
-              {fin.scarcityBonus > 0 && (
-                <span className="text-sm text-gold-400/60 ml-2">+{fin.scarcityBonus.toFixed(1)}% scarcity</span>
-              )}
-            </span>
-            <GraphExplainer
-              title="Financial Projections"
-              explanation="This chart plots three trajectories over your hold period: Asset Value (total property worth), Net Equity (value minus remaining debt), and Cumulative Cash Flow (total rental income minus all expenses). It shows how leverage amplifies equity growth and whether the property generates positive cash flow year over year."
-            />
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-xs uppercase tracking-wider text-white/35 mb-1">Est. IRR</div>
-          <div className={`text-3xl font-mono font-bold ${fin.irrPercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {isFinite(fin.irrPercent) ? `${fin.irrPercent.toFixed(1)}%` : '\u2014'}
-          </div>
-        </div>
-      </div>
-      <div className="h-[380px]"><Line data={data} options={options} /></div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CARRY COST BREAKDOWN
-   ═══════════════════════════════════════════════════════════════ */
-
-function CarryCostBreakdown({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const taxCost = state.propertyValue * state.propertyTaxRate / 100;
-  const labels = [
-    'CAM & Common Area Ops', 'Building Security', 'Facilities & Grounds', 'Utilities & Systems',
-    'Tech Infrastructure', 'Property Management', 'Staffing',
-    'Property Tax', 'Insurance',
-  ];
-  const values = [
-    state.concierge, state.specializedSecurity, state.highEndLandscaping, state.poolMaintenance,
-    state.smartHomeSystems, state.propertyManagement, fin.staffingCost,
-    taxCost, state.annualInsurance,
-  ];
-  const colors = [
-    'rgba(201,169,110,0.6)', 'rgba(248,113,113,0.6)', 'rgba(74,222,128,0.5)', 'rgba(56,189,248,0.5)',
-    'rgba(251,191,36,0.5)', 'rgba(160,160,180,0.5)', 'rgba(236,72,153,0.5)',
-    'rgba(239,68,68,0.4)', 'rgba(100,116,139,0.5)',
-  ];
-
-  // ── Doughnut chart data ──
-  const doughnutData = { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: 'rgba(20,20,20,1)', borderWidth: 2 }] };
-  const doughnutOptions = {
-    responsive: true, maintainAspectRatio: false, cutout: '62%',
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 10,
-        callbacks: { label: (ctx: any) => `${ctx.label}: ${fmt$(ctx.parsed)}` },
-      },
-    },
-  };
-
-  // ── Horizontal Bar chart — sorted cost categories ──
-  const sorted = labels.map((l, i) => ({ label: l, value: values[i], color: colors[i] })).sort((a, b) => b.value - a.value);
-  const barData = {
-    labels: sorted.map(s => s.label),
-    datasets: [{
-      data: sorted.map(s => s.value),
-      backgroundColor: sorted.map(s => s.color),
-      borderColor: 'rgba(20,20,20,1)',
-      borderWidth: 1,
-      borderRadius: 4,
-      barThickness: 18,
-    }],
-  };
-  const barOptions = {
-    indexAxis: 'y' as const,
-    responsive: true, maintainAspectRatio: false,
-    scales: {
-      x: { ticks: { color: 'rgba(255,255,255,0.35)', callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.04)' } },
-      y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 } }, grid: { display: false } },
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 10,
-        callbacks: { label: (ctx: any) => `${ctx.label}: ${fmt$(ctx.parsed.x)}` },
-      },
-    },
-  };
-
-  // ── Line chart — 12-month cumulative cost projection ──
-  const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthlyCost = fin.totalCarryCost / 12;
-  const monthlyRent = fin.effectiveRent / 12;
-  const cumulCosts = monthLabels.map((_, i) => monthlyCost * (i + 1));
-  const cumulIncome = monthLabels.map((_, i) => monthlyRent * (i + 1));
-  const cumulNet = monthLabels.map((_, i) => (monthlyRent - monthlyCost) * (i + 1));
-
-  const lineData = {
-    labels: monthLabels,
-    datasets: [
-      {
-        label: 'Cumulative Costs',
-        data: cumulCosts,
-        borderColor: 'rgba(248,113,113,0.8)',
-        backgroundColor: 'rgba(248,113,113,0.08)',
-        fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 5,
-      },
-      {
-        label: 'Cumulative Rental Income',
-        data: cumulIncome,
-        borderColor: 'rgba(74,222,128,0.8)',
-        backgroundColor: 'rgba(74,222,128,0.08)',
-        fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 5,
-      },
-      {
-        label: 'Net Cash Flow',
-        data: cumulNet,
-        borderColor: 'rgba(201,169,110,0.9)',
-        backgroundColor: 'rgba(201,169,110,0.06)',
-        fill: true, tension: 0.3, borderDash: [5, 3], pointRadius: 3, pointHoverRadius: 5,
-      },
-    ],
-  };
-  const lineOptions = {
-    responsive: true, maintainAspectRatio: false,
-    scales: {
-      x: { ticks: { color: 'rgba(255,255,255,0.35)' }, grid: { color: 'rgba(255,255,255,0.04)' } },
-      y: { ticks: { color: 'rgba(255,255,255,0.35)', callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.04)' } },
-    },
-    plugins: {
-      legend: { labels: { color: 'rgba(255,255,255,0.5)', usePointStyle: true, pointStyle: 'circle', padding: 16 } },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc', padding: 10,
-        callbacks: { label: (ctx: any) => `${ctx.dataset.label}: ${fmt$(ctx.parsed.y)}` },
-      },
-    },
-  };
-
-  return (
-    <div className="sim-visual-card space-y-8">
-      {/* Header */}
-      <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Ownership Economics &mdash; Annual Holding Analysis</div>
-        <div className="text-2xl font-display text-white/85 mb-1">
-          {fmt$(fin.totalCarryCost)}<span className="text-sm text-white/30 ml-1">/year</span>
-        </div>
-        <div className="text-sm text-white/30">
-          {fmt$(fin.totalCarryCost / 12)}/month &middot; {fin.carryRatio.toFixed(2)}% of value
-        </div>
-      </div>
-
-      {/* Row 1: Doughnut + legend */}
-      <div>
-        <h4 className="text-xs uppercase tracking-[0.15em] text-white/40 mb-4">Cost Distribution</h4>
-        <div className="flex gap-6 flex-col lg:flex-row">
-          <div className="h-[280px] w-[280px] relative flex-shrink-0 mx-auto lg:mx-0">
-            <Doughnut data={doughnutData} options={doughnutOptions} />
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs text-white/35 uppercase tracking-wider">Monthly</span>
-              <span className="text-lg font-mono text-white/70">{fmt$(fin.totalCarryCost / 12)}</span>
-            </div>
-          </div>
-          <div className="flex-1 space-y-2 overflow-y-auto max-h-[280px] sim-scrollbar">
-            {labels.map((lbl, i) => (
-              <div key={lbl} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[i] }} />
-                  <span className="text-white/50">{lbl}</span>
-                </span>
-                <span className="text-white/70 font-mono">{fmt$(values[i])}</span>
-              </div>
-            ))}
-            <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
-              <span className="text-white/60 font-medium text-sm">Net after rent</span>
-              <span className={`font-mono text-sm font-bold ${fin.noi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}/yr
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Row 2: Horizontal bar — ranked costs */}
-      <div>
-        <h4 className="text-xs uppercase tracking-[0.15em] text-white/40 mb-4">Cost Ranking</h4>
-        <div className="h-[340px]">
-          <Bar data={barData} options={barOptions} />
-        </div>
-      </div>
-
-      {/* Row 3: 12-month cumulative cash-flow projection */}
-      <div>
-        <h4 className="text-xs uppercase tracking-[0.15em] text-white/40 mb-4">12-Month Cumulative Cash Flow</h4>
-        <div className="h-[280px]">
-          <Line data={lineData} options={lineOptions} />
-        </div>
-        <div className="mt-3 flex gap-4 text-xs text-white/35">
-          <span>Year-end costs: <span className="text-red-400 font-mono">{fmt$(fin.totalCarryCost)}</span></span>
-          <span>Year-end income: <span className="text-emerald-400 font-mono">{fmt$(fin.effectiveRent)}</span></span>
-          <span>Year-end net: <span className={`font-mono ${fin.noi >= 0 ? 'text-gold-400' : 'text-red-400'}`}>{fin.noi >= 0 ? '+' : ''}{fmt$(fin.noi)}</span></span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TAX & STRUCTURING PANEL
-   ═══════════════════════════════════════════════════════════════ */
-
-function TaxStructuringPanel({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const structures = Object.entries(TAX_PROFILES).map(([key, profile]) => {
-    const gain = fin.capitalGain;
-    const tax = Math.max(0, gain) * profile.effectiveCapGainRate;
-    const benefit = profile.yearlyBenefit * state.propertyValue * state.holdPeriodYears;
-    const net = fin.exitValue - (fin.remainingLoan[fin.remainingLoan.length - 1] || 0) - tax - fin.sellingCosts + benefit - profile.setupCost;
-    const isActive = key === state.holdingStructure;
-    return { key, ...profile, tax, benefit, net, isActive };
-  });
-
-  const bestStructure = structures.reduce((a, b) => a.net > b.net ? a : b);
-
-  return (
-    <div className="sim-visual-card space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Tax Efficiency & Structuring</div>
-        <div className="text-2xl font-display text-white/85">Holding Structure Comparison</div>
-        <div className="text-sm text-white/35 mt-1">
-          Estimated capital gain: {fmt$(fin.capitalGain)} over {state.holdPeriodYears} years
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {structures.map((s) => (
-          <div key={s.key}
-            className={`relative rounded-xl border p-5 transition-all ${
-              s.isActive
-                ? 'bg-gold-400/[0.06] border-gold-400/25'
-                : 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1]'
-            }`}
-          >
-            {s.key === bestStructure.key && (
-              <span className="absolute -top-2.5 right-3 px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold bg-emerald-400/15 text-emerald-400 border border-emerald-400/25 rounded-full">
-                Optimal
-              </span>
-            )}
-            <div className="flex items-center gap-2 mb-3">
-              <Scale size={14} className={s.isActive ? 'text-gold-400' : 'text-white/30'} />
-              <span className={`text-sm font-semibold ${s.isActive ? 'text-gold-400' : 'text-white/70'}`}>{s.label}</span>
-            </div>
-            <p className="text-xs text-white/30 mb-4 leading-relaxed">{s.description}</p>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-white/40">Effective CG Rate</span>
-                <span className="text-white/60 font-mono">{(s.effectiveCapGainRate * 100).toFixed(1)}%</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-white/40">Tax on Exit</span>
-                <span className="text-red-400/70 font-mono">&minus;{fmt$(s.tax)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-white/40">Annual Benefit</span>
-                <span className="text-emerald-400/70 font-mono">+{fmt$(s.benefit)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-white/40">Setup Cost</span>
-                <span className="text-white/50 font-mono">{fmt$(s.setupCost)}</span>
-              </div>
-              <div className="pt-2 border-t border-white/[0.06] flex justify-between">
-                <span className="text-white/60 text-xs font-medium">Net Proceeds</span>
-                <span className={`font-mono text-sm font-bold ${s.net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {fmt$(s.net)}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Scarcity Value section */}
-      <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Gem size={14} className="text-gold-400/60" />
-          <span className="text-[11px] uppercase tracking-[0.15em] text-white/35 font-medium">Commercial Demand Premium</span>
-        </div>
-        <div className="flex items-baseline gap-3 mb-4">
-          <span className="text-3xl font-mono font-bold text-gold-400">+{fin.scarcityBonus.toFixed(1)}%</span>
-          <span className="text-sm text-white/35">added to {state.baseAppreciationRate}% base &rarr; {fin.effectiveAppreciation.toFixed(1)}% effective</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: 'Transit Hub Proximity', active: state.scarcityPrivateBeach, bonus: '+1.2%' },
-            { label: 'Institutional Tenant Mix', active: state.scarcityHistoricHeritage, bonus: '+0.8%' },
-            { label: 'Class A Building Spec', active: state.scarcityStarchitect, bonus: '+1.0%' },
-            { label: 'Redevelopment Corridor', active: state.scarcityUniqueView, bonus: '+0.6%' },
-          ].map((f) => (
-            <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
-              f.active ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20' : 'bg-white/[0.02] text-white/30 border border-white/[0.04]'
-            }`}>
-              {f.active ? '\u2605' : '\u2606'} {f.label} <span className="ml-auto font-mono">{f.bonus}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   EXIT STRATEGY & LIQUIDITY PANEL
-   ═══════════════════════════════════════════════════════════════ */
-
-function ExitStrategyPanel({ state, fin }: { state: SimState; fin: ReturnType<typeof useFinancials> }) {
-  const waterfallLabels = ['Purchase', 'Appreciation', 'Tax on Gain', 'Selling Costs', 'Remaining Debt', 'Net Proceeds'];
-  const appreciation = fin.exitValue - state.propertyValue;
-  const remainDebt = fin.remainingLoan[fin.remainingLoan.length - 1] || 0;
-  const waterfallData = [
-    state.propertyValue, appreciation, -fin.taxOnGain, -fin.sellingCosts, -remainDebt, fin.netExitWithBenefit,
-  ];
-  const waterfallColors = [
-    'rgba(160,160,180,0.4)', 'rgba(74,222,128,0.5)', 'rgba(248,113,113,0.5)',
-    'rgba(168,85,247,0.4)', 'rgba(251,191,36,0.4)', 'rgba(160,160,180,0.6)',
-  ];
-
-  const barData = {
-    labels: waterfallLabels,
-    datasets: [{
-      label: 'Exit Waterfall',
-      data: waterfallData,
-      backgroundColor: waterfallColors,
-      borderColor: 'rgba(20,20,20,1)',
-      borderWidth: 1,
-      borderRadius: 4,
-    }],
-  };
-  const barOptions = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1a1a1e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-        titleColor: '#e0e0e0', bodyColor: '#ccc',
-        callbacks: { label: (ctx: any) => `${ctx.parsed.y >= 0 ? '+' : ''}${fmt$(ctx.parsed.y)}` },
-      },
-    },
-    scales: {
-      x: { ticks: { color: '#555', font: { size: 11 } }, grid: { display: false } },
-      y: { ticks: { color: '#555', font: { size: 11 }, callback: (v: any) => fmt$(v) }, grid: { color: 'rgba(255,255,255,0.03)' } },
-    },
-  };
-
-  const totalGain = fin.netExitWithBenefit - fin.equityInvested;
-  const profitMultiple = fin.equityInvested > 0 ? fin.netExitWithBenefit / fin.equityInvested : 0;
-
-  return (
-    <div className="space-y-4">
-      {/* Exit Waterfall */}
-      <div className="sim-visual-card">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-1">Exit Strategy</div>
-            <div className="text-2xl font-display text-white/85">
-              {state.holdPeriodYears}yr Hold &middot; {TAX_PROFILES[state.holdingStructure].label}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs uppercase tracking-wider text-white/35 mb-1">Net Gain</div>
-            <div className={`text-3xl font-mono font-bold ${totalGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {totalGain >= 0 ? '+' : ''}{fmt$(totalGain)}
-            </div>
-            <div className="text-xs text-white/30 mt-0.5">{profitMultiple.toFixed(2)}x equity</div>
-          </div>
-        </div>
-        <div className="h-[300px]"><Bar data={barData} options={barOptions} /></div>
-      </div>
-
-      {/* Liquidity Forecasting */}
-      <div className="sim-visual-card">
-        <div className="flex items-center gap-2 mb-5">
-          <Timer size={16} className="text-gold-400/60" />
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Liquidity Forecasting</div>
-            <div className="text-lg font-display text-white/80">
-              {fin.mktData.label} &middot; {state.priceBracket === 'ultra' ? 'Trophy ($10M+)' : state.priceBracket === 'premium' ? 'Core+ ($5\u201310M)' : 'Core ($2\u20135M)'}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-1">Avg Days on Market</div>
-            <div className="text-3xl font-mono font-bold text-amber-400">{fin.avgDOM}</div>
-            <div className="text-xs text-white/30 mt-1">&asymp; {Math.round(fin.avgDOM / 30)} months</div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-1">Carry During Listing</div>
-            <div className="text-2xl font-mono font-bold text-red-400">{fmt$(fin.carryCostDuringListing)}</div>
-            <div className="text-xs text-white/30 mt-1">Burned while waiting</div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-1">Broker Fee</div>
-            <div className="text-2xl font-mono font-bold text-white/60">{fin.mktData.brokerFee}%</div>
-            <div className="text-xs text-white/30 mt-1">{fmt$(fin.sellingCosts)} on exit</div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-1">Illiquidity Risk</div>
-            <div className={`text-2xl font-mono font-bold ${fin.avgDOM > 360 ? 'text-red-400' : fin.avgDOM > 200 ? 'text-amber-400' : 'text-emerald-400'}`}>
-              {fin.avgDOM > 360 ? 'High' : fin.avgDOM > 200 ? 'Medium' : 'Low'}
-            </div>
-            <div className="text-xs text-white/30 mt-1">
-              {fin.avgDOM > 360 ? 'Plan for 12mo+ exit' : fin.avgDOM > 200 ? '6\u201312mo typical' : 'Relatively liquid'}
-            </div>
-          </div>
-        </div>
-
-        {/* Illiquidity bar by region */}
-        <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-          <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Average DOM by Market ({state.priceBracket === 'ultra' ? 'Trophy' : state.priceBracket === 'premium' ? 'Core+' : 'Core'})</div>
-          <div className="space-y-2">
-            {Object.entries(MARKET_LIQUIDITY)
-              .sort(([, a], [, b]) => a.avgDOM[state.priceBracket] - b.avgDOM[state.priceBracket])
-              .map(([key, mktDataItem]) => {
-                const dom = mktDataItem.avgDOM[state.priceBracket];
-                const active = key === state.marketRegion;
-                return (
-                  <div key={key} className="flex items-center gap-3">
-                    <span className={`text-xs w-40 flex-shrink-0 ${active ? 'text-gold-400 font-semibold' : 'text-white/40'}`}>
-                      {active ? '\u25B8 ' : ''}{mktDataItem.label}
-                    </span>
-                    <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all duration-500 ${
-                        active ? 'bg-gold-400/70' : dom > 360 ? 'bg-red-400/40' : dom > 200 ? 'bg-amber-400/40' : 'bg-emerald-400/40'
-                      }`} style={{ width: `${Math.min(100, (dom / 550) * 100)}%` }} />
-                    </div>
-                    <span className={`text-xs font-mono w-16 text-right ${active ? 'text-gold-400' : 'text-white/40'}`}>{dom}d</span>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      </div>
-
-      {/* Target Exit Price */}
-      <div className="sim-visual-card">
-        <div className="flex items-center gap-2 mb-5">
-          <Crosshair size={16} className="text-gold-400/60" />
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/35 mb-0.5">Target Exit Price Solver</div>
-            <div className="text-lg font-display text-white/80">What appreciation do you need?</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-2">Your Target Profit</div>
-            <div className="text-3xl font-mono font-bold text-gold-400">{fmt$(state.targetExitProfit)}</div>
-            <div className="text-xs text-white/30 mt-1">Net of taxes & fees</div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5 flex flex-col items-center justify-center">
-            <ArrowRight size={20} className="text-white/20 mb-2" />
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-1">Required Annual Appreciation</div>
-            <div className={`text-3xl font-mono font-bold ${fin.requiredAppreciation <= fin.effectiveAppreciation ? 'text-emerald-400' : fin.requiredAppreciation <= fin.effectiveAppreciation + 2 ? 'text-amber-400' : 'text-red-400'}`}>
-              {fin.requiredAppreciation.toFixed(1)}%
-            </div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5">
-            <div className="text-[11px] uppercase tracking-wider text-white/30 mb-2">Current Effective Rate</div>
-            <div className="text-3xl font-mono font-bold text-white/60">{fin.effectiveAppreciation.toFixed(1)}%</div>
-            <div className={`text-xs mt-1 ${fin.requiredAppreciation <= fin.effectiveAppreciation ? 'text-emerald-400' : 'text-red-400'}`}>
-              {fin.requiredAppreciation <= fin.effectiveAppreciation
-                ? '\u2713 Target achievable at current rate'
-                : `\u2717 Gap of ${(fin.requiredAppreciation - fin.effectiveAppreciation).toFixed(1)}% needed`}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GRAPH EXPLAINER TOOLTIP
-   ═══════════════════════════════════════════════════════════════ */
-
-function GraphExplainer({ title, explanation }: { title: string; explanation: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="relative inline-flex ml-2">
+    <div className="border border-dark-700 rounded-xl mb-3 overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs text-white/30 hover:text-gold-400/70 transition-colors cursor-pointer"
-        title="What does this graph mean?"
+        className="w-full flex items-center justify-between px-4 py-3 bg-dark-800 hover:bg-dark-750 transition-colors"
       >
-        <HelpCircle size={15} />
-        <span className="hidden sm:inline">What does this mean?</span>
+        <div className="flex items-center gap-2 label-luxury text-gold-400/80">
+          {icon}
+          {title}
+        </div>
+        {open ? <ChevronUp size={14} className="text-dark-400" /> : <ChevronDown size={14} className="text-dark-400" />}
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-8 z-50 w-80 bg-[#18181b] border border-white/10 rounded-xl shadow-2xl p-5"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-sm font-semibold text-white/80">{title}</span>
-              <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white/60 transition-colors">
-                <X size={14} />
-              </button>
-            </div>
-            <p className="text-xs text-white/50 leading-relaxed">{explanation}</p>
+            <div className="p-4 bg-dark-900/60">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
-    </span>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHARTS
+   ═══════════════════════════════════════════════════════════════ */
+
+const CHART_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: "#8a8a8a", font: { size: 11 } } } },
+  scales: {
+    x: { ticks: { color: "#666" }, grid: { color: "#1e1e1e" } },
+    y: { ticks: { color: "#666" }, grid: { color: "#1e1e1e" } },
+  },
+};
+
+function IncomeWaterfallChart({ rows }: { rows: YearRow[] }) {
+  const labels = rows.map((r) => `Yr ${r.year}`);
+  const data = {
+    labels,
+    datasets: [
+      { label: "NOI", data: rows.map((r) => r.noi), backgroundColor: "rgba(201,169,110,0.85)", stack: "s" },
+      { label: "OpEx", data: rows.map((r) => r.opex), backgroundColor: "rgba(100,80,40,0.7)", stack: "s" },
+      { label: "Vacancy Loss", data: rows.map((r) => r.vacancyLoss), backgroundColor: "rgba(60,60,60,0.9)", stack: "s" },
+    ],
+  };
+  return <div style={{ height: 280 }}><Bar data={data} options={CHART_OPTS as any} /></div>;
+}
+
+function CashFlowChart({ rows, exitProceeds }: { rows: YearRow[]; exitProceeds: number }) {
+  const labels = rows.map((r) => `Yr ${r.year}`);
+  const cfValues = rows.map((r, i) => i === rows.length - 1 ? r.cfad + exitProceeds : r.cfad);
+  const data = {
+    labels,
+    datasets: [{
+      label: "Cash Flow After Debt",
+      data: cfValues,
+      backgroundColor: cfValues.map((v) => v >= 0 ? "rgba(201,169,110,0.8)" : "rgba(200,60,60,0.7)"),
+    }],
+  };
+  return <div style={{ height: 280 }}><Bar data={data} options={CHART_OPTS as any} /></div>;
+}
+
+function CumulativeEquityChart({ rows }: { rows: YearRow[] }) {
+  const labels = rows.map((r) => `Yr ${r.year}`);
+  let cumCF = 0;
+  const cumData = rows.map((r) => { cumCF += r.cfad; return cumCF / 1000; });
+  const firstBal = rows[0]?.loanBalance ?? 0;
+  const principalPaid = rows.map((r) => (firstBal - r.loanBalance) / 1000);
+  const data = {
+    labels,
+    datasets: [
+      { label: "Cumulative CFAD ($K)", data: cumData, borderColor: "#c9a96e", backgroundColor: "rgba(201,169,110,0.1)", fill: true, tension: 0.3 },
+      { label: "Principal Paid ($K)", data: principalPaid, borderColor: "#4ade80", backgroundColor: "transparent", tension: 0.3 },
+    ],
+  };
+  return <div style={{ height: 280 }}><Line data={data} options={CHART_OPTS as any} /></div>;
+}
+
+function ExpensePieChart({ rows }: { rows: YearRow[] }) {
+  const yr1 = rows[0];
+  if (!yr1) return null;
+  const data = {
+    labels: ["OpEx", "Debt Service", "Recurring CapEx", "TI", "LC"],
+    datasets: [{
+      data: [yr1.opex, yr1.debtService, yr1.recurringCapex, yr1.ti, yr1.lc],
+      backgroundColor: ["#c9a96e", "#5a4020", "#8a6a30", "#3a3a3a", "#2a2a2a"],
+      borderColor: "#1a1a1a",
+      borderWidth: 2,
+    }],
+  };
+  return <div style={{ height: 280 }} className="flex justify-center"><Doughnut data={data} options={{ ...CHART_OPTS, scales: {} } as any} /></div>;
+}
+
+function SensitivityHeatmap({ baseState }: { baseState: CREState }) {
+  const rentGrowthVals = [-1, 0, 1, 2, 3, 4];
+  const exitCapVals = [4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5];
+  const cells = rentGrowthVals.map((rg) =>
+    exitCapVals.map((ec) => computeFinancials({ ...baseState, rentGrowthPct: rg, exitCapRate: ec, scenario: "base" }).irr)
+  );
+  const allVals = cells.flat();
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+  function color(v: number) {
+    const t = maxV !== minV ? (v - minV) / (maxV - minV) : 0.5;
+    return `rgb(${Math.round(180 * (1 - t) + 40 * t)},${Math.round(60 * (1 - t) + 160 * t)},${Math.round(40 * (1 - t) + 80 * t)})`;
+  }
+  return (
+    <div className="overflow-x-auto">
+      <div className="text-xs text-dark-400 mb-2 text-center">IRR (%) — Rent Growth % (rows) vs Exit Cap Rate % (cols)</div>
+      <table className="w-full text-xs">
+        <thead>
+          <tr>
+            <th className="text-dark-400 pr-2 pb-2">RG \ EC</th>
+            {exitCapVals.map((ec) => <th key={ec} className="text-dark-400 px-2 pb-2">{ec.toFixed(1)}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rentGrowthVals.map((rg, ri) => (
+            <tr key={rg}>
+              <td className="text-dark-400 pr-2 py-1">{rg >= 0 ? `+${rg}` : rg}%</td>
+              {exitCapVals.map((ec, ci) => {
+                const v = cells[ri][ci];
+                return (
+                  <td key={ec} className="px-2 py-1 text-center font-mono rounded"
+                    style={{ backgroundColor: `${color(v)}33`, color: color(v) }}>
+                    {v.toFixed(1)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AnnualTable({ rows }: { rows: YearRow[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-dark-400 border-b border-dark-700">
+            {["Yr", "GPI", "Vac Loss", "EGI", "OpEx", "NOI", "Debt Svc", "CFAD", "DSCR", "Loan Bal"].map((h) => (
+              <th key={h} className="py-2 px-2 text-right first:text-left whitespace-nowrap">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.year} className="border-b border-dark-800 hover:bg-dark-800/50">
+              <td className="py-2 px-2 text-gold-400 font-semibold">{r.year}</td>
+              <td className="py-2 px-2 text-right">{fmtUSD(r.gpi)}</td>
+              <td className="py-2 px-2 text-right text-red-400">({fmtUSD(r.vacancyLoss)})</td>
+              <td className="py-2 px-2 text-right">{fmtUSD(r.egi)}</td>
+              <td className="py-2 px-2 text-right text-red-400">({fmtUSD(r.opex)})</td>
+              <td className="py-2 px-2 text-right text-gold-400 font-semibold">{fmtUSD(r.noi)}</td>
+              <td className="py-2 px-2 text-right">({fmtUSD(r.debtService)})</td>
+              <td className={`py-2 px-2 text-right font-semibold ${r.cfad >= 0 ? "text-green-400" : "text-red-400"}`}>{fmtUSD(r.cfad)}</td>
+              <td className={`py-2 px-2 text-right ${r.dscr >= 1.25 ? "text-green-400" : r.dscr >= 1.0 ? "text-yellow-400" : "text-red-400"}`}>{r.dscr.toFixed(2)}x</td>
+              <td className="py-2 px-2 text-right text-dark-400">{fmtUSD(r.loanBalance)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -1321,227 +576,179 @@ function GraphExplainer({ title, explanation }: { title: string; explanation: st
    MAIN SIMULATOR
    ═══════════════════════════════════════════════════════════════ */
 
+const CHART_TABS = [
+  { id: "waterfall", label: "Income Waterfall", icon: <BarChart3 size={13} /> },
+  { id: "cashflow", label: "Cash Flow", icon: <TrendingUp size={13} /> },
+  { id: "equity", label: "Equity Build", icon: <Layers size={13} /> },
+  { id: "expenses", label: "Expense Breakdown", icon: <PieChart size={13} /> },
+  { id: "sensitivity", label: "Sensitivity", icon: <Target size={13} /> },
+  { id: "table", label: "Annual Table", icon: <TableProperties size={13} /> },
+] as const;
+
+type ChartTab = typeof CHART_TABS[number]["id"];
+
 export default function Simulator({ address, price }: { address?: string; price?: number }) {
-  const [state, setState] = useState<SimState>(() => {
-    const detectedRegion = address ? detectRegion(address) : 'manhattan';
-    const base: SimState = {
-      ...DEFAULT_STATE,
-      marketRegion: detectedRegion,
-    };
-    // When a price is provided, scale ALL defaults to match the property value
-    if (price != null) {
-      return { ...base, ...generateScaledDefaults(price), marketRegion: detectedRegion };
-    }
-    return base;
-  });
+  const [state, setState] = useState<CREState>(() => defaultState(price));
+  const [activeTab, setActiveTab] = useState<ChartTab>("waterfall");
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const fin = useMemo(() => computeFinancials(state), [state]);
 
-  const update = useCallback((partial: Partial<SimState>) => {
+  const update = useCallback((partial: Partial<CREState>) => {
     setState((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  const fin = useFinancials(state);
-
-  const tabs = [
-    { key: 'overview', label: 'Overview', icon: <ChartNoAxesCombined size={15} /> },
-    { key: 'carry', label: 'Costs', icon: <PieChart size={15} /> },
-    { key: 'tax', label: 'Tax & Structure', icon: <Scale size={15} /> },
-    { key: 'exit', label: 'Exit & Liquidity', icon: <BarChart3 size={15} /> },
-  ];
+  const chatUpdate = useCallback((partial: Partial<SimStatePartial>) => {
+    const mapped: Partial<CREState> = {};
+    if (partial.vacancyRate !== undefined) mapped.vacancyRatePct = partial.vacancyRate;
+    if (partial.interestRate !== undefined) mapped.interestRatePct = partial.interestRate;
+    if (partial.holdPeriodYears !== undefined) mapped.holdingPeriod = partial.holdPeriodYears;
+    if (partial.ltvRatio !== undefined) mapped.ltvPct = partial.ltvRatio;
+    if (partial.grossAnnualRent !== undefined) mapped.baseRentPerSF = partial.grossAnnualRent / state.rentableSF;
+    setState((prev) => ({ ...prev, ...mapped }));
+  }, [state.rentableSF]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 bg-dark-900 rounded-xl border border-white/[0.04] overflow-hidden">
-      {/* LEFT PANEL: Parameters */}
-      <div className="w-full lg:w-[340px] xl:w-[380px] flex-shrink-0 flex flex-col border-r border-white/[0.04] bg-[#0c0c0e]">
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-white/[0.06] bg-gradient-to-b from-gold-400/[0.04] to-transparent">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 border border-gold-400/25 flex items-center justify-center">
-              <Building2 size={18} className="text-gold-400" />
-            </div>
-            <div>
-              <div className="text-base font-semibold text-white/80 tracking-wide">Commercial Real Estate Simulator</div>
-              <div className="text-xs text-gold-400/50">{fmt$(state.propertyValue)} &middot; {TAX_PROFILES[state.holdingStructure].label}</div>
-            </div>
+    <div className="min-h-screen bg-dark-900 text-white">
+      {/* Header */}
+      <div className="border-b border-dark-700 px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Building2 size={20} className="text-gold-400" />
+          <div>
+            <h2 className="text-white font-semibold text-lg">Investment Simulator</h2>
+            {address && <div className="text-dark-400 text-xs mt-0.5">{address}</div>}
           </div>
         </div>
-
-        {/* Scrollable sections */}
-        <div className="flex-1 overflow-y-auto sim-scrollbar">
-          {/* 1. Core Financial Parameters */}
-          <Section title="Core Financials" icon={<DollarSign size={15} />} defaultOpen>
-            <SliderInput label="Property Value" value={state.propertyValue} onChange={(v) => update({ propertyValue: v })}
-              min={1_000_000} max={100_000_000} step={500_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Gross Annual Rent" value={state.grossAnnualRent} onChange={(v) => update({ grossAnnualRent: v })}
-              min={0} max={3_000_000} step={25_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Vacancy Rate" value={state.vacancyRate} onChange={(v) => update({ vacancyRate: v })}
-              min={0} max={50} step={1} unit="%" />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Acquisition Costs</div>
-            <SliderInput label="Closing Costs" value={state.closingCosts} onChange={(v) => update({ closingCosts: v })}
-              min={0} max={1_000_000} step={10_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Immediate Renovations" value={state.renovationCosts} onChange={(v) => update({ renovationCosts: v })}
-              min={0} max={5_000_000} step={50_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Agent Commission" value={state.agentCommission} onChange={(v) => update({ agentCommission: v })}
-              min={0} max={10} step={0.5} formatFn={(v) => `${v}% (${fmt$(state.propertyValue * v / 100)})`} />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Debt Structure</div>
-            <SliderInput label="LTV Ratio" value={state.ltvRatio} onChange={(v) => update({ ltvRatio: v })}
-              min={0} max={80} step={5} formatFn={(v) => v === 0 ? 'All-Cash' : `${v}%`} />
-            <SliderInput label="Interest Rate (Debt)" value={state.interestRate} onChange={(v) => update({ interestRate: v })}
-              min={2} max={10} step={0.25} unit="%" />
-            <SliderInput label="Loan Term" value={state.loanTermYears} onChange={(v) => update({ loanTermYears: v })}
-              min={5} max={30} step={5} unit=" years" />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Appreciation & Scarcity</div>
-            <SliderInput label="Base Appreciation Rate" value={state.baseAppreciationRate} onChange={(v) => update({ baseAppreciationRate: v })}
-              min={0} max={12} step={0.5} unit="%/yr" />
-          </Section>
-
-          {/* 2. Commercial Carry Costs */}
-          <Section title="Commercial Carry Costs" icon={<ReceiptText size={15} />}>
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Building Operating Expenses</div>
-            <SliderInput label="CAM & Common Area Ops" value={state.concierge} onChange={(v) => update({ concierge: v })}
-              min={0} max={500_000} step={10_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Building Security" value={state.specializedSecurity} onChange={(v) => update({ specializedSecurity: v })}
-              min={0} max={1_000_000} step={10_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Facilities & Grounds" value={state.highEndLandscaping} onChange={(v) => update({ highEndLandscaping: v })}
-              min={0} max={300_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Utilities & Building Systems" value={state.poolMaintenance} onChange={(v) => update({ poolMaintenance: v })}
-              min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Tech Infrastructure" value={state.smartHomeSystems} onChange={(v) => update({ smartHomeSystems: v })}
-              min={0} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-            <SliderInput label="Property Management" value={state.propertyManagement} onChange={(v) => update({ propertyManagement: v })}
-              min={0} max={300_000} step={5_000} formatFn={(v) => fmt$(v)} />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Staffing</div>
-            <NumberStepper label="Operations Staff" value={state.liveInStaff} onChange={(v) => update({ liveInStaff: v })} />
-            <NumberStepper label="Security Shifts" value={state.securityTeam} onChange={(v) => update({ securityTeam: v })} />
-            <NumberStepper label="Facility Managers" value={state.propertyManagers} onChange={(v) => update({ propertyManagers: v })} />
-            <SliderInput label="Avg Staff Cost" value={state.avgStaffSalary} onChange={(v) => update({ avgStaffSalary: v })}
-              min={40_000} max={200_000} step={5_000} formatFn={(v) => fmt$(v)} />
-          </Section>
-
-          {/* 3. Tax & Structure */}
-          <Section title="Tax & Holding Structure" icon={<Scale size={15} />}>
-            <ToggleGroup label="Holding Structure" value={state.holdingStructure}
-              onChange={(v) => update({ holdingStructure: v as SimState['holdingStructure'] })}
-              options={[
-                { value: 'personal', label: 'Individual Ownership' },
-                { value: 'llc', label: 'Domestic LLC' },
-                { value: 'trust', label: 'Irrevocable Trust' },
-                { value: 'foreign', label: 'Foreign Corporate Structure' },
-              ]} />
-            <SliderInput label="Property Tax Rate" value={state.propertyTaxRate} onChange={(v) => update({ propertyTaxRate: v })}
-              min={0} max={3} step={0.1} unit="%" />
-            <SliderInput label="Annual Insurance" value={state.annualInsurance} onChange={(v) => update({ annualInsurance: v })}
-              min={10_000} max={500_000} step={5_000} formatFn={(v) => fmt$(v)} />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Demand Drivers</div>
-            <ToggleSwitch label="Transit Hub Proximity" value={state.scarcityPrivateBeach}
-              onChange={(v) => update({ scarcityPrivateBeach: v })} tooltip="+1.2% annual appreciation uplift" />
-            <ToggleSwitch label="Institutional Tenant Mix" value={state.scarcityHistoricHeritage}
-              onChange={(v) => update({ scarcityHistoricHeritage: v })} tooltip="+0.8% annual appreciation uplift" />
-            <ToggleSwitch label="Class A Building Spec" value={state.scarcityStarchitect}
-              onChange={(v) => update({ scarcityStarchitect: v })} tooltip="+1.0% annual appreciation uplift" />
-            <ToggleSwitch label="Redevelopment Corridor" value={state.scarcityUniqueView}
-              onChange={(v) => update({ scarcityUniqueView: v })} tooltip="+0.6% annual appreciation uplift" />
-          </Section>
-
-          {/* 4. Exit & Liquidity */}
-          <Section title="Exit & Liquidity" icon={<Target size={15} />}>
-            <SliderInput label="Hold Period" value={state.holdPeriodYears} onChange={(v) => update({ holdPeriodYears: v })}
-              min={3} max={30} step={1} unit=" years" />
-            <SliderInput label="Target Exit Profit" value={state.targetExitProfit} onChange={(v) => update({ targetExitProfit: v })}
-              min={0} max={50_000_000} step={500_000} formatFn={(v) => fmt$(v)} />
-
-            <div className="h-px bg-white/[0.04] my-3" />
-            <div className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-3">Market Context</div>
-            <ToggleGroup label="Asset Tier" value={state.priceBracket}
-              onChange={(v) => update({ priceBracket: v as SimState['priceBracket'] })}
-              options={[
-                { value: 'entry', label: 'Core ($2\u20135M)' },
-                { value: 'premium', label: 'Core+ ($5\u201310M)' },
-                { value: 'ultra', label: 'Trophy ($10M+)' },
-              ]} />
-            <ToggleGroup label="Market Region" value={state.marketRegion}
-              onChange={(v) => update({ marketRegion: v })}
-              options={[
-                { value: 'beverly-hills', label: 'Downtown Los Angeles' },
-                { value: 'miami-beach', label: 'Miami CBD' },
-                { value: 'manhattan', label: 'Manhattan Office Core' },
-                { value: 'hamptons', label: 'Boston Core' },
-                { value: 'monaco', label: 'Singapore CBD' },
-                { value: 'mayfair', label: 'City of London' },
-              ]} />
-            <div className="flex flex-wrap gap-2 mt-2">
-              {[
-                { value: 'bel-air', label: 'Century City' },
-                { value: 'malibu', label: 'Santa Monica Offices' },
-                { value: 'palm-beach', label: 'West Palm Offices' },
-                { value: 'aspen', label: 'Denver CBD' },
-                { value: 'saint-tropez', label: 'Paris La Defense' },
-                { value: 'paris-16', label: 'Frankfurt Core' },
-              ].map((opt) => (
-                <button key={opt.value} onClick={() => update({ marketRegion: opt.value })}
-                  className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
-                    state.marketRegion === opt.value
-                      ? 'bg-gold-400/10 border-gold-400/25 text-gold-400'
-                      : 'bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/15'
-                  }`}
-                >{opt.label}</button>
-              ))}
-            </div>
-          </Section>
-
-          <div className="h-6" />
+        <div className="flex gap-1 bg-dark-800 rounded-lg p-1">
+          {(["base", "upside", "downside"] as const).map((sc) => (
+            <button
+              key={sc}
+              onClick={() => update({ scenario: sc })}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all ${
+                state.scenario === sc
+                  ? sc === "upside" ? "bg-green-700 text-white" : sc === "downside" ? "bg-red-800 text-white" : "bg-gold-700 text-dark-900"
+                  : "text-dark-400 hover:text-white"
+              }`}
+            >
+              {sc}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* RIGHT PANEL: Visualizations */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Tab bar */}
-        <div className="flex-shrink-0 border-b border-white/[0.04] bg-[#0e0e10] sticky top-0 z-10">
-          <div className="flex overflow-x-auto sim-scrollbar-h px-3 py-2.5 gap-1.5">
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  activeTab === t.key
-                    ? 'bg-gold-400/10 text-gold-400 border border-gold-400/20'
-                    : 'text-white/40 hover:text-white/60 hover:bg-white/[0.03] border border-transparent'
-                }`}
-              >{t.icon}{t.label}</button>
-            ))}
-          </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 px-6 py-4 border-b border-dark-700">
+        <KPICard label="Going-In Cap" value={fmtPct(fin.goingInCapRate)} highlight />
+        <KPICard label="NOI Margin" value={fmtPct(fin.noiMargin)} />
+        <KPICard label="Cash-on-Cash" value={fmtPct(fin.cashOnCash)} negative={fin.cashOnCash < 0} />
+        <KPICard label="DSCR Yr 1" value={`${fin.dscr.toFixed(2)}x`} negative={fin.dscr < 1.25} />
+        <KPICard label="Equity Multiple" value={`${fin.equityMultiple.toFixed(2)}x`} highlight />
+        <KPICard label="IRR" value={fmtPct(fin.irr)} highlight negative={fin.irr < 0} />
+        <KPICard label="NPV @8%" value={fmtUSD(fin.npv)} negative={fin.npv < 0} />
+        <KPICard label="Break-Even Occ" value={fmtPct(fin.breakEvenOccupancy)} />
+      </div>
+
+      {/* Main Layout */}
+      <div className="flex flex-col lg:flex-row">
+        {/* Left: Inputs */}
+        <div className="lg:w-80 xl:w-96 flex-shrink-0 border-r border-dark-700 p-4 overflow-y-auto lg:max-h-[calc(100vh-220px)]">
+          <Section title="Acquisition" icon={<Building2 size={12} />}>
+            <Slider label="Purchase Price" value={state.purchasePrice} min={500000} max={50000000} step={100000} onChange={(v) => update({ purchasePrice: v })} format={fmtUSD} />
+            <Slider label="Closing Costs %" value={state.closingCostsPct} min={0.5} max={6} step={0.1} onChange={(v) => update({ closingCostsPct: v })} unit="%" />
+            <Slider label="Holding Period" value={state.holdingPeriod} min={1} max={20} step={1} onChange={(v) => update({ holdingPeriod: v })} unit=" yrs" />
+            <Slider label="CapEx Budget" value={state.capexBudget} min={0} max={state.purchasePrice * 0.1} step={10000} onChange={(v) => update({ capexBudget: v })} format={fmtUSD} />
+            <Slider label="Rentable SF" value={state.rentableSF} min={1000} max={500000} step={500} onChange={(v) => update({ rentableSF: v })} format={(v) => `${fmtN(v)} SF`} />
+            <Slider label="Exit Cap Rate %" value={state.exitCapRate} min={3} max={12} step={0.25} onChange={(v) => update({ exitCapRate: v })} unit="%" />
+            <Slider label="Selling Costs %" value={state.sellingCostsPct} min={0.5} max={5} step={0.1} onChange={(v) => update({ sellingCostsPct: v })} unit="%" />
+            <div className="mb-3">
+              <div className="label-luxury mb-1">Property Type</div>
+              <select value={state.propertyType} onChange={(e) => update({ propertyType: e.target.value })} className="luxury-input w-full">
+                {PROPERTY_TYPES.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </Section>
+
+          <Section title="Revenue" icon={<DollarSign size={12} />} defaultOpen={false}>
+            <Slider label="Base Rent ($/SF/yr)" value={state.baseRentPerSF} min={5} max={150} step={0.5} onChange={(v) => update({ baseRentPerSF: v })} format={(v) => `$${v.toFixed(2)}/SF`} />
+            <Slider label="Rent Growth %" value={state.rentGrowthPct} min={-2} max={8} step={0.25} onChange={(v) => update({ rentGrowthPct: v })} unit="%" />
+            <Slider label="Vacancy Rate %" value={state.vacancyRatePct} min={0} max={50} step={0.5} onChange={(v) => update({ vacancyRatePct: v })} unit="%" />
+            <Slider label="Concessions (mo)" value={state.concessionMonths} min={0} max={12} step={0.5} onChange={(v) => update({ concessionMonths: v })} unit=" mo" />
+            <Slider label="Ancillary Income %" value={state.ancillaryIncomePct} min={0} max={15} step={0.25} onChange={(v) => update({ ancillaryIncomePct: v })} unit="%" />
+          </Section>
+
+          <Section title="Operating Expenses" icon={<Percent size={12} />} defaultOpen={false}>
+            <Slider label="Expense Growth %" value={state.expenseGrowthPct} min={0} max={6} step={0.25} onChange={(v) => update({ expenseGrowthPct: v })} unit="%" />
+            <Slider label="Mgmt Fee %" value={state.mgmtFeePct} min={1} max={10} step={0.25} onChange={(v) => update({ mgmtFeePct: v })} unit="%" />
+            <Slider label="Property Taxes" value={state.propertyTaxes} min={0} max={state.purchasePrice * 0.03} step={1000} onChange={(v) => update({ propertyTaxes: v })} format={fmtUSD} />
+            <Slider label="Insurance" value={state.insurance} min={0} max={state.purchasePrice * 0.015} step={500} onChange={(v) => update({ insurance: v })} format={fmtUSD} />
+            <Slider label="Utilities & Maint." value={state.utilitiesMaintenance} min={0} max={state.rentableSF * 20} step={1000} onChange={(v) => update({ utilitiesMaintenance: v })} format={fmtUSD} />
+            <Slider label="Other OpEx" value={state.otherOpex} min={0} max={state.rentableSF * 10} step={500} onChange={(v) => update({ otherOpex: v })} format={fmtUSD} />
+          </Section>
+
+          <Section title="Below-NOI Costs" icon={<Layers size={12} />} defaultOpen={false}>
+            <Slider label="Recurring CapEx %" value={state.recurringCapexPct} min={0} max={5} step={0.1} onChange={(v) => update({ recurringCapexPct: v })} unit="%" />
+            <Slider label="TI ($/SF)" value={state.tiPerSF} min={0} max={150} step={1} onChange={(v) => update({ tiPerSF: v })} format={(v) => `$${v}/SF`} />
+            <Slider label="Leasing Comm %" value={state.leasingCommissionsPct} min={0} max={10} step={0.25} onChange={(v) => update({ leasingCommissionsPct: v })} unit="%" />
+          </Section>
+
+          <Section title="Debt Structure" icon={<TrendingUp size={12} />} defaultOpen={false}>
+            <Slider label="LTV %" value={state.ltvPct} min={0} max={85} step={1} onChange={(v) => update({ ltvPct: v })} unit="%" />
+            <Slider label="Interest Rate %" value={state.interestRatePct} min={3} max={12} step={0.125} onChange={(v) => update({ interestRatePct: v })} unit="%" />
+            <Slider label="Loan Term (yrs)" value={state.loanTermYears} min={3} max={30} step={1} onChange={(v) => update({ loanTermYears: v })} unit=" yrs" />
+            <Slider label="Amortization (yrs)" value={state.amortizationYears} min={10} max={40} step={1} onChange={(v) => update({ amortizationYears: v })} unit=" yrs" />
+            <div className="mt-3 p-3 rounded-lg bg-dark-800 border border-dark-700 space-y-1 text-xs">
+              <div className="flex justify-between"><span className="text-dark-400">Loan Amount</span><span className="text-white font-mono">{fmtUSD(fin.loanAmount)}</span></div>
+              <div className="flex justify-between"><span className="text-dark-400">Equity Invested</span><span className="text-gold-400 font-mono">{fmtUSD(fin.equityInvested)}</span></div>
+              <div className="flex justify-between"><span className="text-dark-400">Annual Debt Svc</span><span className="text-white font-mono">{fmtUSD(fin.annualDebtService)}</span></div>
+              <div className="flex justify-between"><span className="text-dark-400">Projected Exit</span><span className="text-gold-400 font-mono">{fmtUSD(fin.exitValue)}</span></div>
+            </div>
+          </Section>
         </div>
 
-        {/* Content */}
-        <div className="p-4 lg:p-6 overflow-y-auto">
-          <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="space-y-4">
-              {activeTab === 'overview' && (
-                <div className="space-y-4">
-                  <OverviewDashboard state={state} fin={fin} />
-                  <ClosingCostChart state={state} fin={fin} />
-                  <FinancialProjectionsChart state={state} fin={fin} />
-                </div>
-              )}
-              {activeTab === 'carry' && <CarryCostBreakdown state={state} fin={fin} />}
-              {activeTab === 'tax' && <TaxStructuringPanel state={state} fin={fin} />}
-              {activeTab === 'exit' && <ExitStrategyPanel state={state} fin={fin} />}
-            </motion.div>
-          </AnimatePresence>
+        {/* Right: Charts */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex gap-1 px-4 pt-4 border-b border-dark-700 flex-wrap">
+            {CHART_TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-medium transition-all border-b-2 -mb-px ${
+                  activeTab === t.id
+                    ? "border-gold-400 text-gold-400 bg-dark-800"
+                    : "border-transparent text-dark-400 hover:text-white"
+                }`}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 p-6 overflow-y-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === "waterfall" && <IncomeWaterfallChart rows={fin.rows} />}
+                {activeTab === "cashflow" && <CashFlowChart rows={fin.rows} exitProceeds={fin.exitProceeds} />}
+                {activeTab === "equity" && <CumulativeEquityChart rows={fin.rows} />}
+                {activeTab === "expenses" && <ExpensePieChart rows={fin.rows} />}
+                {activeTab === "sensitivity" && <SensitivityHeatmap baseState={state} />}
+                {activeTab === "table" && <AnnualTable rows={fin.rows} />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
       {/* AI Chat */}
-      <SimulatorChat currentState={state} financials={fin} onUpdateParams={update} />
+      <SimulatorChat
+        currentState={state as any}
+        financials={fin as any}
+        onUpdateParams={chatUpdate as any}
+      />
     </div>
   );
 }

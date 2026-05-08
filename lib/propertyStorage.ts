@@ -100,6 +100,10 @@ function coerceObject<T>(value: unknown, fallback: T): T {
   return fallback;
 }
 
+function normalizeSegment(value: unknown): "lre" | "cre" {
+  return value === "cre" ? "cre" : "lre";
+}
+
 async function supabaseRequest(method: string, options: SupabaseRequestOptions = {}) {
   ensureSupabaseConfig();
   const url = new URL(TABLE_ENDPOINT);
@@ -143,6 +147,7 @@ async function supabaseRequest(method: string, options: SupabaseRequestOptions =
 }
 
 function mapRowToProperty(row: PropertyRow): Property {
+  const marketData = coerceObject(row.market_data, {} as Record<string, unknown>);
   return {
     id: row.id,
     title: row.title,
@@ -160,7 +165,7 @@ function mapRowToProperty(row: PropertyRow): Property {
     documents: Array.isArray(row.documents) ? row.documents : [],
     maintenanceHistory: Array.isArray(row.maintenance_history) ? row.maintenance_history : [],
     ownershipHistory: Array.isArray(row.ownership_history) ? row.ownership_history : [],
-    marketData: coerceObject(row.market_data, {} as Property["marketData"]),
+    marketData: marketData as unknown as Property["marketData"],
     investmentAnalysis: coerceObject(row.investment_analysis, {} as Property["investmentAnalysis"]),
     annualOpex: row.annual_opex ?? undefined,
     liquidityScore: row.liquidity_score ?? undefined,
@@ -168,10 +173,16 @@ function mapRowToProperty(row: PropertyRow): Property {
     capRate: row.cap_rate ?? undefined,
     irr: row.irr ?? undefined,
     locked: row.locked ?? true,
+    segment: normalizeSegment(marketData.segment),
   };
 }
 
 function serializeProperty(property: Property): PropertyRow {
+  const marketData = {
+    ...((property.marketData ?? {}) as unknown as Record<string, unknown>),
+    segment: normalizeSegment(property.segment),
+  };
+
   return {
     id: property.id,
     title: property.title,
@@ -189,7 +200,7 @@ function serializeProperty(property: Property): PropertyRow {
     documents: property.documents ?? [],
     maintenance_history: property.maintenanceHistory ?? [],
     ownership_history: property.ownershipHistory ?? [],
-    market_data: (property.marketData ?? {}) as unknown,
+    market_data: marketData as unknown,
     investment_analysis: (property.investmentAnalysis ?? {}) as unknown,
     annual_opex: property.annualOpex ?? null,
     liquidity_score: property.liquidityScore ?? null,
@@ -204,6 +215,7 @@ function serializePartial(updates: Partial<Property>): PartialRow {
   const row: PartialRow = {};
   for (const [rawKey, rawValue] of Object.entries(updates)) {
     if (rawValue === undefined) continue;
+    if (rawKey === "segment") continue;
     const key = rawKey as keyof Property;
     const column = COLUMN_ALIASES[rawKey] ?? rawKey;
 
@@ -217,6 +229,18 @@ function serializePartial(updates: Partial<Property>): PartialRow {
       row[column] = rawValue;
     }
   }
+
+  if (updates.segment !== undefined) {
+    const baseMarket =
+      row.market_data && typeof row.market_data === "object"
+        ? (row.market_data as Record<string, unknown>)
+        : {};
+    row.market_data = {
+      ...baseMarket,
+      segment: normalizeSegment(updates.segment),
+    };
+  }
+
   return row;
 }
 

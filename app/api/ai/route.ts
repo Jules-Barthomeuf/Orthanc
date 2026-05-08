@@ -99,6 +99,7 @@ export async function POST(req: Request) {
         reason: 'Owner relocating; listed to optimize estate diversification',
       },
     ],
+    segment: 'lre',
     marketData,
     investmentAnalysis,
   };

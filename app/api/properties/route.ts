@@ -162,6 +162,7 @@ export async function POST(req: Request) {
       yearBuilt: body.yearBuilt || 0,
       lot: body.lot || 0,
       locked: body.locked !== undefined ? body.locked : true,
+      segment: body.segment === "cre" ? "cre" : "lre",
     });
 
     clearSummaryCache();

@@ -9,7 +9,7 @@ const MarketInsightPanel = lazy(() => import("./MarketInsightPanel").then(m => (
 const InvestmentAdvisorPanel = lazy(() => import("./InvestmentAdvisorPanel").then(m => ({ default: m.InvestmentAdvisorPanel })));
 const OverviewPanel = lazy(() => import("./OverviewPanel").then(m => ({ default: m.OverviewPanel })));
 const LeaseAnalysisPanel = lazy(() => import("./LeaseAnalysisPanel").then(m => ({ default: m.LeaseAnalysisPanel })));
-const Simulator = lazy(() => import("./Simulator"));
+const SegmentedSimulator = lazy(() => import("./SegmentedSimulator"));
 
 const TABS = [
   { id: "overview", title: "Overview" },
@@ -426,7 +426,7 @@ export function PropertyVault({
             </div>
             {/* Simulator content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <Simulator address={data.address} price={data.price} />
+              <SegmentedSimulator property={data} />
             </div>
           </div>
         </div>
