@@ -342,6 +342,19 @@ async function fetchMediastack(
   return fetch(url, { cache: "no-store" });
 }
 
+function parseMediastackResponse(json: any): {
+  articles: any[];
+  errorCode?: string;
+} {
+  if (json && json.success === false) {
+    const code = String(json?.error?.code || "api_error");
+    return { articles: [], errorCode: code };
+  }
+
+  const articles = Array.isArray(json?.data) ? json.data : [];
+  return { articles };
+}
+
 async function fetchNewsCards(
   address: string,
   cityHint?: string
@@ -356,42 +369,59 @@ async function fetchNewsCards(
     };
   }
 
-  const { keywords } = buildNewsQuery(address, cityHint);
+  const { city, country, region, keywords } = buildNewsQuery(address, cityHint);
+
+  const queryCandidates = [
+    keywords,
+    [city, country, "real estate", "housing market", "property"].filter(Boolean).join(","),
+    [city, "real estate", "housing", "mortgage"].filter(Boolean).join(","),
+    [region, "real estate", "housing", "geopolitics"].filter(Boolean).join(","),
+    "real estate,housing market,mortgage,inflation",
+  ].filter(Boolean);
 
   try {
-    let res = await fetchMediastack(apiKey, keywords, true);
-    if (!res.ok) {
-      // Free Mediastack plans can require HTTP transport.
-      res = await fetchMediastack(apiKey, keywords, false);
-    }
-
-    if (!res.ok) {
-      return {
-        cards: ensureCoverageAndMinimum(buildMockCards(address, cityHint), context),
-        provider: "mock",
-        debugReason: `http_${res.status}`,
-      };
-    }
-
-    const json = await res.json();
-    const articles = Array.isArray(json?.data) ? json.data : [];
-
+    let lastReason = "no_articles";
     const seen = new Set<string>();
     const cards: RealTimeAnalysisCard[] = [];
 
-    for (const article of articles) {
-      const card = normalizeFromMediastackArticle(article, context);
-      const fingerprint = card.sourceUrl || `${card.title}-${card.publishedAt.toISOString()}`;
-      if (seen.has(fingerprint)) continue;
-      seen.add(fingerprint);
-      cards.push(card);
+    for (const candidate of queryCandidates) {
+      let res = await fetchMediastack(apiKey, candidate, true);
+      if (!res.ok) {
+        // Free Mediastack plans can require HTTP transport.
+        res = await fetchMediastack(apiKey, candidate, false);
+      }
+
+      if (!res.ok) {
+        lastReason = `http_${res.status}`;
+        continue;
+      }
+
+      const json = await res.json();
+      const parsed = parseMediastackResponse(json);
+      if (parsed.errorCode) {
+        lastReason = parsed.errorCode;
+        continue;
+      }
+
+      for (const article of parsed.articles) {
+        const card = normalizeFromMediastackArticle(article, context);
+        const fingerprint = card.sourceUrl || `${card.title}-${card.publishedAt.toISOString()}`;
+        if (seen.has(fingerprint)) continue;
+        seen.add(fingerprint);
+        cards.push(card);
+      }
+
+      if (cards.length >= MIN_NEWS_CARDS) {
+        break;
+      }
     }
 
-    const base = cards.length > 0 ? cards : buildMockCards(address, cityHint);
+    const hasRealCards = cards.length > 0;
+    const base = hasRealCards ? cards : buildMockCards(address, cityHint);
     return {
       cards: ensureCoverageAndMinimum(base, context),
-      provider: cards.length > 0 ? "mediastack" : "mock",
-      debugReason: cards.length > 0 ? undefined : "no_articles",
+      provider: hasRealCards ? "mediastack" : "mock",
+      debugReason: hasRealCards ? undefined : lastReason,
     };
   } catch {
     return {

@@ -365,7 +365,7 @@ export function PropertyVault({
             ) : (
               <>
                 <p className="text-dark-500 text-xs uppercase tracking-wider mb-1">Asking Price</p>
-                <p className="text-3xl lg:text-4xl text-white font-bold">
+                <p className="text-3xl lg:text-4xl text-white font-semibold">
                   {data.price >= 1000000
                     ? `$${(data.price / 1000000).toFixed(2)}M`
                     : `$${data.price?.toLocaleString("en-US")}`}

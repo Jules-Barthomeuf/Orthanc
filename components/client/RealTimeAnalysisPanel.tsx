@@ -45,6 +45,7 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<string>("-");
+  const [debugReason, setDebugReason] = useState<string | undefined>(undefined);
 
   const loadAnalysis = useCallback(async (force = false) => {
     if (!property.id) return;
@@ -59,6 +60,7 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
       }
       setAnalysis(json);
       setSource(json?.source || "-");
+      setDebugReason(json?.debugReason);
     } catch {
       setError("Unable to load real-time analysis");
     } finally {
@@ -87,6 +89,7 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
       }
       setAnalysis(json);
       setSource(json?.source || source);
+      setDebugReason(json?.debugReason);
     } catch {
       setError("Refresh failed");
     } finally {
@@ -161,7 +164,7 @@ export function RealTimeAnalysisPanel({ property, editable = false }: RealTimeAn
           </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-dark-400">Source: <span className="text-white/80">{source}</span></div>
+          <div className="text-xs text-dark-400">Source: <span className="text-white/80">{source}</span>{editable && debugReason && <span className="ml-2 text-red-400 font-mono">[{debugReason}]</span>}</div>
           <div className="text-xs text-dark-400">Last updated: <span className="text-white/80">{formatDate(analysis?.lastUpdated)}</span></div>
           <div className="text-xs text-dark-400">Next refresh: <span className="text-white/80">{formatDate(analysis?.nextRefreshAt)}</span></div>
           {editable && (
