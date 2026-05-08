@@ -23,17 +23,6 @@ interface PortalDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-function getSegmentLabel(segment?: string) {
-  return segment === "cre" ? "CRE" : "LRE";
-}
-
-function getSegmentBadgeClass(segment?: string) {
-  if (segment === "cre") {
-    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
-  }
-  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
-}
-
 export default function PortalDetailPage({ params }: PortalDetailPageProps) {
   const { id } = React.use(params);
   const { user } = useAuthStore();
@@ -408,11 +397,6 @@ export default function PortalDetailPage({ params }: PortalDetailPageProps) {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/70 via-dark-900/10 to-transparent" />
-                    <div className="absolute top-3 left-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(property.segment)}`}>
-                        {getSegmentLabel(property.segment)}
-                      </span>
-                    </div>
                     <div className="absolute bottom-3 left-4">
                       <span className="font-display text-xl font-bold text-white drop-shadow-lg">
                         ${property.price?.toLocaleString()}

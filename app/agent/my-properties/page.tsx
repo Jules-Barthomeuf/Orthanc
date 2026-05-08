@@ -18,17 +18,6 @@ if (typeof document !== 'undefined') document.title = 'Orthanc - My Properties';
 type SortKey = "newest" | "name";
 type ViewMode = "grid" | "list";
 
-function getSegmentLabel(segment?: string) {
-  return segment === "cre" ? "CRE" : "LRE";
-}
-
-function getSegmentBadgeClass(segment?: string) {
-  if (segment === "cre") {
-    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
-  }
-  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
-}
-
 export default function MyPropertiesPage() {
   const { user } = useAuthStore();
   const router = useRouter();
@@ -742,12 +731,6 @@ export default function MyPropertiesPage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/70 via-dark-900/10 to-transparent" />
 
-                    <div className="absolute top-3 left-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(property.segment)}`}>
-                        {getSegmentLabel(property.segment)}
-                      </span>
-                    </div>
-
                     {property.locked && (
                       <div className="absolute bottom-3 left-4">
                         <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold-400/30">
@@ -903,9 +886,6 @@ export default function MyPropertiesPage() {
                       <h3 className="font-display text-base font-bold text-white group-hover:text-gold-300 transition-colors truncate">
                         {property.title}
                       </h3>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${getSegmentBadgeClass(property.segment)}`}>
-                        {getSegmentLabel(property.segment)}
-                      </span>
                       {property.locked && (
                         <span className="flex items-center gap-1 bg-gold-400/20 text-gold-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-gold-400/30 shrink-0">
                           <svg width="8" height="8" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>

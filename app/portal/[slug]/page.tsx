@@ -20,17 +20,6 @@ interface PortalPublicPageProps {
   params: Promise<{ slug: string }>;
 }
 
-function getSegmentLabel(segment?: string) {
-  return segment === "cre" ? "CRE" : "LRE";
-}
-
-function getSegmentBadgeClass(segment?: string) {
-  if (segment === "cre") {
-    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
-  }
-  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
-}
-
 export default function PortalPublicPage({ params }: PortalPublicPageProps) {
   const { slug } = React.use(params);
   const [portal, setPortal] = useState<Portal | null>(null);
@@ -159,11 +148,6 @@ export default function PortalPublicPage({ params }: PortalPublicPageProps) {
                         </svg>
                       </div>
                     )}
-                    <div className="absolute top-4 left-5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(property.segment)}`}>
-                        {getSegmentLabel(property.segment)}
-                      </span>
-                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/85 via-dark-900/20 to-transparent" />
                     <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3">
                       <h3 className="text-lg lg:text-xl font-bold text-white leading-tight">{property.title}</h3>

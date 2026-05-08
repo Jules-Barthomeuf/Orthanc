@@ -377,7 +377,7 @@ export function AgentDashboard() {
         ...prev,
         {
           role: 'ai',
-          content: `✅ **Listing imported.**\n\n**${scraped.title || 'Imported Property'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}Choose **LRE** or **CRE** in the preview panel, then click **Create Property**.`,
+          content: `✅ **Listing imported.**\n\n**${scraped.title || 'Imported Property'}**\n${scraped.address ? `📍 ${scraped.address}\n` : ''}${scraped.price ? `💰 $${scraped.price.toLocaleString()}\n` : ''}Review the preview panel, then click **Create Property**.`,
         },
       ]);
     } catch {
@@ -553,7 +553,7 @@ export function AgentDashboard() {
     const price = draftData.price || 5000000;
     const address = draftData.address || `Auto-generated Address ${now}`;
 
-    function generateSegmentDescription(d: PropertyDraft) {
+    function generatePropertyDescription(d: PropertyDraft) {
       const beds = d.bedrooms || 4;
       const baths = d.bathrooms || 3;
       const sqft = d.squareFeet || 4000;
@@ -575,10 +575,7 @@ export function AgentDashboard() {
       if (features.includes('Waterfront')) extras.push('waterfront access');
       if (features.includes('Concierge')) extras.push('concierge services');
       const extrasText = extras.length ? 'Features ' + extras.join(', ') + '.' : '';
-      if (d.segment === 'cre') {
-        return `Commercial asset${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} office/flex areas and ${baths} restrooms. ${extrasText} Suitable for income generation, tenant optimization, and long-term value creation.`;
-      }
-      return `Luxury residence${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} bedrooms and ${baths} bathrooms. ${extrasText}`;
+      return `Real estate asset${lot ? ` on ${lot}` : ''} ${addressText}. Approx. ${sqft.toLocaleString()} sqft, built in ${year}, with ${beds} rooms and ${baths} bathrooms. ${extrasText}`;
     }
 
     const propertyPayload = {
@@ -586,7 +583,7 @@ export function AgentDashboard() {
       title: address,
       address,
       price,
-      description: draftData.description || generateSegmentDescription(draftData),
+      description: draftData.description || generatePropertyDescription(draftData),
       images: uploadedImages.length > 0 ? uploadedImages : ["https://images.unsplash.com/photo-1600585152552-5d5ef8e2b0f8?w=1200"],
       agentId: user?.id || agentId,
       bedroom: draftData.bedrooms || 4,
@@ -1092,17 +1089,6 @@ export function AgentDashboard() {
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Home Type</label>
                 <input value={draft.homeType || ''} onChange={e => updateDraftField('homeType', e.target.value)}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30" />
-              </div>
-              <div>
-                <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Segment</label>
-                <select
-                  value={draft.segment || 'lre'}
-                  onChange={(e) => updateDraftField('segment', e.target.value === 'cre' ? 'cre' : 'lre')}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-gold-400/30"
-                >
-                  <option value="lre">LRE - Luxury Real Estate</option>
-                  <option value="cre">CRE - Commercial Real Estate</option>
-                </select>
               </div>
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider mb-1 block">Bedrooms</label>

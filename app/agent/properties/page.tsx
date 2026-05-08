@@ -11,16 +11,55 @@ import { Property } from "@/types";
 const PAGE_SIZE = 12;
 
 const getCacheKey = (userId: string, page: number) => `agentPropPage:${userId}:${page}`;
+const CACHE_PREFIX = "agentPropPage:";
+const MAX_CACHE_BYTES = 120_000;
 
-function getSegmentLabel(segment?: string) {
-  return segment === "cre" ? "CRE" : "LRE";
+function makeCachePayload(json: any) {
+  const data = Array.isArray(json?.data)
+    ? json.data.map((p: any) => ({
+        id: p?.id,
+        title: p?.title,
+        images: Array.isArray(p?.images) ? p.images.slice(0, 1) : [],
+      }))
+    : [];
+
+  return { total: json?.total ?? 0, data };
 }
 
-function getSegmentBadgeClass(segment?: string) {
-  if (segment === "cre") {
-    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
+function pruneAgentCacheForUser(userId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const prefix = `${CACHE_PREFIX}${userId}:`;
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key?.startsWith(prefix)) keysToRemove.push(key);
+    }
+    keysToRemove.forEach((k) => sessionStorage.removeItem(k));
+  } catch {
+    // Ignore storage failures and continue without cache.
   }
-  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
+}
+
+function safeSetPageCache(userId: string, pageNum: number, json: any) {
+  if (typeof window === "undefined") return;
+  const key = getCacheKey(userId, pageNum);
+  const payload = makeCachePayload(json);
+  const serialized = JSON.stringify(payload);
+
+  if (serialized.length > MAX_CACHE_BYTES) return;
+
+  try {
+    sessionStorage.setItem(key, serialized);
+  } catch {
+    // Quota can be exceeded if many pages were cached previously.
+    pruneAgentCacheForUser(userId);
+    try {
+      sessionStorage.setItem(key, serialized);
+    } catch {
+      // Give up silently if storage is unavailable.
+    }
+  }
 }
 
 export default function AgentPropertiesPage() {
@@ -60,7 +99,7 @@ export default function AgentPropertiesPage() {
       const json = await res.json();
       setProperties(json.data ?? []);
       setTotal(json.total ?? 0);
-      sessionStorage.setItem(getCacheKey(user.id, pageNum), JSON.stringify(json));
+      safeSetPageCache(user.id, pageNum, json);
     } catch (err) {
       console.error(err);
     } finally {
@@ -194,11 +233,6 @@ export default function AgentPropertiesPage() {
                         </svg>
                       </div>
                     )}
-                    <div className="absolute top-4 left-5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(property.segment)}`}>
-                        {getSegmentLabel(property.segment)}
-                      </span>
-                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-900/85 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3">
                       <h2 className="font-sans text-xl font-semibold text-white leading-tight">

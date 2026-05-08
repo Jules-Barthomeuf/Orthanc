@@ -9,12 +9,13 @@ const MarketInsightPanel = lazy(() => import("./MarketInsightPanel").then(m => (
 const InvestmentAdvisorPanel = lazy(() => import("./InvestmentAdvisorPanel").then(m => ({ default: m.InvestmentAdvisorPanel })));
 const OverviewPanel = lazy(() => import("./OverviewPanel").then(m => ({ default: m.OverviewPanel })));
 const LeaseAnalysisPanel = lazy(() => import("./LeaseAnalysisPanel").then(m => ({ default: m.LeaseAnalysisPanel })));
-const SegmentedSimulator = lazy(() => import("./SegmentedSimulator"));
+const Simulator = lazy(() => import("./Simulator"));
 
 const TABS = [
   { id: "overview", title: "Overview" },
   { id: "market", title: "Market" },
   { id: "technical", title: "Property" },
+  { id: "documents", title: "Documents" },
   { id: "lease", title: "Lease Analysis" },
   { id: "provenance", title: "Provenance" },
   { id: "advisor", title: "Investment Advisor" },
@@ -53,6 +54,74 @@ function EditableField({
         onChange={(e) => onChange(e.target.value)}
         className="luxury-input text-sm w-full"
       />
+    </div>
+  );
+}
+
+function formatDocDate(value: Date | string | undefined) {
+  if (!value) return "Unknown";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "Unknown";
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatDocType(type: string | undefined) {
+  if (!type) return "Other";
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function DocumentsPanel({ property }: { property: Property }) {
+  const docs = Array.isArray(property.documents) ? property.documents : [];
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-8">
+        <h3 className="font-display text-xl text-white mb-2">Documents</h3>
+        <p className="text-dark-400 text-sm">All files attached to this property.</p>
+      </div>
+
+      {docs.length === 0 ? (
+        <div className="bg-dark-800 border border-gold-400/10 rounded-lg p-10 text-center">
+          <p className="text-dark-400 text-sm">No documents available for this property yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {docs.map((doc) => (
+            <div
+              key={doc.id}
+              className="bg-dark-800 border border-gold-400/10 rounded-lg p-5 flex items-start justify-between gap-4"
+            >
+              <div className="min-w-0">
+                <p className="text-white font-medium truncate">{doc.name || "Untitled document"}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-dark-400">
+                  <span className="px-2 py-0.5 rounded-full border border-dark-600/40 text-dark-300">
+                    {formatDocType(doc.type)}
+                  </span>
+                  <span>Uploaded {formatDocDate(doc.uploadedAt)}</span>
+                </div>
+                {doc.analysis ? (
+                  <p className="mt-3 text-sm text-dark-300 leading-relaxed">{doc.analysis}</p>
+                ) : null}
+              </div>
+
+              {doc.url ? (
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 luxury-button-secondary text-xs py-2 px-3"
+                >
+                  Open
+                </a>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -357,7 +426,7 @@ export function PropertyVault({
         </div>
 
         {/* ── Tab Navigation ── */}
-        <div className="flex gap-0 border-b border-dark-600/30 mb-10 overflow-x-auto">
+        <div className="flex flex-wrap gap-0 border-b border-dark-600/30 mb-10">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -387,6 +456,7 @@ export function PropertyVault({
       <div className="max-w-7xl mx-auto px-6 overflow-hidden">
         <Suspense fallback={<div className="h-64 flex items-center justify-center text-dark-500 text-sm">Loading...</div>}>
           {activeTab === "overview" && <OverviewPanel property={data} />}
+          {activeTab === "documents" && <DocumentsPanel property={data} />}
           {activeTab === "lease" && <LeaseAnalysisPanel property={data} />}
           {activeTab === "provenance" && <ProvenancePanel property={data} />}
           {activeTab === "technical" && <TechnicalPanel property={data} />}
@@ -426,7 +496,7 @@ export function PropertyVault({
             </div>
             {/* Simulator content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <SegmentedSimulator property={data} />
+              <Simulator address={data.address} price={data.price} />
             </div>
           </div>
         </div>

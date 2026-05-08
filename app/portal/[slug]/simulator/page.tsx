@@ -1,7 +1,7 @@
 "use client";
 
 import { PortalSidebar } from "@/components/common/PortalSidebar";
-import SegmentedSimulator from "@/components/client/SegmentedSimulator";
+import Simulator from "@/components/client/Simulator";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Property } from "@/types";
@@ -12,17 +12,6 @@ interface Portal {
 }
 
 interface SimulatorPageProps { params: Promise<{ slug: string }>; }
-
-function getSegmentLabel(segment?: string) {
-  return segment === "cre" ? "CRE" : "LRE";
-}
-
-function getSegmentBadgeClass(segment?: string) {
-  if (segment === "cre") {
-    return "bg-cyan-400/20 text-cyan-200 border-cyan-300/30";
-  }
-  return "bg-gold-400/20 text-gold-300 border-gold-400/30";
-}
 
 export default function SimulatorPage({ params }: SimulatorPageProps) {
   const { slug } = React.use(params);
@@ -107,11 +96,6 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
               >
                 <div className="relative h-36">
                   <img src={img} alt={p.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 left-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getSegmentBadgeClass(p.segment)}`}>
-                      {getSegmentLabel(p.segment)}
-                    </span>
-                  </div>
                   {isSelected && (
                     <div className="absolute inset-0 bg-gold-400/10 flex items-center justify-center">
                       <span className="bg-gold-400 text-dark-900 text-xs font-bold px-3 py-1 rounded-full">Selected</span>
@@ -131,7 +115,7 @@ export default function SimulatorPage({ params }: SimulatorPageProps) {
         {/* Simulator */}
         {selectedProperty ? (
           <div className="border-t border-dark-700 pt-10">
-            <SegmentedSimulator property={selectedProperty} />
+            <Simulator address={selectedProperty.address} price={selectedProperty.price} />
           </div>
         ) : (
           <div className="border-t border-dark-700 pt-10 text-center py-20">
